@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# Magisk build orchestrator — see AGENTS.md for usage
+﻿#!/usr/bin/env python3
+# Magisk build orchestrator â€” see AGENTS.md for usage
 import argparse
 import functools
 import glob
