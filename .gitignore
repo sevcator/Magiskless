@@ -1,16 +1,68 @@
-out
-*.zip
-*.jks
+# ── Build outputs ──────────────────────────────────────────────────────────────
+out/
+native/out/
+native/libs/
+native/obj/
+
+# Gradle build cache and outputs
+app/build/
+app/**/build/
+.gradle/
+*.class
+
+# ── APK / zip / signing ────────────────────────────────────────────────────────
 *.apk
-*.log
+*.zip
+*.aab
+*.jks
+*.keystore
+*.p12
+
+# ── Config and secrets ─────────────────────────────────────────────────────────
 /config.prop
+*.local.properties
+local.properties
+signing.properties
+keystore.properties
+
+# ── Rust / Cargo ───────────────────────────────────────────────────────────────
+target/
+tools/elf-cleaner/target/
+tools/rustup-wrapper/target/
+native/src/boot/proto/mod.rs
+native/src/boot/proto/update_metadata.rs
+native/**/*-rs.cpp
+native/**/*-rs.hpp
+
+# ── Logs ───────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Android Studio / IntelliJ / Cursor ────────────────────────────────────────
+.idea/
+*.iml
+.cursor/
+*.ipr
+*.iws
+
+# ── OS junk ────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+
+# ── Temporary / test images ────────────────────────────────────────────────────
+ramdisk.img
+*.img
 /notes.md
 
-# Built binaries
-native/out
+# ── NDK toolchain (downloaded by: python build.py ndk) ────────────────────────
+tools/ndk/
 
-# Android Studio
-*.iml
-.idea
-.cursor
-ramdisk.img
+# ── Local analysis folders ────────────────────────────────────────────────────
+unpacked/
+Magiskless/
