@@ -402,7 +402,10 @@ def build_apk(module: str):
     # Write flags.prop for Gradle (read by Plugin.kt as Config.version, etc.)
     gradle_build_dir = Path("app", "build")
     gradle_build_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
-    write_if_diff(gradle_build_dir / "flags.prop", f"version={config['version']}\n")
+    write_if_diff(
+        gradle_build_dir / "flags.prop",
+        f"version={config['version']}\nabiList={','.join(build_abis.keys())}\n",
+    )
 
     os.chdir("app")
     build_type = "Release" if args.release else "Debug"
