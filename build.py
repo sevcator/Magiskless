@@ -399,6 +399,11 @@ def build_apk(module: str):
     env = find_jdk()
     props = args.config.resolve()
 
+    # Write flags.prop for Gradle (read by Plugin.kt as Config.version, etc.)
+    gradle_build_dir = Path("app", "build")
+    gradle_build_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
+    write_if_diff(gradle_build_dir / "flags.prop", f"version={config['version']}\n")
+
     os.chdir("app")
     build_type = "Release" if args.release else "Debug"
     proc = execv(
