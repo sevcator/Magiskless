@@ -24,7 +24,7 @@ import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.dialog.SuperuserRevokeDialog
 import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
-import com.topjohnwu.magisk.utils.asText
+import com.topjohnwu.magisk.core.utils.asText
 import com.topjohnwu.magisk.view.TextItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

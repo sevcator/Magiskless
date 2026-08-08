@@ -31,7 +31,7 @@ import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.DieEvent
 import com.topjohnwu.magisk.events.ShowUIEvent
-import com.topjohnwu.magisk.utils.TextHolder
+import com.topjohnwu.magisk.core.utils.TextHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit.SECONDS

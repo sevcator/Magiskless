@@ -10,8 +10,8 @@ import com.topjohnwu.magisk.databinding.ItemWrapper
 import com.topjohnwu.magisk.databinding.ObservableRvItem
 import com.topjohnwu.magisk.databinding.RvItem
 import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.utils.TextHolder
-import com.topjohnwu.magisk.utils.asText
+import com.topjohnwu.magisk.core.utils.TextHolder
+import com.topjohnwu.magisk.core.utils.asText
 import com.topjohnwu.magisk.core.R as CoreR
 
 object InstallModule : RvItem(), DiffItem<InstallModule> {
