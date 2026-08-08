@@ -66,3 +66,6 @@ tools/ndk/
 # ── Local analysis folders ────────────────────────────────────────────────────
 unpacked/
 Magiskless/
+
+official-magisk/
+vvb2060-magisk/
