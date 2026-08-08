@@ -127,7 +127,6 @@ impl SePolicy {
 
             // Zygisk rules
             allow(["zygote"], ["zygote"], ["process"], ["execmem"]);
-            allow(["domain"], [proc], ["memfd_file"], ["getattr", "read", "write", "map", "execute"]);
             allow(["zygote"], ["fs_type"], ["filesystem"], ["unmount"]);
             allow(["system_server"], ["system_server"], ["process"], ["execmem"]);
 

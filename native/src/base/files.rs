@@ -422,13 +422,16 @@ impl Utf8CStr {
         }
 
         let mut path = cstr::buf::default();
-        let components = self.split('/').filter(|s| !s.is_empty());
+        let mut components = self.split('/').filter(|s| !s.is_empty());
 
         if self.starts_with('/') {
             path.append_path("/");
         }
 
-        for s in components {
+        loop {
+            let Some(s) = components.next() else {
+                break;
+            };
             path.append_path(s);
             path.mkdir(mode)?;
         }

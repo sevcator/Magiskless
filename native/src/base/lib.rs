@@ -1,8 +1,6 @@
 #![allow(clippy::missing_safety_doc)]
 
-pub use const_format;
-pub use libc;
-pub use nix;
+pub use {const_format, libc, nix};
 
 pub use cstr::{
     FsPathFollow, StrErr, Utf8CStr, Utf8CStrBuf, Utf8CStrBufArr, Utf8CStrBufRef, Utf8CString,

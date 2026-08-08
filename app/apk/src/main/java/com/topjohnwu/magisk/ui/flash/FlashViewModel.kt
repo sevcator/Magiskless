@@ -1,6 +1,5 @@
 package com.topjohnwu.magisk.ui.flash
 
-import android.os.Build
 import android.view.MenuItem
 import androidx.databinding.Bindable
 import androidx.databinding.ObservableArrayList
@@ -80,11 +79,6 @@ class FlashViewModel : BaseViewModel() {
                     uri ?: return@launch
                     showReboot = false
                     MagiskInstaller.Patch(uri, outItems, logItems).exec()
-                }
-                Const.Value.DOWNLOAD -> {
-                    uri ?: return@launch
-                    showReboot = false
-                    MagiskInstaller.Download(uri.toString(), outItems, logItems).exec()
                 }
                 else -> {
                     back()

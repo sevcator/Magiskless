@@ -33,7 +33,6 @@ open class Receiver : BaseReceiver() {
         intent ?: return
         super.onReceive(context, intent)
 
-        @OptIn(kotlinx.coroutines.DelicateCoroutinesApi::class)
         fun rmPolicy(uid: Int) = GlobalScope.launch {
             policyDB.delete(uid)
         }
