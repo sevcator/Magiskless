@@ -37,6 +37,7 @@ data class LocalModule(
     val isZygisk = zygiskFolder.exists()
     val zygiskUnloaded = zygiskFolder.getChildFile("unloaded").exists()
     val hasAction = base.getChildFile("action.sh").exists()
+    val hasWebUi = base.getChildFile("webroot").getChildFile("index.html").exists()
 
     var enable: Boolean
         get() = !disableFile.exists()

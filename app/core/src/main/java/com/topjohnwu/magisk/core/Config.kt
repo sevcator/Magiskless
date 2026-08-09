@@ -105,6 +105,7 @@ object Config : PreferenceConfig, DBConfig {
     var bootloop by dbSettings(Key.BOOTLOOP, 0)
 
     var safetyNotice by preference(Key.SAFETY, false)
+    var autoHided by preference("auto_hided", false)
     var darkTheme by preference(Key.DARK_THEME, -1)
     var themeOrdinal by preference(Key.THEME_ORDINAL, 0)
 

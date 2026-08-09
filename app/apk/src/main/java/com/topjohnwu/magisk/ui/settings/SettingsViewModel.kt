@@ -64,7 +64,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                 SystemlessHosts
             ))
             if (Const.Version.atLeast_24_0()) {
-                list.addAll(listOf(Zygisk, DenyList, DenyListConfig))
+                list.addAll(listOf(Zygisk, DenyListConfig))
             }
         }
 
@@ -84,7 +84,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                 list.remove(Tapjack)
             }
             if (Const.Version.atLeast_30_1()) {
-                list.add(Restrict)
+                list.add(SuList)
             }
         }
 

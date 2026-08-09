@@ -219,25 +219,6 @@ object Zygisk : BaseSettingsItem.Toggle() {
     val mismatch get() = value != Info.isZygiskEnabled
 }
 
-object DenyList : BaseSettingsItem.Toggle() {
-    override val title = CoreR.string.settings_denylist_title.asText()
-    override val description get() = CoreR.string.settings_denylist_summary.asText()
-
-    override var value = Config.denyList
-        set(value) {
-            field = value
-            val cmd = if (value) "enable" else "disable"
-            Shell.cmd("magisk --denylist $cmd").submit { result ->
-                if (result.isSuccess) {
-                    Config.denyList = value
-                } else {
-                    field = !value
-                    notifyPropertyChanged(BR.checked)
-                }
-            }
-        }
-}
-
 object DenyListConfig : BaseSettingsItem.Blank() {
     override val title = CoreR.string.settings_denylist_config_title.asText()
     override val description = CoreR.string.settings_denylist_config_summary.asText()
@@ -326,8 +307,8 @@ object Reauthenticate : BaseSettingsItem.Toggle() {
     }
 }
 
-object Restrict : BaseSettingsItem.Toggle() {
-    override val title = CoreR.string.settings_su_restrict_title.asText()
-    override val description = CoreR.string.settings_su_restrict_summary.asText()
+object SuList : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.settings_sulist_title.asText()
+    override val description = CoreR.string.settings_sulist_summary.asText()
     override var value by Config::suRestrict
 }

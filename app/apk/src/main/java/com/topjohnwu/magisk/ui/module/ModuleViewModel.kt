@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.module
 
+import android.content.Intent
 import android.net.Uri
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
@@ -7,6 +8,7 @@ import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.MainDirections
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.AsyncLoadViewModel
+import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.base.ContentResultCallback
@@ -21,6 +23,7 @@ import com.topjohnwu.magisk.dialog.LocalModuleInstallDialog
 import com.topjohnwu.magisk.dialog.OnlineModuleInstallDialog
 import com.topjohnwu.magisk.events.GetContentEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -28,7 +31,7 @@ import com.topjohnwu.magisk.core.R as CoreR
 
 class ModuleViewModel : AsyncLoadViewModel() {
 
-    val bottomBarBarrierIds = intArrayOf(R.id.module_update, R.id.module_remove)
+    val bottomBarBarrierIds = intArrayOf(R.id.module_update, R.id.module_webui, R.id.module_remove)
 
     private val itemsInstalled = diffList<LocalModuleRvItem>()
 
@@ -100,6 +103,20 @@ class ModuleViewModel : AsyncLoadViewModel() {
 
     fun runAction(id: String, name: String) {
         MainDirections.actionActionFragment(id, name).navigate()
+    }
+
+    fun openWebUi(item: LocalModuleRvItem) {
+        val id = item.item.id
+        viewModelScope.launch(Dispatchers.IO) {
+            val port = (8100..8999).random()
+            // Start busybox httpd serving the module's webroot on a local port
+            Shell.cmd("busybox httpd -f -p $port -h /data/adb/modules/$id/webroot &>/dev/null &").exec()
+            withContext(Dispatchers.Main) {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://127.0.0.1:$port/"))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                AppContext.startActivity(intent)
+            }
+        }
     }
 
     companion object {

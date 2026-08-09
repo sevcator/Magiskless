@@ -26,6 +26,7 @@ class LocalModuleRvItem(
 
     val showNotice: Boolean
     val showAction: Boolean
+    val showWebUi: Boolean
     val noticeText: TextHolder
 
     init {
@@ -37,6 +38,7 @@ class LocalModuleRvItem(
             (Info.isZygiskEnabled && isRiru) ||
             (!Info.isZygiskEnabled && isZygisk)
         showAction = item.hasAction && !showNotice
+        showWebUi = item.hasWebUi && !showNotice
         noticeText =
             when {
                 zygiskUnloaded -> CoreR.string.zygisk_module_unloaded.asText()
