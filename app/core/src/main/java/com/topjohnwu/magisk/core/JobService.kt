@@ -90,7 +90,7 @@ class JobService : BaseJobService() {
             if (Config.checkUpdate) {
                 val cmp = JobService::class.java.cmp(context.packageName)
                 val info = JobInfo.Builder(Const.ID.CHECK_UPDATE_JOB_ID, cmp)
-                    .setPeriodic(TimeUnit.HOURS.toMillis(12))
+                    .setPeriodic(TimeUnit.HOURS.toMillis(24))
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .setRequiresDeviceIdle(true)
                     .build()
