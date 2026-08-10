@@ -208,6 +208,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="repo_install_title">Install %1$s %2$s(%3$d)</string>
+    <string name="download_dialog_title">Enter image URL</string>
+    <string name="download_dialog_msg">Full OTA image or factory image</string>
     <string name="download">Download</string>
     <string name="reboot">Reboot</string>
     <string name="close">Close</string>

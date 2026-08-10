@@ -175,7 +175,7 @@ class SuRequestViewModel(
         var seconds = 0
             set(value) = set(value, field, { field = it }, BR.denyText)
 
-        override fun getText(resources: Resources): CharSequence {
+        override fun getText(resources: Resources): String {
             return if (seconds != 0)
                 "${resources.getString(R.string.deny)} ($seconds)"
             else

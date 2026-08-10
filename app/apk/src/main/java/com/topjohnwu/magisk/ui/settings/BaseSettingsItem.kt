@@ -110,7 +110,7 @@ sealed class BaseSettingsItem : ObservableRvItem() {
         open fun descriptions(res: Resources) = res.getArrayOrEmpty(descriptionRes)
 
         override val description = object : TextHolder() {
-            override fun getText(resources: Resources): CharSequence {
+            override fun getText(resources: Resources): String {
                 return descriptions(resources).getOrElse(value) { "" }
             }
         }
