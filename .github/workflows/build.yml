@@ -36,7 +36,18 @@ jobs:
           python3 personalize.py --native-only --native-prefix "$PREFIX"
 
       - name: Build release (native)
-        run: ./build.py -vvr native
+        id: build_native_macos
+        shell: bash
+        run: |
+          ./build.py -vvr native 2>&1 | tee build_native.log
+          BUILD_RC=${PIPESTATUS[0]}
+          if [ "$BUILD_RC" -ne 0 ] && [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            echo "## Build Release Native Error (macOS)" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -300 build_native.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$BUILD_RC"
 
       - name: Build release (app)
         run: ./build.py -vvr app
@@ -84,7 +95,18 @@ jobs:
         run: python personalize.py --native-only
 
       - name: Build native
-        run: python build.py -vv -c .github/ci.prop native
+        id: build_native
+        shell: bash
+        run: |
+          python build.py -vv -c .github/ci.prop native 2>&1 | tee build_native.log
+          BUILD_RC=${PIPESTATUS[0]}
+          if [ "$BUILD_RC" -ne 0 ] && [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            echo "## Build Native Error (${{ matrix.os }})" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            tail -300 build_native.log >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$BUILD_RC"
 
       - name: Build app
         run: python build.py -vv -c .github/ci.prop app
