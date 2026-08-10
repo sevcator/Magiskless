@@ -12,6 +12,7 @@
 #include <linux/securebits.h>
 #include <sys/capability.h>
 #include <sys/prctl.h>
+#include <signal.h>
 #include <sched.h>
 #include <sys/types.h>
 #include <sys/stat.h>
