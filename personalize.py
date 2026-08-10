@@ -9,7 +9,7 @@ Usage:
   python personalize.py --reset             # restore original package/name
 
 The script patches:
-  - applicationId in app/build-logic/src/main/java/Setup.kt
+  - applicationId in app/buildSrc/src/main/java/Setup.kt
   - App label string in app/apk/src/main/res/values/strings.xml (if present)
   - Generates a signing keystore and writes signing config to local.properties
 """
@@ -26,7 +26,7 @@ from pathlib import Path
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).parent.resolve()
-SETUP_KT      = ROOT / "app/build-logic/src/main/java/Setup.kt"
+SETUP_KT      = ROOT / "app/buildSrc/src/main/java/Setup.kt"
 APK_STRINGS   = ROOT / "app/apk/src/main/res/values/strings.xml"
 LOCAL_PROPS   = ROOT / "local.properties"
 STATE_FILE    = ROOT / ".personalize.json"

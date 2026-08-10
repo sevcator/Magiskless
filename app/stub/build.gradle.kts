@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.lsparanoid)
+    id("com.android.application")
+    id("org.lsposed.lsparanoid")
 }
 
 lsparanoid {

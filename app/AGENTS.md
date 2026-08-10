@@ -17,7 +17,7 @@ Multi-module Gradle project structure:
 - **`:stub`** (`stub/`): Lightweight stub app loader for hidden installs.
 - **`:stub-res`** (`stub-res/`): Stub-specific Android resources.
 - **`:test`** (`test/`): Application testing target.
-- **`:build-logic`** (`build-logic/`): Custom Gradle plugins and build logic.
+- **`buildSrc`** (`buildSrc/`): Custom Gradle plugins and build logic.
 
 ## 3. Development Guidelines
 
