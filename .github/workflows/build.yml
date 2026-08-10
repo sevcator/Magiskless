@@ -35,11 +35,17 @@ jobs:
           echo "BUILD_PREFIX=$PREFIX" >> $GITHUB_ENV
           python3 personalize.py --native-only --native-prefix "$PREFIX"
 
-      - name: Build release
-        run: ./build.py -vr all
+      - name: Build release (native)
+        run: ./build.py -vvr native
+
+      - name: Build release (app)
+        run: ./build.py -vvr app
+
+      - name: Build release (test)
+        run: ./build.py -vvr test
 
       - name: Build debug
-        run: ./build.py -v all
+        run: ./build.py -vv all
 
       - name: Stop gradle daemon
         run: ./app/gradlew --stop
@@ -77,8 +83,14 @@ jobs:
       - name: Randomize build fingerprint
         run: python personalize.py --native-only
 
-      - name: Test build
-        run: python build.py -v -c .github/ci.prop all
+      - name: Build native
+        run: python build.py -vv -c .github/ci.prop native
+
+      - name: Build app
+        run: python build.py -vv -c .github/ci.prop app
+
+      - name: Build test
+        run: python build.py -vv -c .github/ci.prop test
 
       - name: Stop gradle daemon
         run: ./app/gradlew --stop
