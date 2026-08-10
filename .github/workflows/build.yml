@@ -65,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: ${{ github.sha }}
-          path: out/*.apk
+          path: out/app-release.apk
           compression-level: 9
 
   test-build:
