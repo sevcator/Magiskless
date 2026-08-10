@@ -25,5 +25,6 @@ dependencies {
     implementation(libs.navigation.safe.args.plugin)
     implementation(libs.lsparanoid.plugin)
     implementation(libs.moshi.plugin)
+    implementation(libs.wire.plugin)
     implementation(libs.jgit)
 }
