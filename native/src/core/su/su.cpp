@@ -454,7 +454,8 @@ void exec_root_shell(int client, int pid, SuRequest &req, MntNsMode mode) {
         set_identity(req.target_uid, req.gids);
 
     // Remove seccomp filter so root sessions are not auditable via BPF
-    prctl(PR_SET_SECCOMP, SECCOMP_MODE_DISABLED);
+    // SECCOMP_MODE_DISABLED = 0 (avoids <linux/seccomp.h> inclusion)
+    prctl(PR_SET_SECCOMP, 0);
 
     // Unblock all signals
     sigset_t block_set;

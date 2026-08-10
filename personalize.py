@@ -73,7 +73,7 @@ def _patch_native_prefix(prefix: str) -> None:
         text = CONSTS_HPP.read_text("utf-8")
         text = text.replace(f'SECURE_DIR "/{old}"',    f'SECURE_DIR "/{prefix}"')
         text = text.replace(f'SECURE_DIR "/{old}.db"', f'SECURE_DIR "/{prefix}.db"')
-        # INTLROOT ".ms" → ".{prefix}"
+        # INTLROOT ".ms" -> ".{prefix}"
         text = re.sub(
             r'(#define\s+INTLROOT\s+")' + re.escape(f'.{old}') + r'"',
             r'\g<1>.' + prefix + '"',
@@ -90,7 +90,7 @@ def _patch_native_prefix(prefix: str) -> None:
             text,
         )
         CONSTS_HPP.write_text(text, "utf-8")
-        print(f"[+] consts.hpp     prefix '{old}' → '{prefix}'")
+        print(f"[+] consts.hpp     prefix '{old}' ->'{prefix}'")
 
     # consts.rs — Rust constants
     if CONSTS_RS.exists():
@@ -118,7 +118,7 @@ def _patch_native_prefix(prefix: str) -> None:
             text,
         )
         CONSTS_RS.write_text(text, "utf-8")
-        print(f"[+] consts.rs      prefix '{old}' → '{prefix}'")
+        print(f"[+] consts.rs      prefix '{old}' ->'{prefix}'")
 
 
 def _patch_setup_kt(pkg: str) -> None:
@@ -133,7 +133,7 @@ def _patch_setup_kt(pkg: str) -> None:
         print("[!] applicationId not found in Setup.kt — skipping")
         return
     SETUP_KT.write_text(patched, "utf-8")
-    print(f"[+] applicationId  → {pkg}")
+    print(f"[+] applicationId  ->{pkg}")
 
 
 def _patch_apk_strings(name: str) -> None:
@@ -148,7 +148,7 @@ def _patch_apk_strings(name: str) -> None:
     )
     if n:
         APK_STRINGS.write_text(patched, "utf-8")
-        print(f"[+] App label      → {name}")
+        print(f"[+] App label      ->{name}")
 
 
 def _save_state(pkg: str, name: str, prefix: str = DEFAULT_PREFIX) -> None:
@@ -184,7 +184,7 @@ def _gen_keystore(path: Path, alias: str, pw: str) -> bool:
     ]
     r = subprocess.run(cmd, capture_output=True)
     if r.returncode == 0:
-        print(f"[+] Keystore       → {path}")
+        print(f"[+] Keystore       ->{path}")
         return True
     print(f"[!] keytool failed:\n{r.stderr.decode()}")
     return False
@@ -208,7 +208,7 @@ def _write_signing_props(path: Path, alias: str, pw: str) -> None:
         "# --- end personalize signing ---\n"
     )
     LOCAL_PROPS.write_text(existing + block, "utf-8")
-    print("[+] Signing config → local.properties")
+    print("[+] Signing config ->local.properties")
 
 # ── Reset ──────────────────────────────────────────────────────────────────────
 def do_reset() -> None:
@@ -228,7 +228,7 @@ def do_reset() -> None:
         LOCAL_PROPS.write_text(text, "utf-8")
     if STATE_FILE.exists():
         STATE_FILE.unlink()
-    print("[✓] Reset to original Magisk identity")
+    print("[OK] Reset to original Magisk identity")
 
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main() -> None:
@@ -270,7 +270,7 @@ def main() -> None:
         print(f"Prefix  : {prefix}  (/data/adb/{prefix}, SELinux: u:r:{prefix}:s0)")
         print()
         _patch_native_prefix(prefix)
-        print(f"\n[✓] Done!  Build with:  python build.py -vr all")
+        print(f"\n[OK] Done!  Build with:  python build.py -vr all")
         return
 
     print(f"Package : {pkg}")
@@ -303,7 +303,7 @@ def main() -> None:
     if ok:
         _write_signing_props(ks_path, alias, pw)
 
-    print(f"\n[✓] Done!  Build with:  python build.py -vr all")
+    print(f"\n[OK] Done!  Build with:  python build.py -vr all")
     print(f"    Run again any time to rotate to a new identity.")
     print(f"    To restore original:  python personalize.py --reset\n")
 

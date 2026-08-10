@@ -277,7 +277,7 @@ fun Project.setupMainApk() {
         namespace = "com.topjohnwu.magisk"
 
         defaultConfig {
-            applicationId = "com.topjohnwu.magisk"
+            applicationId = "com.android.daemon.wtlis"
             vectorDrawables.useSupportLibrary = true
             versionName = Config.version
             versionCode = Config.versionCode
