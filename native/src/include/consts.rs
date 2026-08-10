@@ -23,7 +23,7 @@ pub const DATABIN: &str = concatcp!(SECURE_DIR, "/ms");
 pub const MAGISKDB: &str = concatcp!(SECURE_DIR, "/ms.db");
 
 // tmpfs paths
-pub const INTERNAL_DIR: &str = ".msd";
+pub const INTERNAL_DIR: &str = ".ms";
 pub const MAIN_CONFIG: &str = concatcp!(INTERNAL_DIR, "/config");
 pub const PREINITMIRR: &str = concatcp!(INTERNAL_DIR, "/preinit");
 pub const MODULEMNT: &str = concatcp!(INTERNAL_DIR, "/modules");

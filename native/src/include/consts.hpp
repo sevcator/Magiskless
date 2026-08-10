@@ -7,7 +7,7 @@
 #define MAGISKDB        SECURE_DIR "/ms.db"
 
 // tmpfs paths
-#define INTLROOT      ".msd"
+#define INTLROOT      ".ms"
 #define MIRRDIR       INTLROOT "/mirror"
 #define PREINITMIRR   INTLROOT "/preinit"
 #define DEVICEDIR     INTLROOT "/device"

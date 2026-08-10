@@ -65,36 +65,60 @@ def _rand_pkg() -> tuple[str, str]:
 
 # ── File patchers ──────────────────────────────────────────────────────────────
 def _patch_native_prefix(prefix: str) -> None:
-    """Patch native constants to replace the 'ms' prefix with a custom value."""
+    """Patch native constants: replace DEFAULT_PREFIX with a custom prefix in consts.hpp and consts.rs."""
     old = DEFAULT_PREFIX
 
     # consts.hpp — C++ macros
     if CONSTS_HPP.exists():
         text = CONSTS_HPP.read_text("utf-8")
-        # Patch DATABIN path: SECURE_DIR "/ms" → SECURE_DIR "/<prefix>"
-        text = re.sub(r'(SECURE_DIR\s+"/)', old, lambda m: m.group(0).replace(f'/{old}', f'/{prefix}'), text)
-        # Use targeted replacements instead
-        text = text.replace(f'SECURE_DIR "/{old}"', f'SECURE_DIR "/{prefix}"')
+        text = text.replace(f'SECURE_DIR "/{old}"',    f'SECURE_DIR "/{prefix}"')
         text = text.replace(f'SECURE_DIR "/{old}.db"', f'SECURE_DIR "/{prefix}.db"')
-        text = text.replace(f'".\\.{old}"', f'".\\.{prefix}"')
-        text = text.replace(f'".{old}"', f'".{prefix}"')
-        text = re.sub(r'(#define\s+INTLROOT\s+")\.' + re.escape(old) + r'"', r'\g<1>.' + prefix + '"', text)
-        text = re.sub(r'(#define\s+SEPOL_PROC_DOMAIN\s+")' + re.escape(old) + r'"', r'\g<1>' + prefix + '"', text)
-        text = re.sub(r'(#define\s+SEPOL_FILE_TYPE\s+")' + re.escape(old) + r'_file"', r'\g<1>' + prefix + '_file"', text)
+        # INTLROOT ".ms" → ".{prefix}"
+        text = re.sub(
+            r'(#define\s+INTLROOT\s+")' + re.escape(f'.{old}') + r'"',
+            r'\g<1>.' + prefix + '"',
+            text,
+        )
+        text = re.sub(
+            r'(#define\s+SEPOL_PROC_DOMAIN\s+")' + re.escape(old) + r'"',
+            r'\g<1>' + prefix + '"',
+            text,
+        )
+        text = re.sub(
+            r'(#define\s+SEPOL_FILE_TYPE\s+")' + re.escape(old) + r'_file"',
+            r'\g<1>' + prefix + '_file"',
+            text,
+        )
         CONSTS_HPP.write_text(text, "utf-8")
-        print(f"[+] consts.hpp     → prefix '{old}' → '{prefix}'")
+        print(f"[+] consts.hpp     prefix '{old}' → '{prefix}'")
 
     # consts.rs — Rust constants
     if CONSTS_RS.exists():
         text = CONSTS_RS.read_text("utf-8")
-        text = text.replace(f'SECURE_DIR, "/{old}")', f'SECURE_DIR, "/{prefix}")')
+        text = text.replace(f'SECURE_DIR, "/{old}")',    f'SECURE_DIR, "/{prefix}")')
         text = text.replace(f'SECURE_DIR, "/{old}.db")', f'SECURE_DIR, "/{prefix}.db")')
-        text = re.sub(r'(INTERNAL_DIR:\s*&str\s*=\s*")\.' + re.escape(old) + r'"', r'\g<1>.' + prefix + '"', text)
-        text = re.sub(r'(SEPOL_PROC_DOMAIN:\s*&str\s*=\s*")' + re.escape(old) + r'"', r'\g<1>' + prefix + '"', text)
-        text = re.sub(r'(SEPOL_FILE_TYPE:\s*&str\s*=\s*")' + re.escape(old) + r'_file"', r'\g<1>' + prefix + '_file"', text)
-        text = re.sub(r'(SEPOL_LOG_TYPE:\s*&str\s*=\s*")' + re.escape(old) + r'_log_file"', r'\g<1>' + prefix + '_log_file"', text)
+        text = re.sub(
+            r'(INTERNAL_DIR:\s*&str\s*=\s*")' + re.escape(f'.{old}') + r'"',
+            r'\g<1>.' + prefix + '"',
+            text,
+        )
+        text = re.sub(
+            r'(SEPOL_PROC_DOMAIN:\s*&str\s*=\s*")' + re.escape(old) + r'"',
+            r'\g<1>' + prefix + '"',
+            text,
+        )
+        text = re.sub(
+            r'(SEPOL_FILE_TYPE:\s*&str\s*=\s*")' + re.escape(old) + r'_file"',
+            r'\g<1>' + prefix + '_file"',
+            text,
+        )
+        text = re.sub(
+            r'(SEPOL_LOG_TYPE:\s*&str\s*=\s*")' + re.escape(old) + r'_log_file"',
+            r'\g<1>' + prefix + '_log_file"',
+            text,
+        )
         CONSTS_RS.write_text(text, "utf-8")
-        print(f"[+] consts.rs      → prefix '{old}' → '{prefix}'")
+        print(f"[+] consts.rs      prefix '{old}' → '{prefix}'")
 
 
 def _patch_setup_kt(pkg: str) -> None:
@@ -217,6 +241,7 @@ def main() -> None:
     ap.add_argument("--native-prefix", metavar="PFX",  help="Native path/domain prefix (e.g. 'ab3x'). Default: random 4-char hex")
     ap.add_argument("--keystore",      metavar="PATH", default="signing.keystore",
                     help="Keystore output path (default: signing.keystore)")
+    ap.add_argument("--native-only",   action="store_true", help="Only randomize native prefix; skip app ID/label/keystore")
     ap.add_argument("--reset",         action="store_true", help="Restore original identity")
     args = ap.parse_args()
 
@@ -240,6 +265,14 @@ def main() -> None:
         prefix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
 
     print(f"\n=== Magisk Alpha Personalizer ===")
+
+    if args.native_only:
+        print(f"Prefix  : {prefix}  (/data/adb/{prefix}, SELinux: u:r:{prefix}:s0)")
+        print()
+        _patch_native_prefix(prefix)
+        print(f"\n[✓] Done!  Build with:  python build.py -vr all")
+        return
+
     print(f"Package : {pkg}")
     print(f"Label   : {name}")
     print(f"Prefix  : {prefix}  (native paths: /data/adb/{prefix}, SELinux: u:r:{prefix}:s0)")

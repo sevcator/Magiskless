@@ -144,17 +144,17 @@ ln -s ./magisk $MAGISKTMP/su
 ln -s ./magisk $MAGISKTMP/resetprop
 ln -s ./magiskpolicy $MAGISKTMP/supolicy
 
-mkdir -p $MAGISKTMP/.magisk/device
-mkdir -p $MAGISKTMP/.magisk/worker
-mount_tmpfs $MAGISKTMP/.magisk/worker
-mount --make-private $MAGISKTMP/.magisk/worker
-touch $MAGISKTMP/.magisk/config
+mkdir -p $MAGISKTMP/.ms/device
+mkdir -p $MAGISKTMP/.ms/worker
+mount_tmpfs $MAGISKTMP/.ms/worker
+mount --make-private $MAGISKTMP/.ms/worker
+touch $MAGISKTMP/.ms/config
 
 export MAGISKTMP
 MAKEDEV=1 $MAGISKTMP/magisk --preinit-device 2>&1
 
 RULESCMD=""
-rule="$MAGISKTMP/.magisk/preinit/sepolicy.rule"
+rule="$MAGISKTMP/.ms/preinit/sepolicy.rule"
 [ -f "$rule" ] && RULESCMD="--apply $rule"
 
 # SELinux stuffs

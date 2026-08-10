@@ -61,8 +61,8 @@ grep_get_prop() {
 getvar() {
   local VARNAME=$1
   local VALUE
-  local PROPPATH='/data/.magisk /cache/.magisk'
-  [ ! -z $MAGISKTMP ] && PROPPATH="$MAGISKTMP/.magisk/config $PROPPATH"
+  local PROPPATH='/data/.ms /cache/.ms'
+  [ ! -z $MAGISKTMP ] && PROPPATH="$MAGISKTMP/.ms/config $PROPPATH"
   VALUE=$(grep_prop $VARNAME $PROPPATH)
   [ ! -z $VALUE ] && eval $VARNAME=\$VALUE
 }
@@ -579,7 +579,7 @@ run_migrations() {
 }
 
 copy_preinit_files() {
-  local PREINITDIR=$MAGISKTMP/.magisk/preinit
+  local PREINITDIR=$MAGISKTMP/.ms/preinit
   if [ ! -d $PREINITDIR ]; then
     ui_print "- Unable to find preinit dir"
     return 1

@@ -18,7 +18,7 @@ env_check() {
     [ -f "$MAGISKBIN/magiskpolicy" ] || return 1
   fi
   if [ "$2" -ge 25210 ]; then
-    [ -b "$MAGISKTMP/.magisk/device/preinit" ] || [ -b "$MAGISKTMP/.magisk/block/preinit" ] || return 2
+    [ -b "$MAGISKTMP/.ms/device/preinit" ] || [ -b "$MAGISKTMP/.ms/block/preinit" ] || return 2
   fi
   grep -xqF "MAGISK_VER='$1'" "$MAGISKBIN/util_functions.sh" || return 3
   grep -xqF "MAGISK_VER_CODE=$2" "$MAGISKBIN/util_functions.sh" || return 3
@@ -89,7 +89,7 @@ run_uninstaller() {
 
 # $1 = boot partition
 restore_imgs() {
-  local SHA1=$(grep_prop SHA1 $MAGISKTMP/.magisk/config)
+  local SHA1=$(grep_prop SHA1 $MAGISKTMP/.ms/config)
   local BACKUPDIR=/data/ms_backup_$SHA1
   [ -d $BACKUPDIR ] || return 1
   [ -f $BACKUPDIR/boot.img.gz ] || return 1

@@ -29,6 +29,12 @@ jobs:
         with:
           is-asset-build: true
 
+      - name: Randomize build fingerprint
+        run: |
+          PREFIX=$(python3 -c "import random,string; print(''.join(random.choices(string.ascii_lowercase+string.digits,k=6)))")
+          echo "BUILD_PREFIX=$PREFIX" >> $GITHUB_ENV
+          python3 personalize.py --native-only --native-prefix "$PREFIX"
+
       - name: Build release
         run: ./build.py -vr all
 
@@ -67,6 +73,9 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup
+
+      - name: Randomize build fingerprint
+        run: python personalize.py --native-only
 
       - name: Test build
         run: python build.py -v -c .github/ci.prop all
