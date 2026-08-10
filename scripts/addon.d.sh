@@ -43,7 +43,7 @@ trampoline() {
 }
 
 # Always use the script in /data
-MAGISKBIN=/data/adb/magisk
+MAGISKBIN=/data/adb/ms
 [ "$0" = $MAGISKBIN/addon.d.sh ] || trampoline "$@"
 
 V1_FUNCS=/tmp/backuptool.functions

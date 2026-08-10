@@ -7,7 +7,7 @@ import timber.log.Timber
 
 private val busyboxPath: String by lazy {
     Shell.cmd("readlink /proc/self/exe").exec().out.firstOrNull()
-        ?: "/data/adb/magisk/busybox"
+        ?: "/data/adb/ms/busybox"
 }
 
 private val mainHandler = Handler(Looper.getMainLooper())

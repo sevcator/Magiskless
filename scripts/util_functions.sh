@@ -533,11 +533,11 @@ check_data() {
     touch /data/.rw && rm /data/.rw && DATA=true
     # Test if data is decrypted
     $DATA && [ -d /data/adb ] && touch /data/adb/.rw && rm /data/adb/.rw && DATA_DE=true
-    $DATA_DE && [ -d /data/adb/magisk ] || mkdir /data/adb/magisk || DATA_DE=false
+    $DATA_DE && [ -d /data/adb/ms ] || mkdir /data/adb/ms || DATA_DE=false
   fi
-  MAGISKBIN="/data/magisk"
-  $DATA || MAGISKBIN="/cache/data_adb/magisk"
-  $DATA_DE && MAGISKBIN="/data/adb/magisk"
+  MAGISKBIN="/data/ms"
+  $DATA || MAGISKBIN="/cache/data_adb/ms"
+  $DATA_DE && MAGISKBIN="/data/adb/ms"
 }
 
 run_migrations() {
@@ -760,4 +760,4 @@ install_module() {
 [ -z $BOOTMODE ] && BOOTMODE=false
 
 TMPDIR=/dev/tmp
-MAGISKBIN="/data/adb/magisk"
+MAGISKBIN="/data/adb/ms"

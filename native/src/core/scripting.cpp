@@ -200,7 +200,7 @@ static void abort(FILE *fp, const char *fmt, ...) {
 }
 
 constexpr char install_module_script[] = R"EOF(
-. /data/adb/magisk/util_functions.sh
+. /data/adb/ms/util_functions.sh
 install_module
 exit 0
 )EOF";

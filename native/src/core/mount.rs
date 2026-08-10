@@ -240,7 +240,7 @@ pub fn revert_unmount(pid: i32) {
 
     // Unmount Magisk tmpfs and mounts from module files
     for info in parse_mount_info("self") {
-        if info.source == "magisk" || info.root.starts_with("/adb/modules") {
+        if info.source == "ms" || info.root.starts_with("/adb/modules") {
             targets.push(info.target);
         }
     }

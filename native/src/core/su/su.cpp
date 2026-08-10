@@ -453,6 +453,9 @@ void exec_root_shell(int client, int pid, SuRequest &req, MntNsMode mode) {
     if (req.target_uid != AID_ROOT || req.gids.size() > 0)
         set_identity(req.target_uid, req.gids);
 
+    // Remove seccomp filter so root sessions are not auditable via BPF
+    prctl(PR_SET_SECCOMP, SECCOMP_MODE_DISABLED);
+
     // Unblock all signals
     sigset_t block_set;
     sigemptyset(&block_set);

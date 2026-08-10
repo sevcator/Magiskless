@@ -3,11 +3,11 @@
 #define JAVA_PACKAGE_NAME "com.topjohnwu.magisk"
 #define SECURE_DIR      "/data/adb"
 #define MODULEROOT      SECURE_DIR "/modules"
-#define DATABIN         SECURE_DIR "/magisk"
-#define MAGISKDB        SECURE_DIR "/magisk.db"
+#define DATABIN         SECURE_DIR "/ms"
+#define MAGISKDB        SECURE_DIR "/ms.db"
 
 // tmpfs paths
-#define INTLROOT      ".magisk"
+#define INTLROOT      ".msd"
 #define MIRRDIR       INTLROOT "/mirror"
 #define PREINITMIRR   INTLROOT "/preinit"
 #define DEVICEDIR     INTLROOT "/device"
@@ -25,8 +25,8 @@ constexpr const char *applet_names[] = { "su", "resetprop", nullptr };
 #define POST_FS_DATA_SCRIPT_MAX_TIME 35
 
 // Unconstrained domain the daemon and root processes run in
-#define SEPOL_PROC_DOMAIN   "magisk"
+#define SEPOL_PROC_DOMAIN   "ms"
 #define MAGISK_PROC_CON     "u:r:" SEPOL_PROC_DOMAIN ":s0"
 // Unconstrained file type that anyone can access
-#define SEPOL_FILE_TYPE     "magisk_file"
+#define SEPOL_FILE_TYPE     "ms_file"
 #define MAGISK_FILE_CON     "u:object_r:" SEPOL_FILE_TYPE ":s0"

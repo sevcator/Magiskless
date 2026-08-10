@@ -109,7 +109,7 @@ case $((STATUS & 3)) in
       SHA1=$(grep_prop SHA1 config.orig)
       rm config.orig
     fi
-    BACKUPDIR=/data/magisk_backup_$SHA1
+    BACKUPDIR=/data/ms_backup_$SHA1
     if [ -d $BACKUPDIR ]; then
       ui_print "- Restoring stock boot image"
       flash_image $BACKUPDIR/boot.img.gz $BOOTIMAGE

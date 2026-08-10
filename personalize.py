@@ -30,9 +30,12 @@ SETUP_KT      = ROOT / "app/build-logic/src/main/java/Setup.kt"
 APK_STRINGS   = ROOT / "app/apk/src/main/res/values/strings.xml"
 LOCAL_PROPS   = ROOT / "local.properties"
 STATE_FILE    = ROOT / ".personalize.json"
+CONSTS_HPP    = ROOT / "native/src/include/consts.hpp"
+CONSTS_RS     = ROOT / "native/src/include/consts.rs"
 
 ORIGINAL_PKG  = "com.topjohnwu.magisk"
 ORIGINAL_NAME = "Magisk"
+DEFAULT_PREFIX = "ms"  # current default after rename
 
 # ── Realistic disguise presets ─────────────────────────────────────────────────
 PRESETS = [
@@ -61,6 +64,39 @@ def _rand_pkg() -> tuple[str, str]:
     return pkg, name
 
 # ── File patchers ──────────────────────────────────────────────────────────────
+def _patch_native_prefix(prefix: str) -> None:
+    """Patch native constants to replace the 'ms' prefix with a custom value."""
+    old = DEFAULT_PREFIX
+
+    # consts.hpp — C++ macros
+    if CONSTS_HPP.exists():
+        text = CONSTS_HPP.read_text("utf-8")
+        # Patch DATABIN path: SECURE_DIR "/ms" → SECURE_DIR "/<prefix>"
+        text = re.sub(r'(SECURE_DIR\s+"/)', old, lambda m: m.group(0).replace(f'/{old}', f'/{prefix}'), text)
+        # Use targeted replacements instead
+        text = text.replace(f'SECURE_DIR "/{old}"', f'SECURE_DIR "/{prefix}"')
+        text = text.replace(f'SECURE_DIR "/{old}.db"', f'SECURE_DIR "/{prefix}.db"')
+        text = text.replace(f'".\\.{old}"', f'".\\.{prefix}"')
+        text = text.replace(f'".{old}"', f'".{prefix}"')
+        text = re.sub(r'(#define\s+INTLROOT\s+")\.' + re.escape(old) + r'"', r'\g<1>.' + prefix + '"', text)
+        text = re.sub(r'(#define\s+SEPOL_PROC_DOMAIN\s+")' + re.escape(old) + r'"', r'\g<1>' + prefix + '"', text)
+        text = re.sub(r'(#define\s+SEPOL_FILE_TYPE\s+")' + re.escape(old) + r'_file"', r'\g<1>' + prefix + '_file"', text)
+        CONSTS_HPP.write_text(text, "utf-8")
+        print(f"[+] consts.hpp     → prefix '{old}' → '{prefix}'")
+
+    # consts.rs — Rust constants
+    if CONSTS_RS.exists():
+        text = CONSTS_RS.read_text("utf-8")
+        text = text.replace(f'SECURE_DIR, "/{old}")', f'SECURE_DIR, "/{prefix}")')
+        text = text.replace(f'SECURE_DIR, "/{old}.db")', f'SECURE_DIR, "/{prefix}.db")')
+        text = re.sub(r'(INTERNAL_DIR:\s*&str\s*=\s*")\.' + re.escape(old) + r'"', r'\g<1>.' + prefix + '"', text)
+        text = re.sub(r'(SEPOL_PROC_DOMAIN:\s*&str\s*=\s*")' + re.escape(old) + r'"', r'\g<1>' + prefix + '"', text)
+        text = re.sub(r'(SEPOL_FILE_TYPE:\s*&str\s*=\s*")' + re.escape(old) + r'_file"', r'\g<1>' + prefix + '_file"', text)
+        text = re.sub(r'(SEPOL_LOG_TYPE:\s*&str\s*=\s*")' + re.escape(old) + r'_log_file"', r'\g<1>' + prefix + '_log_file"', text)
+        CONSTS_RS.write_text(text, "utf-8")
+        print(f"[+] consts.rs      → prefix '{old}' → '{prefix}'")
+
+
 def _patch_setup_kt(pkg: str) -> None:
     text = SETUP_KT.read_text("utf-8")
     # Replace applicationId only (not namespace — namespace drives R-class package paths)
@@ -91,8 +127,8 @@ def _patch_apk_strings(name: str) -> None:
         print(f"[+] App label      → {name}")
 
 
-def _save_state(pkg: str, name: str) -> None:
-    STATE_FILE.write_text(json.dumps({"pkg": pkg, "name": name}, indent=2), "utf-8")
+def _save_state(pkg: str, name: str, prefix: str = DEFAULT_PREFIX) -> None:
+    STATE_FILE.write_text(json.dumps({"pkg": pkg, "name": name, "prefix": prefix}, indent=2), "utf-8")
 
 
 def _load_state() -> dict:
@@ -175,12 +211,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(
         description="Personalize Magisk Alpha: unique package name + signing key per user"
     )
-    ap.add_argument("--package",  metavar="PKG",  help="Custom application ID")
-    ap.add_argument("--name",     metavar="NAME", help="Custom app label")
-    ap.add_argument("--preset",   action="store_true", help="Pick a random realistic preset")
-    ap.add_argument("--keystore", metavar="PATH", default="signing.keystore",
+    ap.add_argument("--package",       metavar="PKG",  help="Custom application ID")
+    ap.add_argument("--name",          metavar="NAME", help="Custom app label")
+    ap.add_argument("--preset",        action="store_true", help="Pick a random realistic preset")
+    ap.add_argument("--native-prefix", metavar="PFX",  help="Native path/domain prefix (e.g. 'ab3x'). Default: random 4-char hex")
+    ap.add_argument("--keystore",      metavar="PATH", default="signing.keystore",
                     help="Keystore output path (default: signing.keystore)")
-    ap.add_argument("--reset",    action="store_true", help="Restore original identity")
+    ap.add_argument("--reset",         action="store_true", help="Restore original identity")
     args = ap.parse_args()
 
     if args.reset:
@@ -196,14 +233,22 @@ def main() -> None:
     else:
         pkg, name = _rand_pkg()
 
+    # Resolve native prefix
+    if args.native_prefix:
+        prefix = args.native_prefix
+    else:
+        prefix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+
     print(f"\n=== Magisk Alpha Personalizer ===")
     print(f"Package : {pkg}")
     print(f"Label   : {name}")
+    print(f"Prefix  : {prefix}  (native paths: /data/adb/{prefix}, SELinux: u:r:{prefix}:s0)")
     print()
 
     _patch_setup_kt(pkg)
     _patch_apk_strings(name)
-    _save_state(pkg, name)
+    _patch_native_prefix(prefix)
+    _save_state(pkg, name, prefix)
 
     # Signing key
     ks_path = Path(args.keystore).resolve()

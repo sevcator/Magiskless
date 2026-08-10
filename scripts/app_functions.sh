@@ -90,7 +90,7 @@ run_uninstaller() {
 # $1 = boot partition
 restore_imgs() {
   local SHA1=$(grep_prop SHA1 $MAGISKTMP/.magisk/config)
-  local BACKUPDIR=/data/magisk_backup_$SHA1
+  local BACKUPDIR=/data/ms_backup_$SHA1
   [ -d $BACKUPDIR ] || return 1
   [ -f $BACKUPDIR/boot.img.gz ] || return 1
   flash_image $BACKUPDIR/boot.img.gz $1
