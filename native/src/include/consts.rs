@@ -37,6 +37,9 @@ pub const ROOTOVL: &str = concatcp!(INTERNAL_DIR, "/rootdir");
 pub const ROOTMNT: &str = concatcp!(ROOTOVL, "/.mount_list");
 pub const SELINUXMOCK: &str = concatcp!(INTERNAL_DIR, "/selinux");
 
+// Source label for the Magisk worker tmpfs (must match revert_unmount check)
+pub const WORKER_SOURCE: &str = "ms";
+
 // Unconstrained domain the daemon and root processes run in
 pub const SEPOL_PROC_DOMAIN: &str = "ms";
 pub const MAGISK_PROC_CON: &str = concatcp!("u:r:", SEPOL_PROC_DOMAIN, ":s0");

@@ -1,4 +1,4 @@
-use crate::consts::{MODULEMNT, MODULEROOT, PREINITDEV, PREINITMIRR, WORKERDIR};
+use crate::consts::{MODULEMNT, MODULEROOT, PREINITDEV, PREINITMIRR, WORKER_SOURCE, WORKERDIR};
 use crate::ffi::{get_magisk_tmp, resolve_preinit_dir, switch_mnt_ns};
 use crate::resetprop::get_prop;
 use base::{
@@ -240,7 +240,7 @@ pub fn revert_unmount(pid: i32) {
 
     // Unmount Magisk tmpfs and mounts from module files
     for info in parse_mount_info("self") {
-        if info.source == "ms" || info.root.starts_with("/adb/modules") {
+        if info.source == WORKER_SOURCE || info.root.starts_with("/adb/modules") {
             targets.push(info.target);
         }
     }
