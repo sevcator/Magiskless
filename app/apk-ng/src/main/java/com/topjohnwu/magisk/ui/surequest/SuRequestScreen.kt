@@ -125,16 +125,6 @@ fun SuRequestScreen(viewModel: SuRequestViewModel) {
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(CoreR.string.su_warning),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                )
-
-                Spacer(Modifier.height(16.dp))
-
-                Text(
                     text = "${stringResource(CoreR.string.request_timeout)}: $sliderLabel",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

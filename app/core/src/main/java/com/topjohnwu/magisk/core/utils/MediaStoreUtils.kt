@@ -30,11 +30,15 @@ object MediaStoreUtils {
 
     private val downloadPath get() = relativePath(Config.downloadDir)
 
+    private fun relPath(subFolder: String) =
+        if (subFolder.isEmpty()) downloadPath
+        else downloadPath + File.separator + subFolder
+
     @RequiresApi(api = 30)
     @Throws(IOException::class)
-    private fun insertFile(displayName: String): MediaStoreFile {
+    private fun insertFile(displayName: String, relPath: String): MediaStoreFile {
         val values = ContentValues()
-        values.put(MediaStore.MediaColumns.RELATIVE_PATH, downloadPath)
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath)
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
 
         // When a file with the same name exists and was not created by us:
@@ -59,7 +63,7 @@ object MediaStoreUtils {
     }
 
     @RequiresApi(api = 29)
-    private fun queryFile(displayName: String): UriFile? {
+    private fun queryFile(displayName: String, relPath: String): UriFile? {
         val projection = arrayOf(MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DATA)
         // Before Android 10, we wrote the DISPLAY_NAME field when insert, so it can be used.
         val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} == ?"
@@ -74,7 +78,7 @@ object MediaStoreUtils {
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(idColumn)
                 val data = cursor.getString(dataColumn)
-                if (data.endsWith(downloadPath + File.separator + displayName)) {
+                if (data.endsWith(relPath + File.separator + displayName)) {
                     return MediaStoreFile(id, data)
                 }
             }
@@ -83,14 +87,15 @@ object MediaStoreUtils {
     }
 
     @Throws(IOException::class)
-    fun getFile(displayName: String): UriFile {
+    fun getFile(displayName: String, subFolder: String = ""): UriFile {
+        val rp = relPath(subFolder)
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             // Fallback to file based I/O pre Android 11
-            val parent = File(Environment.getExternalStorageDirectory(), downloadPath)
+            val parent = File(Environment.getExternalStorageDirectory(), rp)
             parent.mkdirs()
             LegacyUriFile(File(parent, displayName))
         } else {
-            queryFile(displayName) ?: insertFile(displayName)
+            queryFile(displayName, rp) ?: insertFile(displayName, rp)
         }
     }
 

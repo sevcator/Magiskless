@@ -215,17 +215,6 @@ private fun AppSettingsSection() {
             }
         )
 
-        // Random Package Name
-        var randName by remember { mutableStateOf(Config.randName) }
-        SettingsSwitch(
-            title = stringResource(CoreR.string.settings_random_name_title),
-            summary = stringResource(CoreR.string.settings_random_name_description),
-            checked = randName,
-            onCheckedChange = {
-                randName = it
-                Config.randName = it
-            }
-        )
     }
 }
 

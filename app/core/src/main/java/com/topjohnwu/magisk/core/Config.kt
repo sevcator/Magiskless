@@ -40,7 +40,6 @@ object Config : PreferenceConfig, DBConfig {
         const val THEME_ORDINAL = "theme_ordinal"
         const val ASKED_HOME = "asked_home"
         const val DOH = "doh"
-        const val RAND_NAME = "rand_name"
 
         val NO_MIGRATION = setOf(ASKED_HOME, SU_REQUEST_TIMEOUT,
             SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK)
@@ -92,7 +91,6 @@ object Config : PreferenceConfig, DBConfig {
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
     var downloadDir by preference(Key.DOWNLOAD_DIR, "")
-    var randName by preference(Key.RAND_NAME, true)
     var locale
         get() = localePrefs
         set(value) {

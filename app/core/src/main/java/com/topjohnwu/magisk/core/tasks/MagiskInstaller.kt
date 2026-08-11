@@ -46,7 +46,6 @@ import java.io.OutputStream
 import java.io.PushbackInputStream
 import java.nio.ByteBuffer
 import java.security.SecureRandom
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class MagiskInstallImpl protected constructor(
@@ -64,21 +63,17 @@ abstract class MagiskInstallImpl protected constructor(
     private val rootFS get() = RootUtils.fs
     private val localFS get() = FileSystemManager.getLocal()
 
-    private val destName: String by lazy {
-        if (Config.randName) {
-            val alpha = "abcdefghijklmnopqrstuvwxyz"
-            val alphaNum = "$alpha${alpha.uppercase(Locale.ROOT)}0123456789"
-            val random = SecureRandom()
-            StringBuilder("magisk_patched-${BuildConfig.APP_VERSION_CODE}_").run {
-                for (i in 1..5) {
-                    append(alphaNum[random.nextInt(alphaNum.length)])
-                }
-                toString()
-            }
-        } else {
-            "magisk_patched"
-        }
+    private val alphaNum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    private val random = SecureRandom()
+
+    private fun randStr(min: Int, max: Int): String {
+        val len = if (min == max) min else min + random.nextInt(max - min + 1)
+        return buildString(len) { repeat(len) { append(alphaNum[random.nextInt(alphaNum.length)]) } }
     }
+
+    private val destFolder: String by lazy { randStr(4, 20) }
+    private val destName: String by lazy { randStr(10, 20) }
+    private val destExt: String by lazy { randStr(3, 3) }
 
     private fun findImage(slot: String): Boolean {
         val cmd =
@@ -446,7 +441,7 @@ abstract class MagiskInstallImpl protected constructor(
 
                 srcBoot = if (tarMagic.contentEquals("ustar".toByteArray())) {
                     // tar file
-                    outFile = MediaStoreUtils.getFile("$destName.tar")
+                    outFile = MediaStoreUtils.getFile("$destName.$destExt", destFolder)
                     val os = outFile.uri.outputStream().buffered(1024 * 1024)
                     outStream = TarArchiveOutputStream(os).also {
                         it.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR)
@@ -463,7 +458,7 @@ abstract class MagiskInstallImpl protected constructor(
                     }
                 } else {
                     // raw image
-                    outFile = MediaStoreUtils.getFile("$destName.img")
+                    outFile = MediaStoreUtils.getFile("$destName.$destExt", destFolder)
                     outStream = outFile.uri.outputStream()
 
                     try {

@@ -60,36 +60,5 @@ object Shortcuts {
     }
 
     @RequiresApi(api = 25)
-    private fun getShortCuts(context: Context): List<ShortcutInfo> {
-        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            ?: return emptyList()
-
-        val shortCuts = mutableListOf<ShortcutInfo>()
-
-        if (Info.showSuperUser) {
-            shortCuts.add(
-                ShortcutInfo.Builder(context, Const.Nav.SUPERUSER)
-                    .setShortLabel(context.getString(R.string.superuser))
-                    .setIntent(
-                        Intent(intent).putExtra(Const.Key.OPEN_SECTION, Const.Nav.SUPERUSER)
-                    )
-                    .setIcon(context.getIcon(R.drawable.sc_superuser))
-                    .setRank(0)
-                    .build()
-            )
-        }
-        if (Info.env.isActive) {
-            shortCuts.add(
-                ShortcutInfo.Builder(context, Const.Nav.MODULES)
-                    .setShortLabel(context.getString(R.string.modules))
-                    .setIntent(
-                        Intent(intent).putExtra(Const.Key.OPEN_SECTION, Const.Nav.MODULES)
-                    )
-                    .setIcon(context.getIcon(R.drawable.sc_extension))
-                    .setRank(1)
-                    .build()
-            )
-        }
-        return shortCuts
-    }
+    private fun getShortCuts(context: Context): List<ShortcutInfo> = emptyList()
 }

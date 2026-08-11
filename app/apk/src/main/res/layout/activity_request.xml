@@ -103,19 +103,6 @@
                 app:layout="@{@layout/item_spinner}"
                 android:selection="@={viewModel.selectedItemPosition}" />
 
-            <TextView
-                android:id="@+id/warning"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_margin="@dimen/l1"
-                android:gravity="center"
-                android:text="@string/su_warning"
-                android:textAppearance="@style/AppearanceFoundation.Body"
-                android:textColor="?colorError"
-                android:textStyle="bold"
-                tools:text="@string/su_warning" />
-
             <LinearLayout
                 style="?android:buttonBarStyle"
                 android:layout_width="match_parent"
