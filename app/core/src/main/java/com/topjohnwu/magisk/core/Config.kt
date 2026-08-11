@@ -33,9 +33,6 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_REAUTH = "su_reauth"
         const val SU_TAPJACK = "su_tapjack"
         const val SU_RESTRICT = "su_restrict"
-        const val CHECK_UPDATES = "check_update"
-        const val RELEASE_CHANNEL = "release_channel"
-        const val CUSTOM_CHANNEL = "custom_channel"
         const val LOCALE = "locale"
         const val DARK_THEME = "dark_theme_extended"
         const val DOWNLOAD_DIR = "download_dir"
@@ -49,24 +46,7 @@ object Config : PreferenceConfig, DBConfig {
             SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK)
     }
 
-    object OldValue {
-        // Update channels
-        const val DEFAULT_CHANNEL = -1
-        const val STABLE_CHANNEL = 0
-        const val BETA_CHANNEL = 1
-        const val CUSTOM_CHANNEL = 2
-        const val CANARY_CHANNEL = 3
-        const val DEBUG_CHANNEL = 4
-    }
-
     object Value {
-        // Update channels
-        const val DEFAULT_CHANNEL = -1
-        const val STABLE_CHANNEL = 0
-        const val BETA_CHANNEL = 1
-        const val DEBUG_CHANNEL = 2
-        const val CUSTOM_CHANNEL = 3
-
         // root access mode
         const val ROOT_ACCESS_DISABLED = 0
         const val ROOT_ACCESS_APPS_ONLY = 1
@@ -109,21 +89,10 @@ object Config : PreferenceConfig, DBConfig {
     var darkTheme by preference(Key.DARK_THEME, -1)
     var themeOrdinal by preference(Key.THEME_ORDINAL, 0)
 
-    private var checkUpdatePrefs by preference(Key.CHECK_UPDATES, false)
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
-    var updateChannel by preference(Key.RELEASE_CHANNEL, Value.DEFAULT_CHANNEL)
-    var customChannelUrl by preference(Key.CUSTOM_CHANNEL, "")
     var downloadDir by preference(Key.DOWNLOAD_DIR, "")
     var randName by preference(Key.RAND_NAME, true)
-    var checkUpdate
-        get() = checkUpdatePrefs
-        set(value) {
-            if (checkUpdatePrefs != value) {
-                checkUpdatePrefs = value
-                JobService.schedule(AppContext)
-            }
-        }
     var locale
         get() = localePrefs
         set(value) {
@@ -149,10 +118,9 @@ object Config : PreferenceConfig, DBConfig {
         }
     var suReAuth by preference(Key.SU_REAUTH, false)
     var suTapjack by preference(Key.SU_TAPJACK, true)
-    var suRestrict by preference(Key.SU_RESTRICT, false)
+    var suRestrict by preference(Key.SU_RESTRICT, true)
 
     private const val SU_FINGERPRINT = "su_fingerprint"
-    private const val UPDATE_CHANNEL = "update_channel"
 
     fun toBundle(): Bundle {
         val map = prefs.all - Key.NO_MIGRATION
@@ -182,29 +150,13 @@ object Config : PreferenceConfig, DBConfig {
     }
 
     fun init(bundle: Bundle?) {
-        // Only try to load prefs when fresh install
         if (bundle != null && prefs.all.isEmpty()) {
             fromBundle(bundle)
         }
-
         prefs.edit {
-            // Migrate su_fingerprint
             if (prefs.getBoolean(SU_FINGERPRINT, false))
                 suBiometric = true
             remove(SU_FINGERPRINT)
-
-            // Migrate update_channel
-            prefs.getString(UPDATE_CHANNEL, null)?.let {
-                val channel = when (it.toInt()) {
-                    OldValue.STABLE_CHANNEL -> Value.STABLE_CHANNEL
-                    OldValue.CANARY_CHANNEL, OldValue.BETA_CHANNEL -> Value.BETA_CHANNEL
-                    OldValue.DEBUG_CHANNEL -> Value.DEBUG_CHANNEL
-                    OldValue.CUSTOM_CHANNEL -> Value.CUSTOM_CHANNEL
-                    else -> Value.DEFAULT_CHANNEL
-                }
-                putInt(Key.RELEASE_CHANNEL, channel)
-            }
-            remove(UPDATE_CHANNEL)
         }
     }
 }

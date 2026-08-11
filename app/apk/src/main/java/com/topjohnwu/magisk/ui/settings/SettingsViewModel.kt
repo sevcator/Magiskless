@@ -51,7 +51,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
         // Manager
         list.addAll(listOf(
             AppSettings,
-            UpdateChannel, UpdateChannelUrl, DoHToggle, UpdateChecker, DownloadPath, RandNameToggle
+            DoHToggle, DownloadPath, RandNameToggle
         ))
         if (Info.env.isActive && Const.USER_ID == 0) {
             if (hidden) list.add(Restore) else list.add(Hide)
@@ -94,7 +94,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
     override fun onItemPressed(view: View, item: BaseSettingsItem, doAction: () -> Unit) {
         when (item) {
             DownloadPath -> withExternalRW(doAction)
-            UpdateChecker -> withPostNotificationPermission(doAction)
             Authentication -> AuthEvent(doAction).publish()
             AutomaticResponse -> if (Config.suAuth) AuthEvent(doAction).publish() else doAction()
             else -> doAction()
@@ -108,18 +107,10 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
             DenyListConfig -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
-            UpdateChannel -> openUrlIfNecessary(view)
             is Hide -> viewModelScope.launch { AppMigration.hide(view.activity, item.value) }
             Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
             else -> Unit
-        }
-    }
-
-    private fun openUrlIfNecessary(view: View) {
-        UpdateChannelUrl.refresh()
-        if (UpdateChannelUrl.isEnabled && UpdateChannelUrl.value.isBlank()) {
-            UpdateChannelUrl.onPressed(view, this)
         }
     }
 

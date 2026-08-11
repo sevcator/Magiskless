@@ -56,13 +56,7 @@ open class Receiver : BaseReceiver() {
                 getPkg(intent)?.let { Shell.cmd("magisk --denylist rm $it").submit() }
             }
             Intent.ACTION_LOCALE_CHANGED -> Shortcuts.setupDynamic(context)
-            Intent.ACTION_MY_PACKAGE_REPLACED -> {
-                @Suppress("DEPRECATION")
-                val installer = context.packageManager.getInstallerPackageName(context.packageName)
-                if (installer == context.packageName) {
-                    Notifications.updateDone()
-                }
-            }
+            Intent.ACTION_MY_PACKAGE_REPLACED -> Unit
         }
     }
 }

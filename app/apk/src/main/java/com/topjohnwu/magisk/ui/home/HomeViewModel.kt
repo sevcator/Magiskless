@@ -16,29 +16,16 @@ import com.topjohnwu.magisk.arch.ViewEvent
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.download.Subject
-import com.topjohnwu.magisk.core.download.Subject.App
 import com.topjohnwu.magisk.core.ktx.await
 import com.topjohnwu.magisk.core.ktx.toast
-import com.topjohnwu.magisk.core.repository.NetworkService
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.dialog.EnvFixDialog
-import com.topjohnwu.magisk.dialog.ManagerInstallDialog
 import com.topjohnwu.magisk.dialog.UninstallDialog
-import com.topjohnwu.magisk.events.SnackbarEvent
-import com.topjohnwu.magisk.core.utils.asText
 import com.topjohnwu.superuser.Shell
-import kotlin.math.roundToInt
 import com.topjohnwu.magisk.core.R as CoreR
 
-class HomeViewModel(
-    private val svc: NetworkService
-) : AsyncLoadViewModel() {
-
-    enum class State {
-        LOADING, INVALID, OUTDATED, UP_TO_DATE
-    }
+class HomeViewModel : AsyncLoadViewModel() {
 
     val magiskTitleBarrierIds =
         intArrayOf(R.id.home_magisk_icon, R.id.home_magisk_title, R.id.home_magisk_button)
@@ -57,29 +44,21 @@ class HomeViewModel(
             else -> State.UP_TO_DATE
         }
 
-    @get:Bindable
-    var appState = State.LOADING
-        set(value) = set(value, field, { field = it }, BR.appState)
+    enum class State {
+        LOADING, INVALID, OUTDATED, UP_TO_DATE
+    }
 
     val magiskInstalledVersion
         get() = Info.env.run {
             if (isActive)
-                ("$versionString ($versionCode)" + if (isDebug) " (D)" else "").asText()
+                ("$versionString ($versionCode)" + if (isDebug) " (D)" else "")
             else
-                CoreR.string.not_available.asText()
+                CoreR.string.not_available.toString()
         }
-
-    @get:Bindable
-    var managerRemoteVersion = CoreR.string.loading.asText()
-        set(value) = set(value, field, { field = it }, BR.managerRemoteVersion)
 
     val managerInstalledVersion
         get() = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" +
             if (BuildConfig.DEBUG) " (D)" else ""
-
-    @get:Bindable
-    var stateManagerProgress = 0
-        set(value) = set(value, field, { field = it }, BR.stateManagerProgress)
 
     val extraBindings = bindExtra {
         it.put(BR.viewModel, this)
@@ -90,29 +69,10 @@ class HomeViewModel(
     }
 
     override suspend fun doLoadWork() {
-        appState = State.LOADING
-        Info.fetchUpdate(svc)?.apply {
-            appState = when {
-                BuildConfig.APP_VERSION_CODE < versionCode -> State.OUTDATED
-                else -> State.UP_TO_DATE
-            }
-
-            val isDebug = Config.updateChannel == Config.Value.DEBUG_CHANNEL
-            managerRemoteVersion =
-                ("$version (${versionCode})" + if (isDebug) " (D)" else "").asText()
-        } ?: run {
-            appState = State.INVALID
-            managerRemoteVersion = CoreR.string.not_available.asText()
-        }
         ensureEnv()
     }
 
-    override fun onNetworkChanged(network: Boolean) = startLoading()
-
-    fun onProgressUpdate(progress: Float, subject: Subject) {
-        if (subject is App)
-            stateManagerProgress = progress.times(100f).roundToInt()
-    }
+    override fun onNetworkChanged(network: Boolean) {}
 
     fun onLinkPressed(link: String) = object : ViewEvent(), ContextExecutor {
         override fun invoke(context: Context) {
@@ -127,16 +87,6 @@ class HomeViewModel(
     }.publish()
 
     fun onDeletePressed() = UninstallDialog().show()
-
-    fun onManagerPressed() = when (appState) {
-        State.LOADING -> SnackbarEvent(CoreR.string.loading).publish()
-        State.INVALID -> SnackbarEvent(CoreR.string.no_connection).publish()
-        else -> withExternalRW {
-            withInstallPermission {
-                ManagerInstallDialog().show()
-            }
-        }
-    }
 
     fun onMagiskPressed() = withExternalRW {
         HomeFragmentDirections.actionHomeFragmentToInstallFragment().navigate()
@@ -159,8 +109,6 @@ class HomeViewModel(
 
     val showTest = false
     fun onTestPressed() = object : ViewEvent(), ActivityExecutor {
-        override fun invoke(activity: UIActivity<*>) {
-            /* Entry point to trigger test events within the app */
-        }
+        override fun invoke(activity: UIActivity<*>) {}
     }.publish()
 }
