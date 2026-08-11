@@ -7,7 +7,7 @@ use crate::db::Sqlite3;
 use crate::ffi::{
     ModuleInfo, RequestCode, RespondCode, denylist_handler, get_magisk_tmp, scan_deny_apps,
 };
-use crate::logging::{android_logging, magisk_logging, setup_logfile, start_log_daemon};
+use crate::logging::android_logging;
 use crate::module::remove_modules;
 use crate::package::ManagerInfo;
 use crate::resetprop::{get_prop, set_prop};
@@ -98,9 +98,7 @@ impl MagiskD {
             RequestCode::CHECK_VERSION_CODE => {
                 client.write_pod(&MAGISK_VER_CODE).log_ok();
             }
-            RequestCode::START_DAEMON => {
-                setup_logfile();
-            }
+            RequestCode::START_DAEMON => {}
             RequestCode::STOP_DAEMON => {
                 // Unmount all overlays
                 denylist_handler(-1);
@@ -306,10 +304,6 @@ fn daemon_entry() {
         let con = cstr!(MAGISK_PROC_CON);
         current.write_all(con.as_bytes_with_nul()).log_ok();
     }
-
-    start_log_daemon();
-    magisk_logging();
-
 
     let is_emulator = get_prop(cstr!("ro.kernel.qemu")) == "1"
         || get_prop(cstr!("ro.boot.qemu")) == "1"

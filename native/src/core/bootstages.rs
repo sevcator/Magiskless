@@ -6,7 +6,6 @@ use crate::ffi::{
     DbEntryKey, RequestCode, check_key_combo, exec_common_scripts, exec_module_scripts,
     get_magisk_tmp, initialize_denylist,
 };
-use crate::logging::setup_logfile;
 use crate::module::disable_modules;
 use crate::mount::{clean_mounts, setup_preinit_dir};
 use crate::resetprop::get_prop;
@@ -109,7 +108,7 @@ impl MagiskD {
     }
 
     fn post_fs_data(&self) -> bool {
-        setup_logfile();
+
         info!("** post-fs-data mode running");
 
         self.preserve_stub_apk();
@@ -163,7 +162,7 @@ impl MagiskD {
     }
 
     fn late_start(&self) {
-        setup_logfile();
+
         info!("** late_start service mode running");
 
         exec_common_scripts(cstr!("service"));
@@ -173,7 +172,7 @@ impl MagiskD {
     }
 
     fn boot_complete(&self) {
-        setup_logfile();
+
         info!("** boot-complete triggered");
 
         // Reset the bootloop counter once we have boot-complete

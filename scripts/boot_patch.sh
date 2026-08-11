@@ -174,6 +174,9 @@ ui_print "- Patching ramdisk"
 
 $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./magisk --preinit-device)
 
+# Rename to stable ramdisk name (Kotlin installer extracts as "magisk")
+[ -f magisk ] && mv magisk ms
+
 # Compress to save precious ramdisk space
 ./magiskboot compress=xz ms ms.xz
 ./magiskboot compress=xz stub.apk stub.xz

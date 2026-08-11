@@ -1,5 +1,5 @@
 use crate::SePolicy;
-use crate::consts::{SEPOL_FILE_TYPE, SEPOL_LOG_TYPE, SEPOL_PROC_DOMAIN};
+use crate::consts::{SEPOL_FILE_TYPE, SEPOL_PROC_DOMAIN};
 use crate::ffi::Xperm;
 use base::{LogLevel, set_log_level_state};
 
@@ -19,17 +19,11 @@ macro_rules! rules {
     (@args [file]) => {
         vec![SEPOL_FILE_TYPE]
     };
-    (@args [log]) => {
-        vec![SEPOL_LOG_TYPE]
-    };
     (@args proc) => {
         SEPOL_PROC_DOMAIN
     };
     (@args file) => {
         SEPOL_FILE_TYPE
-    };
-    (@args log) => {
-        SEPOL_LOG_TYPE
     };
     (@args [$($arg:tt)*]) => {
         vec![$($arg)*]
@@ -59,17 +53,10 @@ impl SePolicy {
             typeattribute([proc], ["mlstrustedsubject", "netdomain", "appdomain"]);
             type_(file, ["file_type"]);
             typeattribute([file], ["mlstrustedobject"]);
-            type_(log, ["file_type"]);
-            typeattribute([log], ["mlstrustedobject"]);
 
             // Create unconstrained file type
             allow(["domain"], [file],
                 ["file", "dir", "fifo_file", "chr_file", "lnk_file", "sock_file"], all);
-
-            // Only allow zygote to open log pipe
-            allow(["zygote"], [log], ["fifo_file"], ["open", "read"]);
-            // Allow all processes to output logs
-            allow(["domain"], [log], ["fifo_file"], ["write"]);
 
             // Make our root domain unconstrained
             allow([proc], [

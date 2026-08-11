@@ -4,9 +4,11 @@ import glob
 import multiprocessing
 import os
 import platform
+import random
 import re
 import shutil
 import stat
+import string
 import subprocess
 import sys
 import tarfile
@@ -308,10 +310,13 @@ def write_if_diff(file_name: Path, text: str):
 
 
 def dump_flag_header():
+    build_id = ''.join(random.choices(string.ascii_lowercase, k=5))
+
     flag_txt = "#pragma once\n"
     flag_txt += f'#define MAGISK_VERSION      "{config["version"]}"\n'
     flag_txt += f'#define MAGISK_VER_CODE     {config["versionCode"]}\n'
     flag_txt += f"#define MAGISK_DEBUG        {0 if args.release else 1}\n"
+    flag_txt += f'#define BUILD_ID            "{build_id}"\n'
 
     native_gen_path = Path("native", "out", "generated")
     native_gen_path.mkdir(mode=0o755, parents=True, exist_ok=True)
@@ -319,6 +324,7 @@ def dump_flag_header():
 
     rust_flag_txt = f'pub const MAGISK_VERSION: &str = "{config["version"]}";\n'
     rust_flag_txt += f'pub const MAGISK_VER_CODE: i32 = {config["versionCode"]};\n'
+    rust_flag_txt += f'pub const BUILD_ID: &str = "{build_id}";\n'
     write_if_diff(native_gen_path / "flags.rs", rust_flag_txt)
 
 

@@ -76,6 +76,7 @@ echo "PREINITDEVICE=$(./magisk --preinit-device)" >> config
 [ $API = "28" ] && echo 'RECOVERYMODE=true' >> config
 cat config
 
+[ -f magisk ] && mv magisk ms
 ./magiskboot compress=xz ms ms.xz
 ./magiskboot compress=xz stub.apk stub.xz
 ./magiskboot compress=xz init-ld init-ld.xz

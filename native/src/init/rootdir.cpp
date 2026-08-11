@@ -232,7 +232,7 @@ static void recreate_sbin(const char *mirror, bool use_bind_mount) {
 }
 
 static void extract_files(bool sbin) {
-    const char *magisk_xz = sbin ? "/sbin/" MAIN_BIN_NAME ".xz" : MAIN_BIN_NAME ".xz";
+    const char *magisk_xz = sbin ? "/sbin/" RAMDISK_BIN_NAME ".xz" : RAMDISK_BIN_NAME ".xz";
     const char *stub_xz = sbin ? "/sbin/stub.xz" : "stub.xz";
     const char *init_ld_xz = sbin ? "/sbin/init-ld.xz" : "init-ld.xz";
 
