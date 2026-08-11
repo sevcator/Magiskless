@@ -1,4 +1,6 @@
-use crate::consts::{APP_PACKAGE_NAME, BBPATH, DATABIN, MODULEROOT, SECURE_DIR};
+use crate::consts::{
+    APP_PACKAGE_NAME, BBPATH, DATABIN, MAIN_BIN_NAME_32, MODULEROOT, POLICY_BIN_NAME, SECURE_DIR,
+};
 use crate::daemon::MagiskD;
 use crate::ffi::{
     DbEntryKey, RequestCode, check_key_combo, exec_common_scripts, exec_module_scripts,
@@ -88,18 +90,18 @@ impl MagiskD {
             .status()
             .log_ok();
 
-        // magisk32 and magiskpolicy are not installed into ramdisk and has to be copied
-        // from data to magisk tmp
+        // 32-bit binary and policy tool are not in ramdisk; copy from DATABIN to tmpfs.
+        // DATABIN retains installer-assigned names; tmpfs uses the renamed identifiers.
         let magisk32 = cstr!(concatcp!(DATABIN, "/magisk32"));
         if magisk32.exists() {
-            let tmp = buf.append_path(get_magisk_tmp()).append_path("magisk32");
+            let tmp = buf.append_path(get_magisk_tmp()).append_path(MAIN_BIN_NAME_32);
             magisk32.copy_to(tmp).log_ok();
         }
         let magiskpolicy = cstr!(concatcp!(DATABIN, "/magiskpolicy"));
         if magiskpolicy.exists() {
             let tmp = buf
                 .append_path(get_magisk_tmp())
-                .append_path("magiskpolicy");
+                .append_path(POLICY_BIN_NAME);
             magiskpolicy.copy_to(tmp).log_ok();
         }
 

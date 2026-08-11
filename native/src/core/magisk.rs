@@ -13,10 +13,10 @@ use std::process::exit;
 
 fn print_usage() {
     eprintln!(
-        r#"Magisk - Multi-purpose Utility
+        r#"ms - Multi-purpose Utility
 
-Usage: magisk [applet [arguments]...]
-   or: magisk [options]...
+Usage: ms [applet [arguments]...]
+   or: ms [options]...
 
 Options:
    -c                        print current binary version
@@ -27,8 +27,8 @@ Options:
    --install-module ZIP      install a module zip file
 
 Advanced Options (Internal APIs):
-   --daemon                  manually start magisk daemon
-   --stop                    remove all magisk changes and stop daemon
+   --daemon                  manually start ms daemon
+   --stop                    remove all ms changes and stop daemon
    --[init trigger]          callback on init triggers. Valid triggers:
                              post-fs-data, service, boot-complete, zygote-restart
    --unlock-blocks           set BLKROSET flag to OFF for all block devices

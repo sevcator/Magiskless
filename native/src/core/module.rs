@@ -1,4 +1,7 @@
-use crate::consts::{MODULEMNT, MODULEROOT, MODULEUPGRADE, WORKERDIR};
+use crate::consts::{
+    MAIN_BIN_NAME, MAIN_BIN_NAME_32, MODULEMNT, MODULEROOT, MODULEUPGRADE, POLICY_BIN_NAME,
+    WORKERDIR,
+};
 use crate::daemon::MagiskD;
 use crate::ffi::{ModuleInfo, exec_module_scripts, exec_script, get_magisk_tmp};
 use crate::mount::setup_module_mount;
@@ -445,18 +448,18 @@ fn inject_magisk_bins(system: &mut FsNode, is_emulator: bool) {
         // Inject binaries
 
         let len = path.len();
-        path.append_path("magisk");
+        path.append_path(MAIN_BIN_NAME);
         children.insert(
-            "magisk".to_string(),
+            MAIN_BIN_NAME.to_string(),
             FsNode::File {
                 src: path.to_owned(),
             },
         );
 
         path.truncate(len);
-        path.append_path("magiskpolicy");
+        path.append_path(POLICY_BIN_NAME);
         children.insert(
-            "magiskpolicy".to_string(),
+            POLICY_BIN_NAME.to_string(),
             FsNode::File {
                 src: path.to_owned(),
             },
@@ -579,10 +582,10 @@ fn inject_zygisk_bins(name: &str, system: &mut FsNode) {
             let mut bin_path = cstr::buf::default().join_path(get_magisk_tmp());
 
             #[cfg(target_pointer_width = "64")]
-            bin_path.append_path("magisk32");
+            bin_path.append_path(MAIN_BIN_NAME_32);
 
             #[cfg(target_pointer_width = "32")]
-            bin_path.append_path("magisk");
+            bin_path.append_path(MAIN_BIN_NAME);
 
             // There are some devices that announce ABI as 64 bit only, but ship with linker
             // because they make use of a special 32 bit to 64 bit translator (such as tango).
@@ -608,7 +611,7 @@ fn inject_zygisk_bins(name: &str, system: &mut FsNode) {
         if let Some(FsNode::Directory { children }) = lib64 {
             let bin_path = cstr::buf::default()
                 .join_path(get_magisk_tmp())
-                .join_path("magisk");
+                .join_path(MAIN_BIN_NAME);
 
             children.insert(
                 name.to_string(),

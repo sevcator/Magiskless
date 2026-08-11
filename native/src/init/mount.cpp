@@ -219,13 +219,13 @@ void MagiskInit::setup_tmp(const char *path) noexcept {
 
     mount_preinit_dir();
 
-    cp_afc(".backup/.magisk", MAIN_CONFIG);
+    cp_afc(BACKUP_CONFIG, MAIN_CONFIG);
     rm_rf(".backup");
 
     // Create applet symlinks
     for (int i = 0; applet_names[i]; ++i)
-        xsymlink("./magisk", applet_names[i]);
-    xsymlink("./magiskpolicy", "supolicy");
+        xsymlink("./" MAIN_BIN_NAME, applet_names[i]);
+    xsymlink("./" POLICY_BIN_NAME, "supolicy");
 
     xmount(".", path, nullptr, MS_BIND, nullptr);
 

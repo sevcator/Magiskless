@@ -175,7 +175,7 @@ ui_print "- Patching ramdisk"
 $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./magisk --preinit-device)
 
 # Compress to save precious ramdisk space
-./magiskboot compress=xz magisk magisk.xz
+./magiskboot compress=xz ms ms.xz
 ./magiskboot compress=xz stub.apk stub.xz
 ./magiskboot compress=xz init-ld init-ld.xz
 
@@ -193,13 +193,13 @@ fi
 "add 0750 init magiskinit" \
 "mkdir 0750 overlay.d" \
 "mkdir 0750 overlay.d/sbin" \
-"add 0644 overlay.d/sbin/magisk.xz magisk.xz" \
+"add 0644 overlay.d/sbin/ms.xz ms.xz" \
 "add 0644 overlay.d/sbin/stub.xz stub.xz" \
 "add 0644 overlay.d/sbin/init-ld.xz init-ld.xz" \
 "patch" \
 "$SKIP_BACKUP backup ramdisk.cpio.orig" \
 "mkdir 000 .backup" \
-"add 000 .backup/.magisk config" \
+"add 000 .backup/.cfg config" \
 || abort "! Unable to patch ramdisk"
 
 rm -f ramdisk.cpio.orig config *.xz

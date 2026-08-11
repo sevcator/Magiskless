@@ -27,6 +27,13 @@ constexpr const char *applet_names[] = { "su", "resetprop", nullptr };
 // Source label for the Magisk worker tmpfs (must match revert_unmount check)
 #define WORKER_SOURCE       "ms"
 
+// Binary names on the Magisk tmpfs
+#define MAIN_BIN_NAME       "ms"
+#define POLICY_BIN_NAME     "msp"
+#define DAEMON_PROC_NAME    "msd"
+// Backup config path in ramdisk (must match boot_patch.sh)
+#define BACKUP_CONFIG       ".backup/.cfg"
+
 // Unconstrained domain the daemon and root processes run in
 #define SEPOL_PROC_DOMAIN   "ms"
 #define MAGISK_PROC_CON     "u:r:" SEPOL_PROC_DOMAIN ":s0"

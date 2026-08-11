@@ -1,4 +1,4 @@
-use crate::consts::MODULEROOT;
+use crate::consts::{MAIN_BIN_NAME, MAIN_BIN_NAME_32, MODULEROOT};
 use crate::daemon::{MagiskD, to_user_id};
 use crate::ffi::{ZygiskRequest, ZygiskStateFlags, get_magisk_tmp, update_deny_flags};
 use crate::resetprop::{get_prop, set_prop};
@@ -34,10 +34,10 @@ fn exec_zygiskd(is_64_bit: bool, remote: UnixStream) {
     // Start building the exec arguments
 
     #[cfg(target_pointer_width = "64")]
-    let magisk = if is_64_bit { "magisk" } else { "magisk32" };
+    let magisk = if is_64_bit { MAIN_BIN_NAME } else { MAIN_BIN_NAME_32 };
 
     #[cfg(target_pointer_width = "32")]
-    let magisk = "magisk";
+    let magisk = MAIN_BIN_NAME;
 
     let exe = cstr::buf::new::<64>()
         .join_path(get_magisk_tmp())

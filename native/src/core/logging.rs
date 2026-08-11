@@ -55,9 +55,10 @@ fn level_to_prio(level: LogLevel) -> i32 {
     }
 }
 
-fn android_log_write(level: LogLevel, msg: &Utf8CStr) {
+fn android_log_write(_level: LogLevel, _msg: &Utf8CStr) {
+    #[cfg(debug_assertions)]
     unsafe {
-        __android_log_write(level_to_prio(level), raw_cstr!("Magisk"), msg.as_ptr());
+        __android_log_write(level_to_prio(_level), raw_cstr!("Magisk"), _msg.as_ptr());
     }
 }
 

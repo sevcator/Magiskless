@@ -188,7 +188,7 @@ struct Decompress {
 
 fn print_usage(cmd: &str) {
     eprintln!(
-        r#"MagiskBoot - Boot Image Modification Tool
+        r#"magiskboot - Boot Image Modification Tool
 
 Usage: {0} <action> [args...]
 

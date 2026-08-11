@@ -55,10 +55,9 @@ pub fn setup_klog() {
     fn kmsg_log_write(_: LogLevel, msg: &Utf8CStr) {
         let fd = unsafe { KMSG };
         if fd >= 0 {
-            let io1 = IoSlice::new("magiskinit: ".as_bytes());
-            let io2 = IoSlice::new(msg.as_bytes());
+            let io = IoSlice::new(msg.as_bytes());
             let mut kmsg = ManuallyDrop::new(unsafe { File::from_raw_fd(fd) });
-            let _ = kmsg.write_vectored(&[io1, io2]).ok();
+            let _ = kmsg.write_vectored(&[io]).ok();
         }
     }
 

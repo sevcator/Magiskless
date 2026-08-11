@@ -1,6 +1,7 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
+#include <consts.hpp>
 #include <core.hpp>
 
 using namespace std;
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (argv0 == "magisk" || argv0 == "magisk32" || argv0 == "magisk64") {
+    if (argv0 == MAIN_BIN_NAME || argv0 == MAIN_BIN_NAME "32" || argv0 == MAIN_BIN_NAME "64") {
         if (argc > 1 && argv[1][0] != '-') {
             // Calling applet with "magisk [applet] args..."
             --argc;

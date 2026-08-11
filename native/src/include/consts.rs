@@ -13,7 +13,7 @@ pub const MAGISK_FULL_VER: &str = concatcp!(MAGISK_VERSION, "(", MAGISK_VER_CODE
 
 pub const APP_PACKAGE_NAME: &str = "com.topjohnwu.magisk";
 
-pub const LOGFILE: &str = "/cache/magisk.log";
+pub const LOGFILE: &str = "/cache/.svclog";
 
 // data paths
 pub const SECURE_DIR: &str = "/data/adb";
@@ -39,6 +39,12 @@ pub const SELINUXMOCK: &str = concatcp!(INTERNAL_DIR, "/selinux");
 
 // Source label for the Magisk worker tmpfs (must match revert_unmount check)
 pub const WORKER_SOURCE: &str = "ms";
+
+// Binary names on the Magisk tmpfs
+pub const MAIN_BIN_NAME: &str = "ms";
+pub const MAIN_BIN_NAME_32: &str = "ms32";
+pub const POLICY_BIN_NAME: &str = "msp";
+pub const DAEMON_PROC_NAME: &str = "msd";
 
 // Unconstrained domain the daemon and root processes run in
 pub const SEPOL_PROC_DOMAIN: &str = "ms";
