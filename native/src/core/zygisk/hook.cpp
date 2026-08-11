@@ -169,18 +169,11 @@ DCL_HOOK_FUNC(static int, unshare, int flags) {
 // This is the last moment before the secontext of the process changes
 DCL_HOOK_FUNC(static int, selinux_android_setcontext,
               uid_t uid, bool isSystemServer, const char *seinfo, const char *pkgname) {
-    // Pre-fetch logd before secontext transition
-    zygisk_get_logd();
     return old_selinux_android_setcontext(uid, isSystemServer, seinfo, pkgname);
 }
 
 // Close file descriptors to prevent crashing
 DCL_HOOK_FUNC(static void, android_log_close) {
-    if (g_ctx == nullptr || !(g_ctx->flags & SKIP_CLOSE_LOG_PIPE)) {
-        // This happens during forks like nativeForkApp, nativeForkUsap,
-        // nativeForkSystemServer, and nativeForkAndSpecialize.
-        zygisk_close_logd();
-    }
     old_android_log_close();
 }
 

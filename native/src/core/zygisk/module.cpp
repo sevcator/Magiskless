@@ -241,8 +241,6 @@ int ZygiskContext::get_module_info(int uid, rust::Vec<int> &fds) {
 }
 
 void ZygiskContext::sanitize_fds() {
-    zygisk_close_logd();
-
     if (!is_child()) {
         return;
     }
@@ -294,7 +292,7 @@ void ZygiskContext::sanitize_fds() {
 }
 
 bool ZygiskContext::exempt_fd(int fd) {
-    if ((flags & POST_SPECIALIZE) || (flags & SKIP_CLOSE_LOG_PIPE))
+    if (flags & POST_SPECIALIZE)
         return true;
     if (!can_exempt_fd())
         return false;
@@ -334,10 +332,6 @@ void ZygiskContext::fork_pre() {
     }
     // The dirfd will be closed once out of scope
     allowed_fds[dirfd(dir.get())] = false;
-    // logd_fd should be handled separately
-    if (int fd = zygisk_get_logd(); fd >= 0) {
-        allowed_fds[fd] = false;
-    }
 }
 
 void ZygiskContext::fork_post() {
@@ -449,8 +443,6 @@ void ZygiskContext::server_specialize_post() {
 void ZygiskContext::nativeSpecializeAppProcess_pre() {
     process = env->GetStringUTFChars(args.app->nice_name, nullptr);
     ZLOGV("pre  specialize [%s]\n", process);
-    // App specialize does not check FD
-    flags |= SKIP_CLOSE_LOG_PIPE;
     app_specialize_pre();
 }
 

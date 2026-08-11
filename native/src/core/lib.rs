@@ -12,7 +12,7 @@ use crate::ffi::SuRequest;
 use crate::socket::Encodable;
 use base::derive::Decodable;
 use daemon::{MagiskD, connect_daemon_for_cxx};
-use logging::{android_logging, zygisk_close_logd, zygisk_get_logd, zygisk_logging};
+use logging::{android_logging, zygisk_logging};
 use magisk::magisk_main;
 use mount::revert_unmount;
 use resetprop::{get_prop, resetprop_main};
@@ -186,8 +186,6 @@ pub mod ffi {
     extern "Rust" {
         fn android_logging();
         fn zygisk_logging();
-        fn zygisk_close_logd();
-        fn zygisk_get_logd() -> i32;
         fn revert_unmount(pid: i32);
         fn zygisk_should_load_module(flags: u32) -> bool;
         fn send_fd(socket: i32, fd: i32) -> bool;

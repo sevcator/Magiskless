@@ -217,7 +217,6 @@ enum : uint32_t {
     APP_SPECIALIZE = (1u << 2),
     SERVER_FORK_AND_SPECIALIZE = (1u << 3),
     DO_REVERT_UNMOUNT = (1u << 4),
-    SKIP_CLOSE_LOG_PIPE = (1u << 5),
 };
 
 #define DCL_PRE_POST(name) \
