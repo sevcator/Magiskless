@@ -3,8 +3,11 @@
 #include <jni.h>
 #include <core.hpp>
 
-#define ZYGISKLDR       "libzygisk.so"
-#define NBPROP          "ro.dalvik.vm.native.bridge"
+#include <flags.h>
+#define ZYGISKLDR  "lib" BUILD_ID "z.so"
+#define ZYGISKD64  BUILD_ID "d64"
+#define ZYGISKD32  BUILD_ID "d32"
+#define NBPROP     "ro.dalvik.vm.native.bridge"
 
 #if defined(__LP64__)
 #define ZLOGD(...) LOGD("zygisk64: " __VA_ARGS__)

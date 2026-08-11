@@ -62,7 +62,6 @@ class NetworkObserver(context: Context) {
     }
 
     private fun postValue(b: Boolean) {
-        Info.resetUpdate()
         Info.isConnected.postValue(b)
     }
 

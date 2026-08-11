@@ -238,7 +238,6 @@ ZygiskContext::~ZygiskContext() {
     if (!is_child())
         return;
 
-    zygisk_close_logd();
     android_logging();
 
     // Strip out all API function pointers
