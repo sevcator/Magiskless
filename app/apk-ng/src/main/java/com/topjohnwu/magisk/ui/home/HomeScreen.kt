@@ -223,8 +223,6 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 state = uiState.appState,
                 version = viewModel.managerInstalledVersion,
-                remoteVersion = uiState.managerRemoteVersion,
-                progress = uiState.managerProgress,
                 isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME,
                 onManagerPressed = viewModel::onManagerPressed,
                 onHideRestorePressed = viewModel::onHideRestorePressed,
@@ -468,8 +466,6 @@ private fun AppCard(
     modifier: Modifier = Modifier,
     state: HomeViewModel.State,
     version: String,
-    remoteVersion: String,
-    progress: Int,
     isHidden: Boolean,
     onManagerPressed: () -> Unit,
     onHideRestorePressed: () -> Unit,
@@ -529,19 +525,8 @@ private fun AppCard(
 
             Spacer(Modifier.height(16.dp))
 
-            if (state != HomeViewModel.State.LOADING) {
-                AppDetailRow(label = stringResource(CoreR.string.home_latest_version), value = remoteVersion)
-            }
             AppDetailRow(label = stringResource(CoreR.string.home_installed_version), value = version)
             AppDetailRow(label = stringResource(CoreR.string.home_package), value = LocalContext.current.packageName)
-
-            if (progress in 1..99) {
-                Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    progress = { progress / 100f },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
         }
     }
 }

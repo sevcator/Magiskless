@@ -1,6 +1,5 @@
 package com.topjohnwu.magisk.ui
 
-import android.Manifest
 import android.Manifest.permission.REQUEST_INSTALL_PACKAGES
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -82,13 +81,6 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
         setContentView()
         showUnsupportedMessage()
         askForHomeShortcut()
-
-        // Ask permission to post notifications for background update check
-        if (Config.checkUpdate) {
-            withPermission(Manifest.permission.POST_NOTIFICATIONS) {
-                Config.checkUpdate = it
-            }
-        }
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 

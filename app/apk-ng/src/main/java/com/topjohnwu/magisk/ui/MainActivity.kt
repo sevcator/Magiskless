@@ -1,6 +1,5 @@
 package com.topjohnwu.magisk.ui
 
-import android.Manifest
 import android.Manifest.permission.REQUEST_INSTALL_PACKAGES
 import android.annotation.SuppressLint
 import android.content.Context
@@ -95,12 +94,6 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
     override fun onCreateUi(savedInstanceState: Bundle?) {
         showUnsupportedMessage()
         askForHomeShortcut()
-
-        if (Config.checkUpdate) {
-            extension.withPermission(Manifest.permission.POST_NOTIFICATIONS) {
-                Config.checkUpdate = it
-            }
-        }
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 

@@ -102,13 +102,6 @@ fun InstallBottomSheet(
                 modifier = Modifier.padding(16.dp)
             )
             Column(modifier = Modifier.padding(bottom = 16.dp)) {
-                if (installUiState.notes.isNotEmpty()) {
-                    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        MarkdownText(installUiState.notes)
-                    }
-                    HorizontalDivider(thickness = 0.75.dp)
-                }
-
                 if (!installVm.skipOptions) {
                     InstallOptionsSection(installUiState, installVm)
                 }

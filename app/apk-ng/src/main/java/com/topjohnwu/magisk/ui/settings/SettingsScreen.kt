@@ -201,18 +201,6 @@ private fun AppSettingsSection() {
             }
         )
 
-        // Update Checker
-        var checkUpdate by remember { mutableStateOf(Config.checkUpdate) }
-        SettingsSwitch(
-            title = stringResource(CoreR.string.settings_check_update_title),
-            summary = stringResource(CoreR.string.settings_check_update_summary),
-            checked = checkUpdate,
-            onCheckedChange = { newValue ->
-                checkUpdate = newValue
-                Config.checkUpdate = newValue
-            }
-        )
-
         // Download Path
         var showDownloadDialog by remember { mutableStateOf(false) }
         DownloadPathDialog(
