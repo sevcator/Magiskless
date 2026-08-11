@@ -78,9 +78,6 @@ impl SePolicy {
                 "port_type", "node_type", "property_type"
             ], all, all);
 
-            // Just in case, make the domain permissive
-            permissive([proc]);
-
             // Allow us to do any ioctl
             allowxperm([proc], ["fs_type", "dev_type", "file_type", "domain"],
                 ["blk_file", "fifo_file", "chr_file"], xall);
