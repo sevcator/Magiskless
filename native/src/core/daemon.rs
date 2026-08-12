@@ -34,7 +34,7 @@ use std::process::{Command, exit};
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::nonpoison::Mutex;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 // Global magiskd singleton
 pub static MAGISKD: OnceLock<MagiskD> = OnceLock::new();
@@ -465,13 +465,22 @@ pub fn connect_daemon(code: RequestCode, create: bool) -> LoggedResult<UnixStrea
                 exit(0);
             }
 
-            // In the client, we keep retry and connect to the socket
+            // Daemon startup should be nearly immediate. Bound retries so a
+            // failed startup cannot wake the device ten times per second
+            // forever, and back off while still tolerating slow devices.
+            let deadline = Instant::now() + Duration::from_secs(30);
+            let mut retry_delay = Duration::from_millis(20);
             loop {
                 if let Ok(socket) = UnixStream::connect(&sock_path) {
                     return send_request(code, socket);
-                } else {
-                    std::thread::sleep(Duration::from_millis(100));
                 }
+                if Instant::now() >= deadline {
+                    return log_err!("Timed out waiting for daemon startup");
+                }
+                std::thread::sleep(retry_delay);
+                retry_delay = retry_delay
+                    .saturating_mul(2)
+                    .min(Duration::from_millis(500));
             }
         }
     }

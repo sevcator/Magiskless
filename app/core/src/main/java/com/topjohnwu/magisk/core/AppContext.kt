@@ -40,6 +40,8 @@ object AppContext : ContextWrapper(null),
     private var ref = WeakReference<Activity>(null)
     private lateinit var application: Application
     private lateinit var networkObserver: NetworkObserver
+    private var startedActivities = 0
+    private var profileInstallScheduled = false
 
     init {
         // Always log full stack trace with Timber
@@ -57,7 +59,15 @@ object AppContext : ContextWrapper(null),
     }
 
     override fun onActivityStarted(activity: Activity) {
-        networkObserver.postCurrentState()
+        if (startedActivities++ == 0) {
+            networkObserver.start()
+        }
+        if (!profileInstallScheduled && !BuildConfig.DEBUG && !isRunningAsStub) {
+            profileInstallScheduled = true
+            GlobalScope.launch(Dispatchers.IO) {
+                ProfileInstaller.writeProfile(this@AppContext)
+            }
+        }
     }
 
     override fun onActivityResumed(activity: Activity) {
@@ -113,20 +123,12 @@ object AppContext : ContextWrapper(null),
             UiThreadHandler.executor,
             RootUtils.Connection
         )
-        // Pre-heat the shell ASAP
-        Shell.getShell(null) {}
-
         if (SDK_INT >= 34 && isRunningAsStub) {
             // Send over the locale config manually
             val lm = getSystemService(LocaleManager::class.java)
             lm.overrideLocaleConfig = LocaleSetting.localeConfig
         }
-        networkObserver = NetworkObserver.init(this)
-        if (!BuildConfig.DEBUG && !isRunningAsStub) {
-            GlobalScope.launch(Dispatchers.IO) {
-                ProfileInstaller.writeProfile(this@AppContext)
-            }
-        }
+        networkObserver = NetworkObserver(this)
     }
 
     override fun createDeviceProtectedStorageContext(): Context {
@@ -138,7 +140,11 @@ object AppContext : ContextWrapper(null),
     }
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {}
-    override fun onActivityStopped(activity: Activity) {}
+    override fun onActivityStopped(activity: Activity) {
+        if (--startedActivities == 0) {
+            networkObserver.stop()
+        }
+    }
     override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {}
     override fun onActivityDestroyed(activity: Activity) {}
     override fun onLowMemory() {}

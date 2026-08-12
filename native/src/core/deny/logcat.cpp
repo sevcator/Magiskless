@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <unistd.h>
 #include <android/log.h>
 #include <sys/syscall.h>
@@ -232,6 +233,7 @@ static void process_events_buffer(struct log_msg *msg) {
 }
 
 [[noreturn]] void run() {
+    unsigned retry_delay = 1;
     while (true) {
         const unique_ptr<logger_list, decltype(&android_logger_list_free)> logger_list{
             android_logger_list_alloc(0, 1, 0), &android_logger_list_free};
@@ -266,7 +268,11 @@ static void process_events_buffer(struct log_msg *msg) {
             break;
         }
 
-        sleep(1);
+        // A healthy logger blocks in android_logger_list_read and consumes no
+        // CPU. If logd is unavailable, back off reconnect attempts to avoid a
+        // permanent once-per-second wakeup loop.
+        sleep(retry_delay);
+        retry_delay = std::min(retry_delay * 2, 5U);
     }
 
     LOGD("logcat: terminate\n");

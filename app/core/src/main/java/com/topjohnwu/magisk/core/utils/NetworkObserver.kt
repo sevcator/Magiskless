@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.core.utils
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,19 +15,21 @@ import androidx.core.content.getSystemService
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.ktx.registerRuntimeReceiver
 
+@SuppressLint("MissingPermission")
 class NetworkObserver(context: Context) {
-    private val manager = context.getSystemService<ConnectivityManager>()!!
+    private val appContext = context.applicationContext
+    private val manager = appContext.getSystemService<ConnectivityManager>()!!
+    private val activeNetworks = ArraySet<Network>()
+    private var registered = false
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
-        private val activeList = ArraySet<Network>()
-
         override fun onAvailable(network: Network) {
-            activeList.add(network)
+            activeNetworks.add(network)
             postValue(true)
         }
         override fun onLost(network: Network) {
-            activeList.remove(network)
-            postValue(!activeList.isEmpty())
+            activeNetworks.remove(network)
+            postValue(!activeNetworks.isEmpty())
         }
     }
 
@@ -45,16 +48,28 @@ class NetworkObserver(context: Context) {
         }
     }
 
-    init {
+    fun start() {
+        if (registered) return
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
             .build()
         manager.registerNetworkCallback(request, networkCallback)
         val filter = IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED)
-        context.applicationContext.registerRuntimeReceiver(receiver, filter)
+        appContext.registerRuntimeReceiver(receiver, filter)
+        registered = true
+        postCurrentState()
     }
 
-    fun postCurrentState() {
+    fun stop() {
+        if (!registered) return
+        registered = false
+        manager.unregisterNetworkCallback(networkCallback)
+        appContext.unregisterReceiver(receiver)
+        activeNetworks.clear()
+        Info.isConnected.postValue(false)
+    }
+
+    private fun postCurrentState() {
         postValue(
             manager.getNetworkCapabilities(manager.activeNetwork)
                 ?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
@@ -62,12 +77,8 @@ class NetworkObserver(context: Context) {
     }
 
     private fun postValue(b: Boolean) {
-        Info.isConnected.postValue(b)
-    }
-
-    companion object {
-        fun init(context: Context): NetworkObserver {
-            return NetworkObserver(context).apply { postCurrentState() }
+        if (registered) {
+            Info.isConnected.postValue(b)
         }
     }
 }
