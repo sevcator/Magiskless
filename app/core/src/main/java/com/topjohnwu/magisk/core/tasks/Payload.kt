@@ -25,7 +25,7 @@ class Payload(private val channel: DataSourceChannel) {
     @Throws(IOException::class)
     fun extract(outputFile: File, console: MutableList<String>, logger: MutableList<String>) {
         val partition = findPartition()
-        console.add("- Found partition ${partition.partition_name}")
+        console.add("- found partition ${partition.partition_name}")
 
         val actualHash = extractPartition(outputFile, partition, console)
 
@@ -124,7 +124,7 @@ class Payload(private val channel: DataSourceChannel) {
             val count = partition.operations.size
             partition.operations.forEachIndexed { index, operation ->
                 if (index % 5 == 0 || index == count - 1) {
-                    console.add("- Downloading ${index + 1}/$count")
+                    console.add("- downloading ${index + 1}/$count")
                 }
                 processOperation(outChannel, operation)
             }

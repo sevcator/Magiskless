@@ -7,6 +7,7 @@ use crate::daemon::MagiskD;
 use crate::ffi::{ModuleInfo, exec_module_scripts, exec_script, get_magisk_tmp};
 use crate::mount::setup_module_mount;
 use crate::resetprop::load_prop_file;
+use crate::udonge::{UDONGE_MODULE_NAME, UDONGE_RUNTIME, is_enabled as udonge_enabled};
 use base::const_format::concatcp;
 use base::{
     DirEntry, Directory, FsPathBuilder, LoggedResult, OsResult, ResultExt, SilentLogExt, Utf8CStr,
@@ -738,13 +739,6 @@ fn collect_modules(zygisk_enabled: bool, open_zygisk: bool) -> Vec<ModuleInfo> {
                 return Ok(());
             }
 
-            fn open_fd_safe(dir: &Directory, name: &Utf8CStr) -> i32 {
-                dir.open_as_file_at(name, OFlag::O_RDONLY | OFlag::O_CLOEXEC, 0)
-                    .log()
-                    .map(IntoRawFd::into_raw_fd)
-                    .unwrap_or(-1)
-            }
-
             if open_zygisk && is_zygisk {
                 #[cfg(target_arch = "arm")]
                 {
@@ -787,43 +781,80 @@ fn collect_modules(zygisk_enabled: bool, open_zygisk: bool) -> Vec<ModuleInfo> {
     })
     .log_ok();
 
-    if zygisk_enabled && open_zygisk {
-        let mut use_memfd = true;
-        let mut convert_to_memfd = |fd: i32| -> i32 {
-            if fd < 0 {
-                return fd;
-            }
-            if use_memfd {
-                let memfd = unsafe {
-                    libc::syscall(
-                        libc::SYS_memfd_create,
-                        raw_cstr!("jit-cache"),
-                        libc::MFD_CLOEXEC,
-                    ) as i32
-                };
-                if memfd >= 0 {
-                    unsafe {
-                        if libc::sendfile(memfd, fd, ptr::null_mut(), i32::MAX as usize) < 0 {
-                            libc::close(memfd);
-                        } else {
-                            libc::close(fd);
-                            return memfd;
-                        }
-                    }
-                }
-                // Some error occurred, don't try again
-                use_memfd = false;
-            }
-            fd
-        };
+    modules
+}
 
-        modules.iter_mut().for_each(|m| {
-            m.z32 = convert_to_memfd(m.z32);
-            m.z64 = convert_to_memfd(m.z64);
+fn open_fd_safe(dir: &Directory, name: &Utf8CStr) -> i32 {
+    dir.open_as_file_at(name, OFlag::O_RDONLY | OFlag::O_CLOEXEC, 0)
+        .log()
+        .map(IntoRawFd::into_raw_fd)
+        .unwrap_or(-1)
+}
+
+fn append_udonge(modules: &mut Vec<ModuleInfo>) {
+    if !udonge_enabled() {
+        return;
+    }
+    let Ok(dir) = Directory::open(cstr!(UDONGE_RUNTIME)) else {
+        return;
+    };
+    #[cfg(target_arch = "arm")]
+    let (z32, z64) = (open_fd_safe(&dir, cstr!("zygisk/armeabi-v7a.so")), -1);
+    #[cfg(target_arch = "aarch64")]
+    let (z32, z64) = (
+        open_fd_safe(&dir, cstr!("zygisk/armeabi-v7a.so")),
+        open_fd_safe(&dir, cstr!("zygisk/arm64-v8a.so")),
+    );
+    #[cfg(target_arch = "x86")]
+    let (z32, z64) = (open_fd_safe(&dir, cstr!("zygisk/x86.so")), -1);
+    #[cfg(target_arch = "x86_64")]
+    let (z32, z64) = (
+        open_fd_safe(&dir, cstr!("zygisk/x86.so")),
+        open_fd_safe(&dir, cstr!("zygisk/x86_64.so")),
+    );
+    #[cfg(target_arch = "riscv64")]
+    let (z32, z64) = (-1, -1);
+    if z32 >= 0 || z64 >= 0 {
+        modules.push(ModuleInfo {
+            name: UDONGE_MODULE_NAME.to_string(),
+            z32,
+            z64,
         });
     }
+}
 
-    modules
+fn convert_zygisk_modules_to_memfd(modules: &mut [ModuleInfo]) {
+    let mut use_memfd = true;
+    let mut convert = |fd: i32| -> i32 {
+        if fd < 0 {
+            return fd;
+        }
+        if use_memfd {
+            let memfd = unsafe {
+                libc::syscall(
+                    libc::SYS_memfd_create,
+                    raw_cstr!("jit-cache"),
+                    libc::MFD_CLOEXEC,
+                ) as i32
+            };
+            if memfd >= 0 {
+                unsafe {
+                    if libc::sendfile(memfd, fd, ptr::null_mut(), i32::MAX as usize) < 0 {
+                        libc::close(memfd);
+                    } else {
+                        libc::close(fd);
+                        return memfd;
+                    }
+                }
+            }
+            use_memfd = false;
+        }
+        fd
+    };
+    modules.iter_mut().for_each(|module| {
+        module.z32 = convert(module.z32);
+        module.z64 = convert(module.z64);
+    });
 }
 
 impl MagiskD {
@@ -836,8 +867,12 @@ impl MagiskD {
         exec_module_scripts(cstr!("post-fs-data"), &modules);
 
         // Recollect modules (module scripts could remove itself)
-        let modules = collect_modules(zygisk, true);
+        let mut modules = collect_modules(zygisk, true);
         self.apply_modules(&modules);
+        if zygisk {
+            append_udonge(&mut modules);
+            convert_zygisk_modules_to_memfd(&mut modules);
+        }
 
         self.module_list.set(modules).ok();
     }

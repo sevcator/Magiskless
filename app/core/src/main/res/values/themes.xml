@@ -5,28 +5,4 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_reisen_white_padded</item>
     </style>
     <style name="StubSplashTheme" parent="SplashTheme"/>
-
-    <style name="SplashTheme.Pink"><item name="windowSplashScreenBackground">@color/startup_pink</item></style>
-    <style name="SplashTheme.Purple"><item name="windowSplashScreenBackground">@color/startup_purple</item></style>
-    <style name="SplashTheme.Blue"><item name="windowSplashScreenBackground">@color/startup_blue</item></style>
-    <style name="SplashTheme.Green"><item name="windowSplashScreenBackground">@color/startup_green</item></style>
-    <style name="SplashTheme.Amber"><item name="windowSplashScreenBackground">@color/startup_amber</item></style>
-    <style name="SplashTheme.Red"><item name="windowSplashScreenBackground">@color/startup_red</item></style>
-    <style name="SplashTheme.Teal"><item name="windowSplashScreenBackground">@color/startup_teal</item></style>
-    <style name="SplashTheme.White">
-        <item name="windowSplashScreenBackground">@color/startup_white</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_reisen_black_padded</item>
-    </style>
-
-    <style name="StubSplashTheme.Pink"><item name="windowSplashScreenBackground">@color/startup_pink</item></style>
-    <style name="StubSplashTheme.Purple"><item name="windowSplashScreenBackground">@color/startup_purple</item></style>
-    <style name="StubSplashTheme.Blue"><item name="windowSplashScreenBackground">@color/startup_blue</item></style>
-    <style name="StubSplashTheme.Green"><item name="windowSplashScreenBackground">@color/startup_green</item></style>
-    <style name="StubSplashTheme.Amber"><item name="windowSplashScreenBackground">@color/startup_amber</item></style>
-    <style name="StubSplashTheme.Red"><item name="windowSplashScreenBackground">@color/startup_red</item></style>
-    <style name="StubSplashTheme.Teal"><item name="windowSplashScreenBackground">@color/startup_teal</item></style>
-    <style name="StubSplashTheme.White">
-        <item name="windowSplashScreenBackground">@color/startup_white</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_reisen_black_padded</item>
-    </style>
 </resources>

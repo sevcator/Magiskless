@@ -42,7 +42,7 @@ object SuCallbackHandler {
 
         val appName = runCatching {
             pm.getPackageInfo(uid, pid)?.applicationInfo?.getLabel(pm)
-        }.getOrNull() ?: "[UID] $uid"
+        }.getOrNull() ?: "[uid] $uid"
 
         notify(context, policy >= SuPolicy.ALLOW, appName)
     }

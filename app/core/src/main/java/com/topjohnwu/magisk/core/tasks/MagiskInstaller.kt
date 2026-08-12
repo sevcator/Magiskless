@@ -82,11 +82,11 @@ abstract class MagiskInstallImpl protected constructor(
             "find_boot_image; echo \$BOOTIMAGE"
         val bootPath = ("($cmd)").fsh()
         if (bootPath.isEmpty()) {
-            console.add("! Unable to detect target image")
+            console.add("! unable to detect target image")
             return false
         }
         srcBoot = rootFS.getFile(bootPath)
-        console.add("- Target image: $bootPath")
+        console.add("- target image: $bootPath")
         return true
     }
 
@@ -96,13 +96,13 @@ abstract class MagiskInstallImpl protected constructor(
 
     private fun findSecondary(): Boolean {
         val slot = if (Info.slot == "_a") "_b" else "_a"
-        console.add("- Target slot: $slot")
+        console.add("- target slot: $slot")
         return findImage(slot)
     }
 
     private suspend fun extractFiles(): Boolean {
-        console.add("- Device platform: ${Const.CPU_ABI}")
-        console.add("- Installing: ${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})")
+        console.add("- device platform: ${Const.CPU_ABI}")
+        console.add("- installing: ${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})")
 
         installDir = localFS.getFile(context.filesDir.parent, "install")
         installDir.deleteRecursively()
@@ -167,7 +167,9 @@ abstract class MagiskInstallImpl protected constructor(
             }
 
             // Extract scripts
-            for (script in listOf("util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk")) {
+            for (script in listOf(
+                "util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk", "udonge.bin"
+            )) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)
             }
@@ -179,7 +181,7 @@ abstract class MagiskInstallImpl protected constructor(
                 context.assets.open(name).writeTo(dest)
             }
         } catch (e: Exception) {
-            console.add("! Unable to extract files")
+            console.add("! unable to extract files")
             return false
         }
 
@@ -218,7 +220,7 @@ abstract class MagiskInstallImpl protected constructor(
             entry.name = name
             entry.size = file.length()
             file.newInputStream().use {
-                console.add("-- Writing   : $name")
+                console.add("-- writing   : $name")
                 tarOut.putArchiveEntry(entry)
                 it.copyAll(tarOut)
                 tarOut.closeArchiveEntry()
@@ -231,7 +233,7 @@ abstract class MagiskInstallImpl protected constructor(
         tarIn: TarArchiveInputStream,
         tarOut: TarArchiveOutputStream
     ): BootItem {
-        console.add("- Processing tar file")
+        console.add("- processing tar file")
         var entry: TarArchiveEntry? = tarIn.nextEntry
 
         fun decompressedStream(): InputStream {
@@ -260,7 +262,7 @@ abstract class MagiskInstallImpl protected constructor(
             }
 
             if (bootItem != null) {
-                console.add("-- Extracting: ${bootItem.name}")
+                console.add("-- extracting: ${bootItem.name}")
                 decompressedStream().copyAndCloseOut(bootItem.file.newOutputStream())
             } else if (entry.name.contains("vbmeta.img")) {
                 val rawData = decompressedStream().readBytes()
@@ -272,7 +274,7 @@ abstract class MagiskInstallImpl protected constructor(
                 Info.patchBootVbmeta = false
 
                 val name = entry.name.replace(".lz4", "")
-                console.add("-- Patching  : $name")
+                console.add("-- patching  : $name")
 
                 // Patch flags to AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED |
                 // AVB_VBMETA_IMAGE_FLAGS_VERIFICATION_DISABLED
@@ -292,9 +294,9 @@ abstract class MagiskInstallImpl protected constructor(
                 tarOut.closeArchiveEntry()
                 continue
             } else if (entry.name.contains("userdata.img")) {
-                console.add("-- Skipping  : ${entry.name}")
+                console.add("-- skipping  : ${entry.name}")
             } else {
-                console.add("-- Copying   : ${entry.name}")
+                console.add("-- copying   : ${entry.name}")
                 tarOut.putArchiveEntry(entry)
                 tarIn.copyAll(tarOut)
                 tarOut.closeArchiveEntry()
@@ -331,7 +333,7 @@ abstract class MagiskInstallImpl protected constructor(
 
     @Throws(IOException::class)
     private suspend fun processZip(zipIn: ZipArchiveInputStream): ExtendedFile {
-        console.add("- Processing zip file")
+        console.add("- processing zip file")
         val boot = installDir.getChildFile("boot.img")
         val initBoot = installDir.getChildFile("init_boot.img")
         var entry: ZipArchiveEntry
@@ -347,12 +349,12 @@ abstract class MagiskInstallImpl protected constructor(
                     }
                 }
                 "init_boot.img" -> {
-                    console.add("- Extracting init_boot.img")
+                    console.add("- extracting init_boot.img")
                     zipIn.copyAndCloseOut(initBoot.newOutputStream())
                     return initBoot
                 }
                 "boot.img" -> {
-                    console.add("- Extracting boot.img")
+                    console.add("- extracting boot.img")
                     zipIn.copyAndCloseOut(boot.newOutputStream())
                     // Don't return here since there might be an init_boot.img
                 }
@@ -369,7 +371,7 @@ abstract class MagiskInstallImpl protected constructor(
     private fun processPayload(input: InputStream): ExtendedFile {
         var fifo: File? = null
         try {
-            console.add("- Processing payload.bin")
+            console.add("- processing payload.bin")
             fifo = File.createTempFile("payload-fifo-", null, installDir)
             fifo.delete()
             Os.mkfifo(fifo.path, 420 /* 0644 */)
@@ -406,18 +408,18 @@ abstract class MagiskInstallImpl protected constructor(
 
             val success = try { future.get().isSuccess } catch (e: Exception) { false }
             if (!success) {
-                console.add("! Error while extracting payload.bin")
+                console.add("! error while extracting payload.bin")
                 throw IOException()
             }
             val boot = installDir.getChildFile("boot.img")
             val initBoot = installDir.getChildFile("init_boot.img")
             return when {
                 initBoot.exists() -> {
-                    console.add("-- Extract init_boot.img")
+                    console.add("-- extract init_boot.img")
                     initBoot
                 }
                 boot.exists() -> {
-                    console.add("-- Extract boot.img")
+                    console.add("-- extract boot.img")
                     boot
                 }
                 else -> {
@@ -441,7 +443,7 @@ abstract class MagiskInstallImpl protected constructor(
             PushbackInputStream(uri.inputStream().buffered(1024 * 1024), 512).use { src ->
                 val head = ByteArray(512)
                 if (src.read(head) != head.size) {
-                    console.add("! Invalid input file")
+                    console.add("! invalid input file")
                     return false
                 }
                 src.unread(head)
@@ -477,7 +479,7 @@ abstract class MagiskInstallImpl protected constructor(
                         } else if (magic.contentEquals("PK\u0003\u0004".toByteArray())) {
                             processZip(ZipArchiveInputStream(src))
                         } else {
-                            console.add("- Copying image to cache")
+                            console.add("- copying image to cache")
                             installDir.getChildFile("boot.img").also {
                                 src.copyAndCloseOut(it.newOutputStream())
                             }
@@ -491,8 +493,8 @@ abstract class MagiskInstallImpl protected constructor(
             }
         } catch (e: IOException) {
             if (e is NoBootException)
-                console.add("! No boot image found")
-            console.add("! Process error")
+                console.add("! no boot image found")
+            console.add("! process error")
             return false
         }
 
@@ -515,11 +517,11 @@ abstract class MagiskInstallImpl protected constructor(
 
             console.add("")
             console.add("****************************")
-            console.add(" Output file is written to ")
+            console.add(" output file is written to ")
             console.add(" $outFile ")
             console.add("****************************")
         } catch (e: IOException) {
-            console.add("! Failed to output to $outFile")
+            console.add("! failed to output to $outFile")
             outFile.delete()
             return false
         } finally {
@@ -567,12 +569,12 @@ abstract class MagiskInstallImpl protected constructor(
             "post_ota $file".sh()
 
             console.add("*************************************************************")
-            console.add(" Next reboot will boot to second slot!")
-            console.add(" Go back to System Updates and press Restart to complete OTA")
+            console.add(" next reboot will boot to second slot!")
+            console.add(" go back to system updates and press restart to complete ota")
             console.add("*************************************************************")
             true
         } catch (_: IOException) {
-            console.add("! Unable to download bootctl")
+            console.add("! unable to download bootctl")
             false
         } finally {
             bootctl?.delete()
@@ -628,9 +630,9 @@ abstract class ConsoleInstaller(
     override suspend fun exec(): Boolean {
         val success = super.exec()
         if (success) {
-            console.add("- All done!")
+            console.add("- all done!")
         } else {
-            console.add("! Installation failed")
+            console.add("! installation failed")
         }
         return success
     }

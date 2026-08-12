@@ -23,7 +23,7 @@ class PolicyRvItem(
 
     override val layoutRes = R.layout.item_policy_md2
 
-    val title get() = if (isSharedUid) "[SharedUID] $appName" else appName
+    val title get() = if (isSharedUid) "[shareduid] ${appName.lowercase()}" else appName.lowercase()
 
     private inline fun <reified T> setImpl(new: T, old: T, setter: (T) -> Unit) {
         if (old != new) {

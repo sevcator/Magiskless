@@ -28,17 +28,17 @@ trampoline() {
     fi
     ui_print() {
       if $BOOTMODE; then
-        log -t Magisk -- "$1"
+        echo "$1"
       else
         echo -e "ui_print $1\nui_print" >> /proc/self/fd/$OUTFD
       fi
     }
 
     ui_print "***********************"
-    ui_print " Magisk addon.d failed"
+    ui_print " reisenless addon.d failed"
     ui_print "***********************"
-    ui_print "! Cannot find Magisk binaries - was data wiped or not decrypted?"
-    ui_print "! Reflash OTA from decrypted recovery or reflash Magisk"
+    ui_print "! cannot find reisenless binaries - was data wiped or not decrypted?"
+    ui_print "! reflash ota from decrypted recovery or reflash reisenless"
   fi
   exit 1
 }
@@ -65,7 +65,7 @@ initialize() {
 
   if $BOOTMODE; then
     # Override ui_print when booted
-    ui_print() { log -t Magisk -- "$1"; }
+    ui_print() { echo "$1"; }
   fi
   OUTFD=
   setup_flashable
@@ -92,7 +92,7 @@ main() {
   else
     PRETTY_VER="$MAGISK_VER($MAGISK_VER_CODE)"
   fi
-  print_title "Magisk $PRETTY_VER addon.d"
+  print_title "reisenless $PRETTY_VER addon.d"
 
   mount_partitions
   check_data
@@ -109,11 +109,11 @@ main() {
   fi
 
   find_boot_image
-  [ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-  ui_print "- Target image: $BOOTIMAGE"
+  [ -z $BOOTIMAGE ] && abort "! unable to detect target image"
+  ui_print "- target image: $BOOTIMAGE"
 
   api_level_arch_detect
-  ui_print "- Device platform: $ABI"
+  ui_print "- device platform: $ABI"
 
   remove_system_su
   install_magisk
@@ -123,7 +123,7 @@ main() {
   $BOOTMODE || recovery_cleanup
   rm -rf $TMPDIR
 
-  ui_print "- Done"
+  ui_print "- done"
   exit 0
 }
 

@@ -39,18 +39,18 @@
                 android:id="@+id/theme_primary"
                 handler="@{viewModel}"
                 item="@{viewModel.primaryAccent}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/l_50"
                 layout="@layout/item_settings" />
 
             <include
                 android:id="@+id/theme_secondary"
                 handler="@{viewModel}"
                 item="@{viewModel.secondaryAccent}"
-                layout="@layout/item_settings" />
-
-            <include
-                android:id="@+id/theme_startup"
-                handler="@{viewModel}"
-                item="@{viewModel.startupColor}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/l_50"
                 layout="@layout/item_settings" />
 
         </LinearLayout>

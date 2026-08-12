@@ -3,8 +3,10 @@ package com.topjohnwu.magisk.ui.settings
 import android.content.Context
 import android.content.res.Resources
 import android.os.Build
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.EditText
 import androidx.databinding.Bindable
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
@@ -12,6 +14,7 @@ import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
+import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.LocaleSetting
@@ -52,7 +55,8 @@ object LanguageSystem : BaseSettingsItem.Blank() {
     override val description: TextHolder
         get() {
             val locale = LocaleSetting.instance.appLocale
-            return locale?.getDisplayName(locale)?.asText() ?: CoreR.string.system_default.asText()
+            return locale?.getDisplayName(locale)?.lowercase(locale)?.asText()
+                ?: CoreR.string.system_default.asText()
         }
 }
 
@@ -76,8 +80,8 @@ object Hide : BaseSettingsItem.Input() {
         get() = if (isError) null else result
 
     @get:Bindable
-    var result = "Settings"
-        set(value) = set(value, field, { field = it }, BR.result, BR.error)
+    var result = "settings"
+        set(value) = set(value.lowercase(), field, { field = it }, BR.result, BR.error)
 
     val maxLength
         get() = AppMigration.MAX_LABEL_LENGTH
@@ -175,6 +179,61 @@ object Zygisk : BaseSettingsItem.Toggle() {
 object DenyListConfig : BaseSettingsItem.Blank() {
     override val title = CoreR.string.settings_denylist_config_title.asText()
     override val description = CoreR.string.settings_denylist_config_summary.asText()
+}
+
+object UdongeSettings : BaseSettingsItem.Section() {
+    override val title = CoreR.string.udonge.asText()
+}
+
+object UdongeIntegrity : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.udonge_integrity_title.asText()
+    override val description = CoreR.string.udonge_integrity_summary.asText()
+    override var value by Config::udongeEnabled
+}
+
+object UdongeKeyboxes : BaseSettingsItem.Blank() {
+    override val title = CoreR.string.udonge_keybox_list_title.asText()
+    override val description = CoreR.string.udonge_keybox_list_summary.asText()
+
+    override fun onPressed(view: View, handler: Handler) {
+        handler.onItemPressed(view, this) {
+            val input = EditText(view.context).apply {
+                hint = view.resources.getString(CoreR.string.udonge_keybox_hint)
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                minLines = 4
+                maxLines = 10
+                setText(Config.udongeKeyboxUrls)
+                setSelection(text.length)
+            }
+            MagiskDialog(view.activity).apply {
+                setTitle(CoreR.string.udonge_keybox_list_title)
+                setView(input)
+                setButton(MagiskDialog.ButtonType.POSITIVE) {
+                    text = android.R.string.ok
+                    onClick {
+                        Shell.EXECUTOR.execute {
+                            if (Udonge.setKeyboxUrls(input.text.toString())) {
+                                Udonge.refreshKeyboxes()
+                            }
+                        }
+                    }
+                }
+                setButton(MagiskDialog.ButtonType.NEGATIVE) {
+                    text = android.R.string.cancel
+                }
+            }.show()
+        }
+    }
+}
+
+object UdongeUpdate : BaseSettingsItem.Blank() {
+    override val title = CoreR.string.udonge_update_title.asText()
+    override val description = object : TextHolder() {
+        override fun getText(resources: Resources) = resources.getString(
+            CoreR.string.udonge_update_summary,
+            BuildConfig.APP_VERSION_NAME,
+        )
+    }
 }
 
 // --- Superuser

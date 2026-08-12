@@ -71,11 +71,11 @@ class RootUtils(stub: Any?) : RootService() {
         File(module, "module.prop").outputStream().writer().use {
             it.write("""
                 id=hosts
-                name=Systemless Hosts
+                name=systemless hosts
                 version=1.0
                 versionCode=1
-                author=Magisk
-                description=Magisk app built-in systemless hosts module
+                author=reisenless
+                description=reisenless app built-in systemless hosts module
             """.trimIndent())
         }
         File("/system/etc/hosts").copyTo(hosts)

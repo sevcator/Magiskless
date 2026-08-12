@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         resourceConfigurations += listOf(
-            "en", "b+en+Latn+US+lower", "ru", "zh-rCN", "zh-rTW"
+            "en", "ja", "ru", "zh-rCN", "zh-rTW"
         )
     }
 

@@ -116,15 +116,8 @@ interface LocaleSetting {
 
     @SuppressLint("NewApi")
     companion object {
-        private const val LOWERCASE_ENGLISH_TAG = "en-Latn-US-lower"
-
-        private fun localeName(locale: Locale, tag: String): String {
-            return if (tag.equals(LOWERCASE_ENGLISH_TAG, ignoreCase = true)) {
-                AppContext.getString(R.string.language_english_small)
-            } else {
-                locale.getDisplayName(locale)
-            }
-        }
+        private fun localeName(locale: Locale): String =
+            locale.getDisplayName(locale).lowercase(locale)
 
         val available: AppLocaleList by lazy {
             val names = ArrayList<String>()
@@ -142,7 +135,7 @@ interface LocaleSetting {
                 for (i in 0 until list.size()) {
                     val locale = list[i]
                     val tag = locale.toLanguageTag()
-                    names.add(localeName(locale, tag))
+                    names.add(localeName(locale))
                     tags.add(tag)
                 }
             } else {
@@ -154,7 +147,7 @@ interface LocaleSetting {
                             if (parser.name == "locale") {
                                 val tag = parser.getAttributeValue(0)
                                 val locale = Locale.forLanguageTag(tag)
-                                names.add(localeName(locale, tag))
+                                names.add(localeName(locale))
                                 tags.add(tag)
                             }
                         }

@@ -169,6 +169,7 @@ fun Project.setupCoreLib() {
                         "app_functions.sh", "uninstaller.sh", "module_installer.sh")
                 }
                 from(rootFile("tools/bootctl"))
+                from(rootFile("out/udonge.bin"))
                 into("chromeos") {
                     from(rootFile("tools/futility"))
                     from(rootFile("tools/keys")) {
@@ -281,7 +282,7 @@ fun Project.setupMainApk() {
         defaultConfig {
             applicationId = "io.sevcator.reisenless"
             vectorDrawables.useSupportLibrary = true
-            versionName = "1.403.946752603"
+            versionName = Config.version
             versionCode = Config.versionCode
             ndk {
                 abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64", "riscv64")

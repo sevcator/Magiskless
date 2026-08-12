@@ -88,21 +88,21 @@ chmod -R 755 .
 CHROMEOS=false
 VENDORBOOT=false
 
-ui_print "- Unpacking boot image"
+ui_print "- unpacking boot image"
 ./mboot unpack "$BOOTIMAGE"
 
 case $? in
   0 ) ;;
   2 )
-    ui_print "- ChromeOS boot image detected"
+    ui_print "- chromeos boot image detected"
     CHROMEOS=true
     ;;
   3 )
-    ui_print "- Vendor boot image detected"
+    ui_print "- vendor boot image detected"
     VENDORBOOT=true
     ;;
   * )
-    abort "! Unable to unpack boot image"
+    abort "! unable to unpack boot image"
     ;;
 esac
 
@@ -118,7 +118,7 @@ for path in ramdisk.cpio vendor_ramdisk/init_boot.cpio vendor_ramdisk/ramdisk.cp
   fi
 done
 
-ui_print "- Checking ramdisk status"
+ui_print "- checking ramdisk status"
 if [ -n "$RAMDISK" ]; then
   ./mboot cpio $RAMDISK test
   STATUS=$?
@@ -134,14 +134,14 @@ fi
 case $STATUS in
   0 )
     # Stock boot
-    ui_print "- Stock boot image detected"
+    ui_print "- stock boot image detected"
     SHA1=$(./mboot sha1 "$BOOTIMAGE" 2>/dev/null)
     cat $BOOTIMAGE > stock_boot.img
     cp -af $RAMDISK ramdisk.cpio.orig 2>/dev/null
     ;;
   1 )
     # Magisk patched
-    ui_print "- Magisk patched boot image detected"
+    ui_print "- reisenless patched boot image detected"
     # Try our config first, fall back to old .magisk marker
     if ./mboot cpio $RAMDISK "exists .backup/.cfg" 2>/dev/null; then
       ./mboot cpio $RAMDISK "extract .backup/.cfg config.orig" "restore"
@@ -153,8 +153,8 @@ case $STATUS in
     ;;
   2 )
     # Unsupported
-    ui_print "! Boot image patched by unsupported programs"
-    abort "! Please restore back to stock boot image"
+    ui_print "! boot image patched by unsupported programs"
+    abort "! please restore back to stock boot image"
     ;;
 esac
 
@@ -173,7 +173,7 @@ fi
 # Ramdisk Patches
 ##################
 
-ui_print "- Patching ramdisk"
+ui_print "- patching ramdisk"
 
 $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./$MAIN_BIN_NAME --preinit-device)
 
@@ -184,13 +184,14 @@ $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./$MAIN_BIN_NAME --prein
 ./mboot compress=xz ms ms.xz
 ./mboot compress=xz stub.apk stub.xz
 ./mboot compress=xz init-ld init-ld.xz
+./mboot compress=xz udonge.bin udonge.xz
 
 echo "KEEPVERITY=$KEEPVERITY" > config
 echo "KEEPFORCEENCRYPT=$KEEPFORCEENCRYPT" >> config
 echo "RECOVERYMODE=$RECOVERYMODE" >> config
 echo "VENDORBOOT=$VENDORBOOT" >> config
 if [ -n "$PREINITDEVICE" ]; then
-  ui_print "- Pre-init storage partition: $PREINITDEVICE"
+  ui_print "- pre-init storage partition: $PREINITDEVICE"
   echo "PREINITDEVICE=$PREINITDEVICE" >> config
 fi
 [ -n "$SHA1" ] && echo "SHA1=$SHA1" >> config
@@ -202,11 +203,12 @@ fi
 "add 0644 overlay.d/sbin/ms.xz ms.xz" \
 "add 0644 overlay.d/sbin/stub.xz stub.xz" \
 "add 0644 overlay.d/sbin/init-ld.xz init-ld.xz" \
+"add 0600 overlay.d/sbin/udonge.xz udonge.xz" \
 "patch" \
 "$SKIP_BACKUP backup ramdisk.cpio.orig" \
 "mkdir 000 .backup" \
 "add 000 .backup/.cfg config" \
-|| abort "! Unable to patch ramdisk"
+|| abort "! unable to patch ramdisk"
 
 rm -f ramdisk.cpio.orig config *.xz
 
@@ -217,11 +219,11 @@ rm -f ramdisk.cpio.orig config *.xz
 for dt in dtb kernel_dtb extra; do
   if [ -f $dt ]; then
     if ! ./mboot dtb $dt test; then
-      ui_print "! Boot image $dt was patched by old (unsupported) Magisk"
-      abort "! Please try again with *unpatched* boot image"
+      ui_print "! boot image $dt was patched by old unsupported root software"
+      abort "! please try again with *unpatched* boot image"
     fi
     if ./mboot dtb $dt patch; then
-      ui_print "- Patch fstab in boot image $dt"
+      ui_print "- patch fstab in boot image $dt"
     fi
   fi
 done
@@ -262,8 +264,8 @@ fi
 # Repack & Flash
 #################
 
-ui_print "- Repacking boot image"
-./mboot repack "$BOOTIMAGE" || abort "! Unable to repack boot image"
+ui_print "- repacking boot image"
+./mboot repack "$BOOTIMAGE" || abort "! unable to repack boot image"
 
 # Sign chromeos boot
 $CHROMEOS && sign_chromeos

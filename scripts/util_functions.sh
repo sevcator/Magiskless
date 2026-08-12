@@ -133,7 +133,7 @@ ensure_bb() {
   elif [ -f $MAGISKBIN/busybox ]; then
     bb=$MAGISKBIN/busybox
   else
-    abort "! Cannot find BusyBox"
+    abort "! cannot find busybox"
   fi
   chmod 755 $bb
 
@@ -179,7 +179,7 @@ recovery_actions() {
 
 recovery_cleanup() {
   local DIR
-  ui_print "- Unmounting partitions"
+  ui_print "- unmounting partitions"
   (
   if [ ! -d /postinstall/tmp ]; then
     umount -l /system
@@ -260,7 +260,7 @@ mount_name() {
     local BLOCK=$(find_block $PART)
     mount $FLAG $BLOCK $POINT || return
   fi
-  ui_print "- Mounting $POINT"
+  ui_print "- mounting $POINT"
 }
 
 # mount_ro_ensure <partname(s)> <mountpoint>
@@ -270,7 +270,7 @@ mount_ro_ensure() {
   local PART=$1
   local POINT=$2
   mount_name "$PART" $POINT '-o ro'
-  is_mounted $POINT || abort "! Cannot mount $POINT"
+  is_mounted $POINT || abort "! cannot mount $POINT"
 }
 
 # After calling this method, the following variables will be set:
@@ -283,7 +283,7 @@ mount_partitions() {
     [ -z $SLOT ] || SLOT=_${SLOT}
   fi
   [ "$SLOT" = "normal" ] && unset SLOT
-  [ -z $SLOT ] || ui_print "- Current boot slot: $SLOT"
+  [ -z $SLOT ] || ui_print "- current boot slot: $SLOT"
 
   # Mount ro partitions
   if is_mounted /system_root; then
@@ -307,7 +307,7 @@ mount_partitions() {
       SYSTEM_AS_ROOT=false
     fi
   fi
-  $SYSTEM_AS_ROOT && ui_print "- Device is system-as-root"
+  $SYSTEM_AS_ROOT && ui_print "- device is system-as-root"
 
   LEGACYSAR=false
   if $BOOTMODE; then
@@ -322,7 +322,7 @@ mount_partitions() {
     fi
     if $SYSTEM_AS_ROOT && ! $IS_DYNAMIC; then
       LEGACYSAR=true
-      ui_print "- Legacy SAR, force kernel to load rootfs"
+      ui_print "- legacy sar, force kernel to load rootfs"
     fi
   fi
 }
@@ -345,7 +345,7 @@ get_flags() {
     PATCHVBMETAFLAG=false
   else
     PATCHVBMETAFLAG=true
-    ui_print "- No vbmeta partition, patch vbmeta in boot image"
+    ui_print "- no vbmeta partition, patch vbmeta in boot image"
   fi
 
   # Overridable config flags with safe defaults
@@ -356,7 +356,7 @@ get_flags() {
   if [ -z $KEEPVERITY ]; then
     if $SYSTEM_AS_ROOT; then
       KEEPVERITY=true
-      ui_print "- System-as-root, keep dm-verity"
+      ui_print "- system-as-root, keep dm-verity"
     else
       KEEPVERITY=false
     fi
@@ -364,7 +364,7 @@ get_flags() {
   if [ -z $KEEPFORCEENCRYPT ]; then
     if $ISENCRYPTED; then
       KEEPFORCEENCRYPT=true
-      ui_print "- Encrypted data, keep forceencrypt"
+      ui_print "- encrypted data, keep forceencrypt"
     else
       KEEPFORCEENCRYPT=false
     fi
@@ -424,7 +424,7 @@ flash_image() {
     flash_eraseall "$2" >&2
     eval "$CMD1" | nandwrite -p "$2" - >&2
   else
-    ui_print "- Not block or char device, storing image"
+    ui_print "- not block or char device, storing image"
     eval "$CMD1" > "$2" 2>/dev/null
   fi
   return 0
@@ -438,11 +438,11 @@ install_magisk() {
   SOURCEDMODE=true
   . ./boot_patch.sh "$BOOTIMAGE"
 
-  ui_print "- Flashing new boot image"
+  ui_print "- flashing new boot image"
   flash_image new-boot.img "$BOOTIMAGE"
   case $? in
     1)
-      abort "! Insufficient partition size"
+      abort "! insufficient partition size"
       ;;
     2)
       abort "! $BOOTIMAGE is read only"
@@ -456,7 +456,7 @@ install_magisk() {
 }
 
 sign_chromeos() {
-  ui_print "- Signing ChromeOS boot image"
+  ui_print "- signing chromeos boot image"
 
   echo > empty
   ./chromeos/futility vbutil_kernel --pack new-boot.img.signed \
@@ -471,7 +471,7 @@ remove_system_su() {
   [ -d /postinstall/tmp ] && POSTINST=/postinstall
   cd $POSTINST/system
   if [ -f bin/su -o -f xbin/su ] && [ ! -f /su/bin/su ]; then
-    ui_print "- Removing system installed root"
+    ui_print "- removing system installed root"
     blockdev --setrw /dev/block/mapper/system$SLOT 2>/dev/null
     mount -o rw,remount $POSTINST/system
     # SuperSU
@@ -495,7 +495,7 @@ remove_system_su() {
     .supersu /cache/.supersu /data/.supersu \
     app/Superuser.apk app/SuperSU /cache/Superuser.apk
   elif [ -f /cache/su.img -o -f /data/su.img -o -d /data/su -o -d ${SECURE_DIR}/su ]; then
-    ui_print "- Removing systemless installed root"
+    ui_print "- removing systemless installed root"
     umount -l /su 2>/dev/null
     rm -rf /cache/su.img /data/su.img /data/su ${SECURE_DIR}/su ${SECURE_DIR}/suhide \
     /cache/.supersu /data/.supersu /cache/supersu_install /data/supersu_install
@@ -585,7 +585,7 @@ run_migrations() {
 copy_preinit_files() {
   local PREINITDIR=$MAGISKTMP/.ms/preinit
   if [ ! -d $PREINITDIR ]; then
-    ui_print "- Unable to find preinit dir"
+    ui_print "- unable to find preinit dir"
     return 1
   fi
 
@@ -665,7 +665,7 @@ install_module() {
 
   # Extract prop file
   unzip -o "$ZIPFILE" module.prop -d $TMPDIR >&2
-  [ ! -f $TMPDIR/module.prop ] && abort "! This zip is not a Magisk module!"
+  [ ! -f $TMPDIR/module.prop ] && abort "! this zip is not a magisk module!"
 
   local MODDIRNAME=modules
   $BOOTMODE && MODDIRNAME=modules_update
@@ -697,16 +697,16 @@ install_module() {
     $POSTFSDATA && cp -af $TMPDIR/post-fs-data.sh $MODPATH/post-fs-data.sh
     $LATESTARTSERVICE && cp -af $TMPDIR/service.sh $MODPATH/service.sh
 
-    ui_print "- Setting permissions"
+    ui_print "- setting permissions"
     set_permissions
   else
     print_title "$MODNAME" "by $MODAUTH"
-    print_title "Powered by Magisk"
+    print_title "powered by reisenless"
 
     unzip -o "$ZIPFILE" customize.sh -d $MODPATH >&2
 
     if ! grep -q '^SKIPUNZIP=1$' $MODPATH/customize.sh 2>/dev/null; then
-      ui_print "- Extracting module files"
+      ui_print "- extracting module files"
       unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
       set_default_perm $MODPATH
     fi
@@ -717,12 +717,12 @@ install_module() {
 
   # Handle replace folders
   for TARGET in $REPLACE; do
-    ui_print "- Replace target: $TARGET"
+    ui_print "- replace target: $TARGET"
     mktouch $MODPATH$TARGET/.replace
   done
 
   for TARGET in $REMOVE; do
-    ui_print "- Remove target: $TARGET"
+    ui_print "- remove target: $TARGET"
     mkdir -p $(dirname $MODPATH$TARGET) 2>/dev/null
     mknod $MODPATH$TARGET c 0 0
   done
@@ -737,7 +737,7 @@ install_module() {
 
   # Copy over custom sepolicy rules
   if [ -f $MODPATH/sepolicy.rule ]; then
-    ui_print "- Installing custom sepolicy rules"
+    ui_print "- installing custom sepolicy rules"
     copy_preinit_files
   fi
 
@@ -751,7 +751,7 @@ install_module() {
   $BOOTMODE || recovery_cleanup
   rm -rf $TMPDIR
 
-  ui_print "- Done"
+  ui_print "- done"
 }
 
 ##########

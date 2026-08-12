@@ -10,6 +10,7 @@ use crate::module::disable_modules;
 use crate::mount::{clean_mounts, setup_preinit_dir};
 use crate::resetprop::get_prop;
 use crate::selinux::restorecon;
+use crate::udonge::{run_service as run_udonge_service, setup_runtime as setup_udonge_runtime};
 use base::const_format::concatcp;
 use base::{BufReadExt, FsPathBuilder, ResultExt, cstr, error, info};
 use bitflags::bitflags;
@@ -155,6 +156,7 @@ impl MagiskD {
             Ordering::Release,
         );
         initialize_denylist();
+        setup_udonge_runtime();
         self.handle_modules();
         clean_mounts();
 
@@ -169,6 +171,7 @@ impl MagiskD {
         if let Some(module_list) = self.module_list.get() {
             exec_module_scripts(cstr!("service"), module_list);
         }
+        run_udonge_service();
     }
 
     fn boot_complete(&self) {

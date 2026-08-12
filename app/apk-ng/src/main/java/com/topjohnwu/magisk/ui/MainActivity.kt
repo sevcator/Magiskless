@@ -36,7 +36,6 @@ import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.base.ActivityExtension
 import com.topjohnwu.magisk.core.base.SplashController
 import com.topjohnwu.magisk.core.base.SplashScreenHost
-import com.topjohnwu.magisk.core.base.StartupTheme
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.AppMigration
@@ -75,7 +74,6 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         extension.onCreate(savedInstanceState)
-        StartupTheme.apply(this)
         splashController.preOnCreate()
         theme.applyStyle(R.style.Main, true)
         super.onCreate(savedInstanceState)

@@ -13,7 +13,7 @@ run_delay() {
 # $1 = version string
 # $2 = version code
 env_check() {
-  for file in "$MAIN_BIN_NAME" busybox mboot minit util_functions.sh boot_patch.sh; do
+  for file in "$MAIN_BIN_NAME" busybox mboot minit util_functions.sh boot_patch.sh udonge.bin; do
     [ -f "$MAGISKBIN/$file" ] || return 1
   done
   if [ "$2" -ge 25000 ]; then
@@ -61,11 +61,11 @@ fix_env() {
 # $1 = install dir
 # $2 = boot partition
 direct_install() {
-  echo "- Flashing new boot image"
+  echo "- flashing new boot image"
   flash_image $1/new-boot.img $2
   case $? in
     1)
-      echo "! Insufficient partition size"
+      echo "! insufficient partition size"
       return 1
       ;;
     2)

@@ -61,7 +61,7 @@ fun ApplicationInfo.getLabel(pm: PackageManager): String {
         }
     }
 
-    return loadLabel(pm).toString()
+    return loadLabel(pm).toString().lowercase()
 }
 
 fun Context.unwrap(): Context {

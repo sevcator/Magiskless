@@ -15,7 +15,7 @@ COMMONDIR=$INSTALLER/assets
 CHROMEDIR=$INSTALLER/assets/chromeos
 
 if [ ! -f $COMMONDIR/util_functions.sh ]; then
-  echo "! Unable to extract zip file!"
+  echo "! unable to extract zip file!"
   exit 1
 fi
 
@@ -33,22 +33,22 @@ if echo $MAGISK_VER | grep -q '\.'; then
 else
   PRETTY_VER="$MAGISK_VER($MAGISK_VER_CODE)"
 fi
-print_title "Magisk $PRETTY_VER Uninstaller"
+print_title "reisenless $PRETTY_VER uninstaller"
 
-is_mounted /data || mount /data || abort "! Unable to mount /data, please uninstall with the Magisk app"
+is_mounted /data || mount /data || abort "! unable to mount /data, please uninstall with the magisk app"
 mount_partitions
 check_data
-$DATA_DE || abort "! Cannot access /data, please uninstall with the Magisk app"
+$DATA_DE || abort "! cannot access /data, please uninstall with the magisk app"
 get_flags
 find_boot_image
 
-[ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-ui_print "- Target image: $BOOTIMAGE"
+[ -z $BOOTIMAGE ] && abort "! unable to detect target image"
+ui_print "- target image: $BOOTIMAGE"
 
 # Detect version and architecture
 api_level_arch_detect
 
-ui_print "- Device platform: $ABI"
+ui_print "- device platform: $ABI"
 
 BINDIR=$INSTALLER/lib/$ABI
 cd $BINDIR
@@ -66,7 +66,7 @@ cd $BINDIR
 
 CHROMEOS=false
 
-ui_print "- Unpacking boot image"
+ui_print "- unpacking boot image"
 # Dump image for MTD/NAND character device boot partitions
 if [ -c $BOOTIMAGE ]; then
   nanddump -f boot.img $BOOTIMAGE
@@ -77,10 +77,10 @@ fi
 
 case $? in
   1 )
-    abort "! Unsupported/Unknown image format"
+    abort "! unsupported/unknown image format"
     ;;
   2 )
-    ui_print "- ChromeOS boot image detected"
+    ui_print "- chromeos boot image detected"
     CHROMEOS=true
     ;;
 esac
@@ -89,7 +89,7 @@ esac
 [ "$BOOTNAND" ] && BOOTIMAGE=$BOOTNAND
 
 # Detect boot image state
-ui_print "- Checking ramdisk status"
+ui_print "- checking ramdisk status"
 if [ -e ramdisk.cpio ]; then
   ./mboot cpio ramdisk.cpio test
   STATUS=$?
@@ -99,10 +99,10 @@ else
 fi
 case $((STATUS & 3)) in
   0 )  # Stock boot
-    ui_print "- Stock boot image detected"
+    ui_print "- stock boot image detected"
     ;;
   1 )  # Magisk patched
-    ui_print "- Magisk patched image detected"
+    ui_print "- reisenless patched image detected"
     # Find SHA1 of stock boot image (try our config first, fall back to old .magisk)
     ./mboot cpio ramdisk.cpio "extract .backup/.cfg config.orig" 2>/dev/null || \
       ./mboot cpio ramdisk.cpio "extract .backup/.magisk config.orig" 2>/dev/null
@@ -113,18 +113,18 @@ case $((STATUS & 3)) in
     fi
     BACKUPDIR=/data/ms_backup_$SHA1
     if [ -d $BACKUPDIR ]; then
-      ui_print "- Restoring stock boot image"
+      ui_print "- restoring stock boot image"
       flash_image $BACKUPDIR/boot.img.gz $BOOTIMAGE
       for name in dtb dtbo dtbs; do
         [ -f $BACKUPDIR/${name}.img.gz ] || continue
         IMAGE=$(find_block $name$SLOT)
         [ -z $IMAGE ] && continue
-        ui_print "- Restoring stock $name image"
+        ui_print "- restoring stock $name image"
         flash_image $BACKUPDIR/${name}.img.gz $IMAGE
       done
     else
-      ui_print "! Boot image backup unavailable"
-      ui_print "- Restoring ramdisk with internal backup"
+      ui_print "! boot image backup unavailable"
+      ui_print "- restoring ramdisk with internal backup"
       ./mboot cpio ramdisk.cpio restore
       if ! ./mboot cpio ramdisk.cpio "exists init"; then
         # A only system-as-root
@@ -133,27 +133,27 @@ case $((STATUS & 3)) in
       ./mboot repack $BOOTIMAGE
       # Sign chromeos boot
       $CHROMEOS && sign_chromeos
-      ui_print "- Flashing restored boot image"
-      flash_image new-boot.img $BOOTIMAGE || abort "! Insufficient partition size"
+      ui_print "- flashing restored boot image"
+      flash_image new-boot.img $BOOTIMAGE || abort "! insufficient partition size"
     fi
     ;;
   2 )  # Unsupported
-    ui_print "! Boot image patched by unsupported programs"
-    abort "! Cannot uninstall"
+    ui_print "! boot image patched by unsupported programs"
+    abort "! cannot uninstall"
     ;;
 esac
 
 if $BOOTMODE; then
-  ui_print "- Removing modules"
+  ui_print "- removing modules"
   $MAIN_BIN_NAME --remove-modules -n
 fi
 
-ui_print "- Removing files"
+ui_print "- removing files"
 rm -rf \
 /cache/*magisk* /cache/unblock /data/*magisk* /data/cache/*magisk* /data/property/*magisk* \
 /data/Magisk.apk /data/busybox /data/custom_ramdisk_patch.sh /data/adb/*magisk* \
-${SECURE_DIR}/ms ${SECURE_DIR}/ms.db ${SECURE_DIR}/post-fs-data.d ${SECURE_DIR}/service.d ${SECURE_DIR}/modules* \
-/data/adb/ms /data/adb/ms.db /data/adb/post-fs-data.d /data/adb/service.d /data/adb/modules* \
+${SECURE_DIR}/ms ${SECURE_DIR}/ms.db ${SECURE_DIR}/udonge ${SECURE_DIR}/post-fs-data.d ${SECURE_DIR}/service.d ${SECURE_DIR}/modules* \
+/data/adb/ms /data/adb/ms.db /data/adb/udonge /data/adb/post-fs-data.d /data/adb/service.d /data/adb/modules* \
 /data/unencrypted/magisk /data/unencrypted/.mnt \
 /metadata/magisk /metadata/watchdog/magisk /metadata/watchdog/.mnt \
 /persist/magisk /persist/.mnt /mnt/vendor/persist/magisk /mnt/vendor/persist/.mnt
@@ -169,17 +169,17 @@ cd /
 
 if $BOOTMODE; then
   ui_print "********************************************"
-  ui_print " The Magisk app will uninstall itself, and"
+  ui_print " the reisenless app will uninstall itself, and"
   ui_print " the device will reboot after a few seconds"
   ui_print "********************************************"
   (sleep 8; /system/bin/reboot)&
 else
   ui_print "********************************************"
-  ui_print " The Magisk app will not be uninstalled"
-  ui_print " Please uninstall it manually after reboot"
+  ui_print " the reisenless app will not be uninstalled"
+  ui_print " please uninstall it manually after reboot"
   ui_print "********************************************"
   recovery_cleanup
-  ui_print "- Done"
+  ui_print "- done"
 fi
 
 rm -rf $TMPDIR

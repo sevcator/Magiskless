@@ -25,14 +25,14 @@ class ExtractImage(
             .get().use { zipFile ->
                 val payload = zipFile.getEntry("payload.bin")
                 if (payload != null) {
-                    console.add("- Processing as OTA package")
+                    console.add("- processing as ota package")
 
                     zipFile.getEntry("META-INF/com/android/metadata")?.let { entry ->
                         zipFile.getInputStream(entry).use {
                             val meta = it.bufferedReader().readText()
                             logs.add(meta)
 
-                            console.add("- OTA metadata:")
+                            console.add("- ota metadata:")
                             meta.lines().forEach { line ->
                                 if (line.startsWith("post-")) {
                                     console.add("  ${line.substringAfter('-')}")
@@ -67,7 +67,7 @@ class ExtractImage(
         zipFile: ZipFile,
         channel: DataSourceChannel,
     ) {
-        console.add("- Processing as factory image package")
+        console.add("- processing as factory image package")
 
         findBootImageZipEntry(zipFile)?.let { entry ->
             return extractImageFile(zipFile, entry, channel)
@@ -122,8 +122,8 @@ class ExtractImage(
         entry: ZipArchiveEntry,
         channel: DataSourceChannel,
     ) {
-        console.add("- Found boot image entry: ${entry.name} (${entry.size} bytes)")
-        console.add("- Downloading")
+        console.add("- found boot image entry: ${entry.name} (${entry.size} bytes)")
+        console.add("- downloading")
 
         zipFile.getRawInputStream(entry)
         when (entry.method) {

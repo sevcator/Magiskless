@@ -77,11 +77,11 @@ data class LocalModule(
 
             when (key) {
                 "id" -> id = value
-                "name" -> name = value
-                "version" -> version = value
+                "name" -> name = value.lowercase()
+                "version" -> version = value.lowercase()
                 "versionCode" -> versionCode = value.toInt()
-                "author" -> author = value
-                "description" -> description = value
+                "author" -> author = value.lowercase()
+                "description" -> description = value.lowercase()
                 "updateJson" -> updateUrl = value
             }
         }

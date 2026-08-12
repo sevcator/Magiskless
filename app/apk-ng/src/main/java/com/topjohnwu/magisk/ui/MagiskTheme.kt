@@ -17,18 +17,6 @@ object ThemeState {
     var secondaryAccent by mutableIntStateOf(Config.accentSecondary)
 }
 
-private val primaryColors = listOf(
-    Color(0xFFF4A6C1), Color(0xFF7E57C2),
-    Color(0xFF4EAFF5), Color(0xFF68A17F), Color(0xFFF2B90D), Color(0xFFDB7366),
-    Color(0xFF009688), Color(0xFF607D8B),
-)
-
-private val secondaryColors = listOf(
-    Color(0xFFD97A9C), Color(0xFF5E35B1),
-    Color(0xFF3E78AF), Color(0xFF2F6D43), Color(0xFFB29667), Color(0xFFB65247),
-    Color(0xFF00796B), Color(0xFF455A64),
-)
-
 private fun contentColor(background: Color) =
     if (background.luminance() > 0.45f) Color(0xFF101010) else Color(0xFFF9F9F9)
 
@@ -36,8 +24,8 @@ private fun contentColor(background: Color) =
 fun MagiskTheme(
     content: @Composable () -> Unit
 ) {
-    val primary = primaryColors[ThemeState.primaryAccent.coerceIn(primaryColors.indices)]
-    val secondary = secondaryColors[ThemeState.secondaryAccent.coerceIn(secondaryColors.indices)]
+    val primary = Color(ThemeState.primaryAccent)
+    val secondary = Color(ThemeState.secondaryAccent)
     val base = if (ThemeState.darkTheme == Config.Value.THEME_DARK) {
         darkColorScheme()
     } else {

@@ -15,7 +15,7 @@ COMMONDIR=$INSTALLER/assets
 CHROMEDIR=$INSTALLER/assets/chromeos
 
 if [ ! -f $COMMONDIR/util_functions.sh ]; then
-  echo "! Unable to extract zip file!"
+  echo "! unable to extract zip file!"
   exit 1
 fi
 
@@ -33,7 +33,7 @@ if echo $MAGISK_VER | grep -q '\.'; then
 else
   PRETTY_VER="$MAGISK_VER($MAGISK_VER_CODE)"
 fi
-print_title "Magisk $PRETTY_VER Installer"
+print_title "reisenless $PRETTY_VER installer"
 
 is_mounted /data || mount /data || is_mounted /cache || mount /cache
 mount_partitions
@@ -41,15 +41,15 @@ check_data
 get_flags
 find_boot_image
 
-[ -z $BOOTIMAGE ] && abort "! Unable to detect target image"
-ui_print "- Target image: $BOOTIMAGE"
+[ -z $BOOTIMAGE ] && abort "! unable to detect target image"
+ui_print "- target image: $BOOTIMAGE"
 
 # Detect version and architecture
 api_level_arch_detect
 
-[ $API -lt 23 ] && abort "! Magisk only support Android 6.0 and above"
+[ $API -lt 23 ] && abort "! magisk only support android 6.0 and above"
 
-ui_print "- Device platform: $ABI"
+ui_print "- device platform: $ABI"
 
 BINDIR=$INSTALLER/lib/$ABI
 cd $BINDIR
@@ -65,7 +65,7 @@ $BOOTMODE || remove_system_su
 # Environment
 ##############
 
-ui_print "- Constructing environment"
+ui_print "- constructing environment"
 
 # Copy required files
 rm -rf $MAGISKBIN 2>/dev/null
@@ -80,7 +80,7 @@ chmod -R 755 $MAGISKBIN
 
 # addon.d
 if [ -d /system/addon.d ]; then
-  ui_print "- Adding addon.d survival script"
+  ui_print "- adding addon.d survival script"
   blockdev --setrw /dev/block/mapper/system$SLOT 2>/dev/null
   mount -o rw,remount /system || mount -o rw,remount /
   ADDOND=/system/addon.d/99-ms.sh
@@ -98,5 +98,5 @@ install_magisk
 $BOOTMODE || recovery_cleanup
 rm -rf $TMPDIR
 
-ui_print "- Done"
+ui_print "- done"
 exit 0

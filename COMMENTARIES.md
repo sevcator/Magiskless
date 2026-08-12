@@ -18,25 +18,25 @@ If the optional test package is installed, migration repackages it from the curr
 
 ## Cleanup policy
 
-Startup removes the retired `sulogs.db`, legacy migration APKs, cached update-note Markdown files, abandoned migration/flash/install staging directories, and the retired `/cache/magisk.log`. Failed flash preparation removes its staging directory immediately, and the temporary OTA `bootctl` payload is deleted in a `finally` block. Network cache and functional installation output are retained because deleting them would increase network use or remove information needed during an active operation.
+Startup removes the retired `sulogs.db`, legacy migration APKs, cached update-note Markdown files, and abandoned migration/flash/install staging directories. Failed flash preparation removes its staging directory immediately, and the temporary OTA `bootctl` payload is deleted in a `finally` block. The app does not open a root shell merely to remove a log file that Reisenless no longer creates. Network cache and functional installation output are retained because deleting them would increase network use or remove information needed during an active operation.
 
 ## Locales
 
-Release resources contain English, lowercase English (`en-Latn-US-lower`), Russian, Simplified Chinese, and Traditional Chinese. The lowercase variant duplicates English text with every displayed character converted to lowercase; it is separate from the normal English locale and also covers the hidden-app stub. Missing strings in the other retained locales were completed so builds do not silently fall back to English. Android version and theme overlays are not locale packs and remain present.
+Release resources contain English, Russian, Simplified Chinese, Traditional Chinese, and Japanese. Japanese was retained from the upstream Magisk resources. The separate lowercase-English locale was removed; Reisenless-owned English and Russian interface text is written in lowercase directly. Android version and theme overlays are not locale packs and remain present.
 
 ## Installed version display
 
-An inactive legacy Home state previously converted `R.string.not_available` itself to text, displaying its decimal Android resource ID. It now resolves the resource value before display. Native installed-version reporting remains `versionString (versionCode)` and keeps version code `30700` for this build line.
+An inactive legacy Home state previously converted `R.string.not_available` itself to text, displaying its decimal Android resource ID. It now resolves the resource value before display. Release version names are the source commit identifier and version codes are derived from the build timestamp, keeping Android's integer version ordering while tying each artifact to its source.
 
 ## Theme selection
 
-The app no longer follows the system theme, uses Android dynamic colors, or exposes named theme presets. The persisted mode is normalized to Light or Dark, including old installations whose previous value meant system/default. Primary and secondary accents are stored independently and applied as separate overlays, so changing one never resets the other. Both accents default to pink.
+The app no longer follows the system theme, uses Android dynamic colors, or exposes named theme presets. The persisted mode is normalized to Light or Dark, including old installations whose previous value meant system/default. Primary and secondary accents are stored independently, selected with RGB editors, and applied as separate overlays, so changing one never resets the other. The primary accent defaults to purple and the secondary accent defaults to pink. The legacy resource-based UI selects the closest bundled overlay while retaining and previewing the exact RGB value.
 
 ## Reisenless identity and startup
 
 The primary app ID is `io.sevcator.reisenless`. Hidden installs still use generated package IDs, and the stub retains its fixed loader namespace because it is rewritten during hiding. User-facing Magisk branding is Reisenless, while low-level Magisk protocol, binary, database, and source identifiers remain unchanged for compatibility.
 
-The startup color is stored independently from the light/dark and accent selections. Pink is the default. Pink, purple, blue, green, amber, red, and teal use the white Reisen silhouette; white uses the black silhouette to preserve contrast. The original root-level image is copied into the Android drawable resources and removed so there is a single packaged source of truth.
+There is no separate startup-color preference. The platform splash uses a pink background and the same pink-to-purple Reisen artwork used by the launcher, home screen, hidden-app stub, and installer surfaces. The drawable resource is the single packaged source of truth.
 
 ## Startup lifecycle
 
@@ -47,3 +47,9 @@ The platform splash is installed before `Activity.onCreate`, and the final activ
 The main native binary remains because it is the superuser daemon, module mount engine, Zygisk coordinator, boot-stage dispatcher, and settings database endpoint. Only its redundant `--install-module` CLI command was removed; module installation in the application remains. The separate resetprop executable target was removed, while the embedded resetprop applet used by modules and the daemon remains.
 
 The standalone test APK, downloaded third-party test modules, Cuttlefish scripts, and emulator-matrix CI jobs are not release inputs and were removed. CI now performs one release native build and one release APK build, then uploads the APK.
+
+## Boot-integrated Udonge
+
+Udonge is a first-party Reisenless boot payload, not an installable module. `build.py` compiles its DEX and ABI-specific Zygisk libraries into a reproducible `udonge.bin`; the image patcher stores that payload in the boot image, and `magiskinit` exposes it to the root daemon. The daemon installs a versioned runtime below `/data/adb/udonge` before ordinary modules are applied and injects Udonge into Zygisk through a reserved internal entry that is never mounted, scripted, or shown as a user module.
+
+The enabled marker, keybox sources, and refresh request live in Udonge state rather than Magisk module metadata. Keybox downloads accept HTTPS sources only, are rate-limited to one automatic attempt per day, and select the structurally valid candidate with the most certificate entries. This is an input-quality check, not proof that Google has not revoked a keybox; no client-side implementation can guarantee server-side strong-integrity acceptance. Runtime files and TEE payloads are replaced only when the embedded Reisenless version changes, and DEX transfer is limited to the Google Play services attestation process to avoid per-process IPC and repeated flash writes.

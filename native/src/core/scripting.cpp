@@ -37,6 +37,14 @@ void exec_script(Utf8CStr script) {
     exec_command_sync(exec, BBEXEC_CMD, script.c_str());
 }
 
+void exec_script_async(Utf8CStr script) {
+    exec_t exec {
+        .pre_exec = set_script_env,
+        .fork = fork_dont_care
+    };
+    exec_command(exec, BBEXEC_CMD, script.c_str());
+}
+
 static timespec pfs_timeout;
 
 #define PFS_SETUP() \
@@ -134,6 +142,8 @@ void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_lis
 
     char path[4096];
     for (auto &m : module_list) {
+        if (!m.name.empty() && m.name.data()[0] == '@')
+            continue;
         sprintf(path, MODULEROOT "/%.*s/%s.sh", (int) m.name.size(), m.name.data(), stage.c_str());
         if (access(path, F_OK) == -1)
             continue;

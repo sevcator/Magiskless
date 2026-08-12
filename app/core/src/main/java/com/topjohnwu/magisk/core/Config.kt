@@ -39,11 +39,12 @@ object Config : PreferenceConfig, DBConfig {
         const val DARK_THEME = "dark_theme_extended"
         const val ACCENT_PRIMARY = "accent_primary"
         const val ACCENT_SECONDARY = "accent_secondary"
-        const val STARTUP_COLOR = "startup_color"
         const val DOWNLOAD_DIR = "download_dir"
         const val SAFETY = "safety_notice"
         const val ASKED_HOME = "asked_home"
         const val DOH = "doh"
+        const val UDONGE_ENABLED = "udonge_enabled"
+        const val UDONGE_KEYBOX_URLS = "udonge_keybox_urls"
 
         val NO_MIGRATION = setOf(ASKED_HOME, SU_REQUEST_TIMEOUT,
             SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK)
@@ -105,9 +106,16 @@ object Config : PreferenceConfig, DBConfig {
                 Value.THEME_LIGHT
             }
         }
-    var accentPrimary by preference(Key.ACCENT_PRIMARY, 0)
-    var accentSecondary by preference(Key.ACCENT_SECONDARY, 0)
-    var startupColor by preference(Key.STARTUP_COLOR, 0)
+    private var storedAccentPrimary by preference(Key.ACCENT_PRIMARY, 0xFF7E57C2.toInt())
+    private var storedAccentSecondary by preference(Key.ACCENT_SECONDARY, 0xFFF4A6C1.toInt())
+    var accentPrimary
+        get() = migrateAccent(storedAccentPrimary, true)
+        set(value) { storedAccentPrimary = value }
+    var accentSecondary
+        get() = migrateAccent(storedAccentSecondary, false)
+        set(value) { storedAccentSecondary = value }
+    var udongeEnabled by preference(Key.UDONGE_ENABLED, true)
+    var udongeKeyboxUrls by preference(Key.UDONGE_KEYBOX_URLS, "")
 
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
@@ -142,6 +150,24 @@ object Config : PreferenceConfig, DBConfig {
     var suRestrict by preference(Key.SU_RESTRICT, true)
 
     private const val SU_FINGERPRINT = "su_fingerprint"
+
+    private fun migrateAccent(value: Int, primary: Boolean): Int {
+        if (value !in 0..7) return value
+        val colors = if (primary) {
+            intArrayOf(
+                0xFFF4A6C1.toInt(), 0xFF7E57C2.toInt(), 0xFF4EAFF5.toInt(),
+                0xFF68A17F.toInt(), 0xFFF2B90D.toInt(), 0xFFDB7366.toInt(),
+                0xFF009688.toInt(), 0xFF607D8B.toInt(),
+            )
+        } else {
+            intArrayOf(
+                0xFFD97A9C.toInt(), 0xFF5E35B1.toInt(), 0xFF3E78AF.toInt(),
+                0xFF2F6D43.toInt(), 0xFFB29667.toInt(), 0xFFB65247.toInt(),
+                0xFF00796B.toInt(), 0xFF455A64.toInt(),
+            )
+        }
+        return colors[value]
+    }
 
     fun toBundle(): Bundle {
         val map = prefs.all - Key.NO_MIGRATION

@@ -2,14 +2,14 @@
 <resources>
 
     <!-- Static strings -->
-    <string name="magisk" translatable="false">Reisenless</string>
-    <string name="zygisk" translatable="false">Zygisk</string>
+    <string name="magisk" translatable="false">reisenless</string>
+    <string name="zygisk" translatable="false">zygisk</string>
     <string name="empty" translatable="false"/>
 
-    <string name="paypal" translatable="false">PayPal</string>
-    <string name="patreon" translatable="false">Patreon</string>
-    <string name="twitter" translatable="false">Twitter</string>
-    <string name="github" translatable="false">GitHub</string>
+    <string name="paypal" translatable="false">paypal</string>
+    <string name="patreon" translatable="false">patreon</string>
+    <string name="twitter" translatable="false">twitter</string>
+    <string name="github" translatable="false">github</string>
 
     <drawable name="ic_launcher">@drawable/ic_logo</drawable>
 

@@ -17,44 +17,44 @@
     <string name="not_available">無</string>
     <string name="hide">隱藏</string>
     <string name="home_package">套件</string>
-    <string name="home_app_title">Reisenless</string>
+    <string name="home_app_title">reisenless</string>
 
-    <string name="home_notice_content">請從官方的 Github 網頁下載 Reisenless。從未知來源下載的檔案可能懷有惡意！</string>
+    <string name="home_notice_content">請從官方的 github 網頁下載 reisenless。從未知來源下載的檔案可能懷有惡意！</string>
     <string name="home_support_title">支持開發</string>
     <string name="home_follow_title">追蹤我們</string>
     <string name="home_item_source">原始碼</string>
-    <string name="home_support_content">Reisenless 無論現在和未來永遠是免費且開源。但您可以透過發送小額的抖內來彰顯您對我們的支持。</string>
+    <string name="home_support_content">reisenless 無論現在和未來永遠是免費且開源。但您可以透過發送小額的抖內來彰顯您對我們的支持。</string>
     <string name="home_installed_version">已安裝</string>
     <string name="home_latest_version">最新</string>
     <string name="invalid_update_channel">無效的更新頻道</string>
-    <string name="uninstall_magisk_title">解除安裝 Reisenless</string>
-    <string name="uninstall_magisk_msg">所有模組將會被停用並移除！\nRoot 將會被移除且未被加密的資料將可能被加密！</string>
+    <string name="uninstall_magisk_title">解除安裝 reisenless</string>
+    <string name="uninstall_magisk_msg">所有模組將會被停用並移除！\nroot 將會被移除且未被加密的資料將可能被加密！</string>
 
     <!--Install-->
     <string name="keep_force_encryption">保持強制加密</string>
-    <string name="keep_dm_verity">保持 AVB 2.0/dm-verity</string>
-    <string name="recovery_mode">安裝至 Recovery</string>
+    <string name="keep_dm_verity">保持 avb 2.0/dm-verity</string>
+    <string name="recovery_mode">安裝至 recovery</string>
     <string name="install_options_title">選項</string>
     <string name="install_method_title">安裝方式</string>
     <string name="install_next">下一步</string>
     <string name="install_start">開始執行</string>
     <string name="manager_download_install">點選以下載並安裝</string>
     <string name="direct_install">直接安裝（建議）</string>
-    <string name="install_inactive_slot">安裝到非使用中的槽位（在 OTA 更新後）</string>
-    <string name="install_inactive_slot_msg">您的裝置將在下次重新啟動後強制切換到非使用中的槽位！\n這個選項僅在 OTA 更新完畢後使用。\n請問是否繼續？</string>
+    <string name="install_inactive_slot">安裝到非使用中的槽位（在 ota 更新後）</string>
+    <string name="install_inactive_slot_msg">您的裝置將在下次重新啟動後強制切換到非使用中的槽位！\n這個選項僅在 ota 更新完畢後使用。\n請問是否繼續？</string>
     <string name="setup_title">修復安裝</string>
     <string name="select_patch_file">選擇並修補檔案</string>
-    <string name="patch_file_msg">請選取未修改過的映像檔 (*.img) 或 Odin 的 TAR 檔案 (*.tar) 或 payload.bin (*.bin)</string>
+    <string name="patch_file_msg">請選取未修改過的映像檔 (*.img) 或 odin 的 tar 檔案 (*.tar) 或 payload.bin (*.bin)</string>
     <string name="reboot_delay_toast">將在 5 秒後重新啟動……</string>
     <string name="flash_screen_title">安裝</string>
 
     <!--Superuser-->
     <string name="su_request_title">超級使用者要求</string>
-    <string name="touch_filtered_warning">由於某個應用程式遮蔽了超級使用者要求的視窗，因此 Reisenless 無法驗證您的回應</string>
+    <string name="touch_filtered_warning">由於某個應用程式遮蔽了超級使用者要求的視窗，因此 reisenless 無法驗證您的回應</string>
     <string name="deny">拒絕</string>
     <string name="prompt">提示</string>
     <string name="grant">授予</string>
-    <string name="su_warning">將授予本裝置使用 Root 權限。\n如果不確定，請拒絕！</string>
+    <string name="su_warning">將授予本裝置使用 root 權限。\n如果不確定，請拒絕！</string>
     <string name="forever">永久</string>
     <string name="once">僅此一次</string>
     <string name="tenmin">10 分鐘</string>
@@ -77,8 +77,8 @@
     <string name="superuser_policy_none">目前沒有任何應用程式要求超級使用者的權限。</string>
 
     <!--Logs-->
-    <string name="pid">PID: %1$d</string>
-    <string name="target_uid">目標 UID: %1$d</string>
+    <string name="pid">pid: %1$d</string>
+    <string name="target_uid">目標 uid: %1$d</string>
 
     <!--SafetyNet-->
 
@@ -91,10 +91,10 @@
     <!--Module -->
     <string name="no_info_provided">（未提供資訊）</string>
     <string name="reboot_userspace">快速重新啟動</string>
-    <string name="reboot_recovery">重新啟動至 Recovery</string>
-    <string name="reboot_bootloader">重新啟動至 Bootloader</string>
-    <string name="reboot_download">重新啟動至 Download</string>
-    <string name="reboot_edl">重新啟動至 EDL</string>
+    <string name="reboot_recovery">重新啟動至 recovery</string>
+    <string name="reboot_bootloader">重新啟動至 bootloader</string>
+    <string name="reboot_download">重新啟動至 download</string>
+    <string name="reboot_edl">重新啟動至 edl</string>
     <string name="module_version_author">%1$s 來自 %2$s</string>
     <string name="module_state_remove">移除</string>
     <string name="module_state_restore">復原</string>
@@ -102,7 +102,7 @@
     <string name="update_available">有可用的更新</string>
     <string name="suspend_text_riru">此模組因 %1$s 已啟用而暫停運作</string>
     <string name="suspend_text_zygisk">此模組因 %1$s 未啟用而暫停運作</string>
-    <string name="zygisk_module_unloaded">此模組因不相容 Zygisk 而未載入</string>
+    <string name="zygisk_module_unloaded">此模組因不相容 zygisk 而未載入</string>
     <string name="module_empty">未安裝任何模組</string>
     <string name="confirm_install">安裝模組 %1$s？</string>
     <string name="confirm_install_title">安裝確認</string>
@@ -113,7 +113,7 @@
     <string name="theme_dark">深色</string>
     <string name="settings_accent_primary">強調色</string>
     <string name="settings_accent_secondary">強調色 2</string>
-    <string name="settings_startup_color">啟動顏色</string>
+    <string name="color_preview">顏色預覽</string>
     <string name="color_white">白色</string>
     <string name="color_blue">藍色</string>
     <string name="color_green">綠色</string>
@@ -125,9 +125,9 @@
     <string name="color_gray">灰色</string>
     <string name="settings_download_path_title">下載路徑</string>
     <string name="settings_download_path_message">檔案將被儲存在：%1$s</string>
-    <string name="settings_hide_app_title">隱藏 Reisenless</string>
+    <string name="settings_hide_app_title">隱藏 reisenless</string>
     <string name="settings_hide_app_summary">安裝一個隨機套件名稱和客製化應用程式名稱的代理應用程式</string>
-    <string name="settings_restore_app_title">還原 Reisenless</string>
+    <string name="settings_restore_app_title">還原 reisenless</string>
     <string name="settings_restore_app_summary">取消隱藏並還原為原始套件</string>
     <string name="language">語言</string>
     <string name="system_default">（系統預設值）</string>
@@ -138,9 +138,9 @@
     <string name="settings_update_beta">測試版</string>
     <string name="settings_update_custom">自訂頻道</string>
     <string name="settings_update_custom_msg">輸入一個自訂的網址</string>
-    <string name="settings_zygisk_summary">在 Zygote 中執行 Reisenless</string>
+    <string name="settings_zygisk_summary">在 zygote 中執行 reisenless</string>
     <string name="settings_denylist_title">強制黑名單</string>
-    <string name="settings_denylist_summary">Reisenless 黑名單上的處理程序將復原變更</string>
+    <string name="settings_denylist_summary">reisenless 黑名單上的處理程序將復原變更</string>
     <string name="settings_denylist_config_title">設定黑名單</string>
     <string name="settings_denylist_config_summary">選擇要包含在黑名單的處理程序</string>
     <string name="settings_hosts_title">主機（hosts）模組化</string>
@@ -149,9 +149,9 @@
     <string name="settings_app_name_hint">新的名稱</string>
     <string name="settings_app_name_helper">應用程式將以此名稱重新封裝</string>
     <string name="settings_app_name_error">無效的格式</string>
-    <string name="settings_su_app_adb">應用程式及 ADB</string>
+    <string name="settings_su_app_adb">應用程式及 adb</string>
     <string name="settings_su_app">僅限應用程式</string>
-    <string name="settings_su_adb">僅限 ADB</string>
+    <string name="settings_su_adb">僅限 adb</string>
     <string name="settings_su_disable">停用</string>
     <string name="settings_su_request_10">10 秒</string>
     <string name="settings_su_request_15">15 秒</string>
@@ -168,34 +168,34 @@
     <string name="settings_su_tapjack_title">啟用點選攔截保護</string>
     <string name="settings_su_tapjack_summary">發現有其他應用程式重疊在超級使用者視窗上面時，不回應允許操作</string>
     <string name="settings_customization">客製化</string>
-    <string name="setting_add_shortcut_summary">在主螢幕中新增一個精緻的捷徑。防止隱藏 Reisenless 以後，其名稱與圖示將難以辨識</string>
-    <string name="settings_doh_title">安全化的網域解析(DoH)</string>
-    <string name="settings_doh_description">解決某些地區的 DNS 中毒問題</string>
+    <string name="setting_add_shortcut_summary">在主螢幕中新增一個精緻的捷徑。防止隱藏 reisenless 以後，其名稱與圖示將難以辨識</string>
+    <string name="settings_doh_title">安全化的網域解析(doh)</string>
+    <string name="settings_doh_description">解決某些地區的 dns 中毒問題</string>
 
     <string name="multiuser_mode">多重使用者模式</string>
     <string name="settings_owner_only">僅限裝置擁有者</string>
     <string name="settings_owner_manage">由裝置擁有者管理</string>
     <string name="settings_user_independent">使用者獨立管理</string>
-    <string name="owner_only_summary">僅限裝置擁有者可使用 Root 權限</string>
-    <string name="owner_manage_summary">僅限裝置擁有者可管理及接收 Root 權限的要求提示</string>
-    <string name="user_independent_summary">每個使用者皆擁有獨立的 Root 權限規則</string>
+    <string name="owner_only_summary">僅限裝置擁有者可使用 root 權限</string>
+    <string name="owner_manage_summary">僅限裝置擁有者可管理及接收 root 權限的要求提示</string>
+    <string name="user_independent_summary">每個使用者皆擁有獨立的 root 權限規則</string>
 
     <string name="mount_namespace_mode">掛接命名空間模式</string>
     <string name="settings_ns_global">全域命名空間</string>
     <string name="settings_ns_requester">繼承命名空間</string>
     <string name="settings_ns_isolate">獨立命名空間</string>
-    <string name="global_summary">所有 Root 工作階段皆使用全域的命名空間</string>
-    <string name="requester_summary">所有 Root 工作階段皆繼承原程式的命名空間</string>
-    <string name="isolate_summary">所有 Root 工作階段皆擁有獨立的命名空間</string>
+    <string name="global_summary">所有 root 工作階段皆使用全域的命名空間</string>
+    <string name="requester_summary">所有 root 工作階段皆繼承原程式的命名空間</string>
+    <string name="isolate_summary">所有 root 工作階段皆擁有獨立的命名空間</string>
 
     <!--Notifications-->
-    <string name="update_channel">Reisenless 更新</string>
+    <string name="update_channel">reisenless 更新</string>
     <string name="progress_channel">進度通知</string>
     <string name="updated_channel">更新完成</string>
     <string name="download_complete">下載完成</string>
     <string name="download_file_error">下載錯誤</string>
-    <string name="magisk_update_title">Reisenless 有可用的更新！</string>
-    <string name="updated_title">Reisenless 已完成更新</string>
+    <string name="magisk_update_title">reisenless 有可用的更新！</string>
+    <string name="updated_title">reisenless 已完成更新</string>
     <string name="updated_text">點選即可開啟應用程式</string>
 
     <!--Toasts, Dialogs-->
@@ -208,7 +208,7 @@
     <string name="flashing">正在刷入……</string>
     <string name="done">完成！</string>
     <string name="failure">失敗！</string>
-    <string name="hide_app_title">正在隱藏 Reisenless……</string>
+    <string name="hide_app_title">正在隱藏 reisenless……</string>
     <string name="open_link_failed_toast">沒有可以開啟此連結的應用程式</string>
     <string name="complete_uninstall">完全解除安裝</string>
     <string name="restore_img">還原原始映像檔</string>
@@ -217,16 +217,16 @@
     <string name="restore_fail">不存在原始備份的映像檔！</string>
     <string name="setup_fail">安裝失敗</string>
     <string name="env_fix_title">需要修復執行環境</string>
-    <string name="env_fix_msg">缺少讓 Reisenless 正常執行所需的檔案。請您同意讓 Reisenless 額外下載安裝包進行修復安裝，修復完成後將自動重新啟動。請問您是否繼續？</string>
-    <string name="env_full_fix_msg">需要重新安裝才能使 Reisenless 正常工作。請在應用程式內重新安裝，recovery 模式無法正確獲取設備訊息。</string>
+    <string name="env_fix_msg">缺少讓 reisenless 正常執行所需的檔案。請您同意讓 reisenless 額外下載安裝包進行修復安裝，修復完成後將自動重新啟動。請問您是否繼續？</string>
+    <string name="env_full_fix_msg">需要重新安裝才能使 reisenless 正常工作。請在應用程式內重新安裝，recovery 模式無法正確獲取設備訊息。</string>
     <string name="setup_msg">正在修復執行環境……</string>
-    <string name="unsupport_magisk_title">不支援的 Reisenless 版本</string>
-    <string name="unsupport_magisk_msg">此應用程式的版本不支援 Reisenless %1$s 版或更低的版本。\n\nReisenless 將顯示為未安裝的狀態。不過您仍然可以升級功能，請盡快升級。</string>
+    <string name="unsupport_magisk_title">不支援的 reisenless 版本</string>
+    <string name="unsupport_magisk_msg">此應用程式的版本不支援 reisenless %1$s 版或更低的版本。\n\nreisenless 將顯示為未安裝的狀態。不過您仍然可以升級功能，請盡快升級。</string>
     <string name="unsupport_general_title">異常狀態</string>
     <string name="unsupport_system_app_msg">本應用程式不支援以系統應用程式的方式執行。請恢復為使用者應用程式。</string>
-    <string name="unsupport_other_su_msg">偵測到一個不是來自 Reisenless 的「su」二進位檔案。請移除其他 Root 方案。</string>
+    <string name="unsupport_other_su_msg">偵測到一個不是來自 reisenless 的「su」二進位檔案。請移除其他 root 方案。</string>
     <string name="unsupport_external_storage_msg">應用程式已被安裝到外部儲存空間。請移動應用程式至內部儲存空間。</string>
-    <string name="unsupport_nonroot_stub_msg">應用程式無法在 Root 權限遺失的情況下以隱藏模式執行。請還原為原始套件。</string>
+    <string name="unsupport_nonroot_stub_msg">應用程式無法在 root 權限遺失的情況下以隱藏模式執行。請還原為原始套件。</string>
     <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">授予儲存空間存取權以啟用此功能</string>
     <string name="install_unknown_denied">允許「安裝未知應用程式」以啟用此功能</string>
@@ -240,14 +240,14 @@
     <string name="reboot_safe_mode">安全模式</string>
     <string name="module_action">操作</string>
     <string name="settings_update_debug">偵錯</string>
-    <string name="settings_su_restrict_title">限制 Root 權限</string>
+    <string name="settings_su_restrict_title">限制 root 權限</string>
     <string name="settings_su_restrict_summary">預設限制新的超級使用者應用程式。警告：這會導致大多數應用程式無法正常運作。除非您了解後果，否則請勿啟用。</string>
-    <string name="download_dialog_title">輸入映像檔 URL</string>
-    <string name="download_dialog_msg">完整 OTA 映像檔或原廠映像檔</string>
+    <string name="download_dialog_title">輸入映像檔 url</string>
+    <string name="download_dialog_msg">完整 ota 映像檔或原廠映像檔</string>
     <string name="close">關閉</string>
     <string name="running">執行中</string>
     <string name="done_action">%1$s 的操作已完成</string>
-    <string name="settings_sulist_title">SuList</string>
-    <string name="settings_sulist_summary">只有 SuList 中的應用程式可以要求 Root 權限。其他要求將自動拒絕。</string>
+    <string name="settings_sulist_title">sulist</string>
+    <string name="settings_sulist_summary">只有 sulist 中的應用程式可以要求 root 權限。其他要求將自動拒絕。</string>
     <string name="webui">網頁介面</string>
 </resources>

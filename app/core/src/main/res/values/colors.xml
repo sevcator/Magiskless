@@ -6,11 +6,4 @@
     <color name="su_request_background">#e0e0e0</color>
     <color name="splash_background">@color/ic_launcher_background</color>
     <color name="startup_pink">#F4A6C1</color>
-    <color name="startup_purple">#7E57C2</color>
-    <color name="startup_blue">#4EAFF5</color>
-    <color name="startup_green">#68A17F</color>
-    <color name="startup_amber">#F2B90D</color>
-    <color name="startup_red">#DB7366</color>
-    <color name="startup_teal">#009688</color>
-    <color name="startup_white">#FFFFFF</color>
 </resources>

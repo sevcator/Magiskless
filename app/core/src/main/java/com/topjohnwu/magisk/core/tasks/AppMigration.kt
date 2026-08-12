@@ -268,7 +268,9 @@ object AppMigration {
 
                 val repack = File(workDir, "patched.apk")
                 repack.outputStream().use {
-                    if (!patch(context, stub, it, newPackage, label)) return@withContext false
+                    if (!patch(context, stub, it, newPackage, label.lowercase())) {
+                        return@withContext false
+                    }
                 }
 
                 if (!Shell.cmd("adb_pm_install $repack $newPackage").exec().isSuccess) {

@@ -21,12 +21,14 @@ import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.AppMigration
+import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.events.AddHomeIconEvent
 import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
 
 class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
@@ -66,6 +68,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             if (Const.Version.atLeast_24_0()) {
                 list.addAll(listOf(Zygisk, DenyListConfig))
             }
+            list.addAll(listOf(UdongeSettings, UdongeIntegrity, UdongeKeyboxes, UdongeUpdate))
         }
 
         // Superuser
@@ -110,6 +113,19 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             is Hide -> viewModelScope.launch { AppMigration.hide(view.activity, item.value) }
             Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
+            UdongeIntegrity -> {
+                val requested = UdongeIntegrity.value
+                if (requested) Config.zygisk = true
+                Shell.EXECUTOR.execute {
+                    if (!Udonge.setEnabled(requested) && Config.udongeEnabled == requested) {
+                        Config.udongeEnabled = !requested
+                        view.post { UdongeIntegrity.notifyPropertyChanged(BR.checked) }
+                    }
+                }
+                SnackbarEvent(R.string.reboot_apply_change).publish()
+            }
+            UdongeUpdate -> SettingsFragmentDirections
+                .actionSettingsFragmentToInstallFragment().navigate()
             else -> Unit
         }
     }

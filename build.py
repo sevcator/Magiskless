@@ -16,7 +16,7 @@ import tarfile
 import tempfile
 import urllib.request
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 
 def color_print(code, str):
@@ -534,6 +534,149 @@ def _read_generated_flag(name: str, fallback: str) -> str:
     return fallback
 
 
+def _latest_android_tool(path: Path) -> Path:
+    def key(item: Path):
+        return tuple(int(part) for part in re.findall(r"\d+", item.name))
+
+    entries = [item for item in path.iterdir() if item.is_dir()]
+    if not entries:
+        error(f"No Android SDK tools found in {path}")
+    return max(entries, key=key)
+
+
+def _zip_bytes(zf: ZipFile, name: str, data: bytes, mode: int = 0o644):
+    info = ZipInfo(name, (1980, 1, 1, 0, 0, 0))
+    info.compress_type = ZIP_DEFLATED
+    info.external_attr = (stat.S_IFREG | mode) << 16
+    zf.writestr(info, data)
+
+
+def build_udonge():
+    ensure_paths()
+    header("* Building the built-in Udonge payload")
+
+    host = {
+        "windows": "windows-x86_64",
+        "linux": "linux-x86_64",
+        "darwin": "darwin-x86_64",
+    }[os_name]
+    tool_bin = ndk_path / "toolchains" / "llvm" / "prebuilt" / host / "bin"
+    env = find_jdk()
+    javac = shutil.which("javac", path=env.get("PATH"))
+    jar = shutil.which("jar", path=env.get("PATH"))
+    if not javac or not jar:
+        error("JDK tools required to build Udonge are missing")
+
+    build_tools = _latest_android_tool(sdk_path / "build-tools")
+    platform = _latest_android_tool(sdk_path / "platforms")
+    d8 = build_tools / f"d8{'.bat' if is_windows else ''}"
+    android_jar = platform / "android.jar"
+    if not d8.exists() or not android_jar.exists():
+        error("Android SDK platform or D8 is missing")
+
+    work = config["outdir"] / ".udonge-build"
+    if work.exists():
+        rm_rf(work)
+    classes = work / "classes"
+    dex_out = work / "dex"
+    zygisk_out = work / "zygisk"
+    classes.mkdir(parents=True)
+    dex_out.mkdir(parents=True)
+    zygisk_out.mkdir(parents=True)
+
+    java_source = Path("udonge", "java", "src", "EntryPoint.java")
+    proc = execv(
+        [javac, "--release", "17", "-classpath", android_jar, "-d", classes, java_source],
+        env=env,
+    )
+    if proc.returncode != 0:
+        error("Build Udonge Java payload failed!")
+
+    classes_jar = work / "classes.jar"
+    proc = execv([jar, "--create", "--file", classes_jar, "-C", classes, "."], env=env)
+    if proc.returncode != 0:
+        error("Package Udonge Java payload failed!")
+    proc = execv(
+        [
+            d8,
+            "--release",
+            "--no-desugaring",
+            "--min-api",
+            "23",
+            "--output",
+            dex_out,
+            classes_jar,
+        ],
+        env=env,
+    )
+    if proc.returncode != 0:
+        error("Build Udonge DEX payload failed!")
+
+    native_sources = [
+        Path("udonge", "native", name)
+        for name in ("main.cpp", "config.cpp", "hooks.cpp", "spoof.cpp")
+    ]
+    api = "23"
+    secure_dir = config.get("secureDir", "/data/adb").rstrip("/")
+    drivers = {
+        "armeabi-v7a": "armv7a-linux-androideabi",
+        "arm64-v8a": "aarch64-linux-android",
+        "x86": "i686-linux-android",
+        "x86_64": "x86_64-linux-android",
+    }
+    for abi in build_abis:
+        if abi == "riscv64":
+            continue
+        driver_ext = ".cmd" if is_windows else ""
+        clang = tool_bin / f"{drivers[abi]}{api}-clang++{driver_ext}"
+        if not clang.exists():
+            error(f"Udonge compiler is missing: {clang}")
+        output = zygisk_out / f"{abi}.so"
+        cmd = [
+            clang,
+            "-std=c++20",
+            "-Oz",
+            "-fPIC",
+            "-fvisibility=hidden",
+            "-fno-exceptions",
+            "-fno-rtti",
+            "-ffunction-sections",
+            "-fdata-sections",
+            "-shared",
+            "-Wl,--gc-sections",
+            "-Wl,--build-id=none",
+            f'-DUDONGE_ROOT="{secure_dir}/udonge"',
+            *native_sources,
+            "-ldl",
+            "-o",
+            output,
+        ]
+        proc = execv(cmd)
+        if proc.returncode != 0:
+            error(f"Build Udonge for {abi} failed!")
+
+    output = config["outdir"] / "udonge.bin"
+    payload = Path("udonge", "payload")
+    with ZipFile(output, "w") as zf:
+        _zip_bytes(zf, "version", f"{config['version']}\n".encode())
+        _zip_bytes(zf, "classes.dex", (dex_out / "classes.dex").read_bytes())
+        for lib in sorted(zygisk_out.glob("*.so")):
+            _zip_bytes(zf, f"zygisk/{lib.name}", lib.read_bytes())
+        for source in sorted(item for item in payload.rglob("*") if item.is_file()):
+            name = source.relative_to(payload).as_posix()
+            data = source.read_bytes()
+            if name.endswith(".sh") or name in {"tee/daemon"} or name.endswith("/inject") or name.endswith("/supervisor"):
+                mode = 0o700
+            else:
+                mode = 0o600 if name.startswith("defaults/") else 0o644
+            if name.endswith(".sh"):
+                data = data.replace(b"root=/data/adb/udonge", f"root={secure_dir}/udonge".encode())
+            _zip_bytes(zf, name, data, mode)
+
+    rm_rf(work)
+    header(f"Output: {output}")
+
+
 def build_apk(module: str):
     ensure_paths()
     env = find_jdk()
@@ -545,6 +688,7 @@ def build_apk(module: str):
     write_if_diff(
         gradle_build_dir / "flags.prop",
         f"version={config['version']}\n"
+        f"magisk.versionCode={config['versionCode']}\n"
         f"abiList={','.join(build_abis.keys())}\n"
         f"mainBinName={_read_generated_flag('BUILD_ID', 'ms')}\n"
         f"secureDir={_read_generated_flag('BUILD_SECURE_DIR', config.get('secureDir', '/data/adb'))}\n",
@@ -580,6 +724,7 @@ def build_app():
     _validate_generated_flags(
         "Build native binaries with the same mode and configuration first."
     )
+    build_udonge()
     header("* Building the Reisenless app")
     apk = build_apk(":apk")
 
@@ -920,6 +1065,7 @@ def set_build_abis(abis: set[str]):
 
 def load_config():
     commit_hash = cmd_out(["git", "rev-parse", "--short=8", "HEAD"])
+    commit_timestamp = cmd_out(["git", "show", "-s", "--format=%ct", "HEAD"])
 
     # Default values
     config["version"] = commit_hash
@@ -935,6 +1081,10 @@ def load_config():
         for key, value in parse_props(gradle_props).items():
             if key.startswith("magisk."):
                 config[key[7:]] = value
+
+    # Keep app and native metadata deterministic for the exact source commit.
+    config["version"] = commit_hash
+    config["versionCode"] = commit_timestamp
 
     try:
         config["versionCode"] = int(config["versionCode"])

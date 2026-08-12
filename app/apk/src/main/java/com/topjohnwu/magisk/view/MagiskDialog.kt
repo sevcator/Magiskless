@@ -30,6 +30,7 @@ import com.topjohnwu.magisk.databinding.RvItem
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.databinding.setAdapter
+import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.view.MagiskDialog.DialogClickListener
 
 typealias DialogButtonClickListener = (DialogInterface) -> Unit
@@ -100,7 +101,7 @@ class MagiskDialog(
                 message = when (value) {
                     is Int -> context.getText(value)
                     else -> value
-                }.toString()
+                }.toString().lowercase(LocaleSetting.instance.currentLocale)
             }
 
         @get:Bindable

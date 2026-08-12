@@ -55,7 +55,7 @@ fun runSuCommand(emulator: TerminalEmulator, command: String): Boolean {
 
         process.waitFor() == 0
     } catch (e: Exception) {
-        emulator.appendLineOnMain("! Error: ${e.message}")
+        emulator.appendLineOnMain("! error: ${e.message?.lowercase()}")
         false
     }
 }

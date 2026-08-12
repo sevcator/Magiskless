@@ -17,6 +17,10 @@ tools/elf-cleaner/** -binary
 *.jar binary
 *.exe binary
 *.apk binary
+*.so binary
+*.dex binary
 *.png binary
 *.jpg binary
 *.ttf binary
+udonge/payload/tee/**/inject binary
+udonge/payload/tee/**/supervisor binary

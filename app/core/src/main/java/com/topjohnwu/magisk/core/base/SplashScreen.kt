@@ -12,6 +12,7 @@ import com.topjohnwu.magisk.core.BuildConfig.APP_PACKAGE_NAME
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
+import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.AppMigration
@@ -43,7 +44,7 @@ class SplashController<T>(private val activity: T)
 
     fun preOnCreate() {
         if (isRunningAsStub && !splashShown) {
-            StartupTheme.apply(activity, stub = true)
+            activity.setTheme(R.style.StubSplashTheme)
         } else if (!isRunningAsStub) {
             activity.installSplashScreen().setKeepOnScreenCondition { !splashShown }
         }
@@ -111,8 +112,6 @@ class SplashController<T>(private val activity: T)
             }
             return
         }
-
-        Shell.cmd("rm -f /cache/magisk.log").exec()
 
         // Validate stub APK
         if (isRunningAsStub && (

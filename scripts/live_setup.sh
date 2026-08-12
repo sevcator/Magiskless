@@ -33,7 +33,7 @@ mount_sbin() {
 
 if [ ! -f /system/build.prop ]; then
   # Running on PC
-  echo 'Please run `./build.py emulator` instead of directly executing the script!'
+  echo 'please run `./build.py emulator` instead of directly executing the script!'
   exit 1
 fi
 

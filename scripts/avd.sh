@@ -16,7 +16,7 @@ huge_ram_min_api=26
 case $(uname -m) in
   'arm64'|'aarch64')
     if [ -n "$FORCE_32_BIT" ]; then
-      echo "! ARM32 is not supported"
+      echo "! arm32 is not supported"
       exit 1
     fi
     arch=arm64-v8a

@@ -26,7 +26,6 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.base.SplashController
 import com.topjohnwu.magisk.core.base.SplashScreenHost
-import com.topjohnwu.magisk.core.base.StartupTheme
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.model.module.LocalModule
@@ -66,7 +65,6 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
     private var isRootFragment = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        StartupTheme.apply(this)
         splashController.preOnCreate()
         if (isRunningAsStub && !splashController.showingSplash) {
             Theme.apply(this)

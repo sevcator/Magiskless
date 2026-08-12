@@ -4,6 +4,7 @@ use crate::consts::{MAIN_BIN_NAME, MODULEROOT, ZYGISKLDR};
 use crate::daemon::{MagiskD, to_user_id};
 use crate::ffi::{ZygiskRequest, ZygiskStateFlags, get_magisk_tmp, update_deny_flags};
 use crate::resetprop::{get_prop, set_prop};
+use crate::udonge::{UDONGE_MODULE_NAME, UDONGE_ROOT, UDONGE_RUNTIME};
 use crate::socket::{IpcRead, UnixSocketExt};
 use base::libc::STDOUT_FILENO;
 use base::{
@@ -228,10 +229,14 @@ impl MagiskD {
                 let Some(module) = module_list.get(id as usize) else {
                     continue;
                 };
-                let path = cstr::buf::default()
-                    .join_path(MODULEROOT)
-                    .join_path(&module.name)
-                    .join_path("zygisk");
+                let path = if module.name == UDONGE_MODULE_NAME {
+                    cstr::buf::default().join_path(UDONGE_ROOT).join_path("state")
+                } else {
+                    cstr::buf::default()
+                        .join_path(MODULEROOT)
+                        .join_path(&module.name)
+                        .join_path("zygisk")
+                };
                 // Create the unloaded marker file
                 if let Ok(dir) = Directory::open(&path) {
                     dir.open_as_file_at(cstr!("unloaded"), OFlag::O_CREAT | OFlag::O_RDONLY, 0o644)
@@ -253,9 +258,13 @@ impl MagiskD {
         else {
             return Ok(());
         };
-        let dir = cstr::buf::default()
-            .join_path(MODULEROOT)
-            .join_path(&module.name);
+        let dir = if module.name == UDONGE_MODULE_NAME {
+            cstr::buf::default().join_path(UDONGE_RUNTIME)
+        } else {
+            cstr::buf::default()
+                .join_path(MODULEROOT)
+                .join_path(&module.name)
+        };
         let fd = dir.open(OFlag::O_RDONLY | OFlag::O_CLOEXEC)?;
         client.send_fds(&[fd.as_raw_fd()])?;
         Ok(())

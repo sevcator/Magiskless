@@ -40,6 +40,7 @@ mod selinux;
 mod socket;
 mod su;
 mod thread;
+mod udonge;
 mod zygisk;
 
 #[allow(clippy::needless_lifetimes)]
@@ -157,6 +158,7 @@ pub mod ffi {
 
         // Scripting
         fn exec_script(script: Utf8CStrRef);
+        fn exec_script_async(script: Utf8CStrRef);
         fn exec_common_scripts(stage: Utf8CStrRef);
         fn exec_module_scripts(state: Utf8CStrRef, modules: &Vec<ModuleInfo>);
         fn install_apk(apk: Utf8CStrRef);

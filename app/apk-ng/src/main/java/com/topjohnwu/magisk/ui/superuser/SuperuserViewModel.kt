@@ -95,7 +95,9 @@ class SuperuserViewModel(
                             packageName = info.packageName,
                             isSharedUid = info.sharedUserId != null,
                             icon = info.applicationInfo?.loadIcon(pm) ?: pm.defaultActivityIcon,
-                            appName = info.applicationInfo?.getLabel(pm) ?: info.packageName
+                            appName = (info.applicationInfo?.getLabel(pm) ?: info.packageName)
+                                .toString()
+                                .lowercase()
                         )
                     } catch (_: PackageManager.NameNotFoundException) {
                         null

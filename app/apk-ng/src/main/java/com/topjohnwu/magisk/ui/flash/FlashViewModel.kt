@@ -155,7 +155,7 @@ class FlashViewModel : BaseViewModel() {
         val (error, prepResult) = result
         if (prepResult == null) {
             withContext(Dispatchers.IO) { installDir.deleteRecursively() }
-            emu.appendLineOnMain("! ${error ?: "Installation failed"}")
+            emu.appendLineOnMain("! ${error?.lowercase() ?: "installation failed"}")
             _flashState.value = State.FAILED
             return
         }
