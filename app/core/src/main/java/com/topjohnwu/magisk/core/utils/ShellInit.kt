@@ -2,6 +2,7 @@ package com.topjohnwu.magisk.core.utils
 
 import android.content.Context
 import com.topjohnwu.magisk.StubApk
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.isRunningAsStub
@@ -41,7 +42,7 @@ class ShellInit : Shell.Initializer() {
             }
 
             if (shell.isRoot) {
-                add("export MAGISKTMP=\$(magisk --path)")
+                add("export MAGISKTMP=\$(${BuildConfig.MAIN_BIN_NAME} --path)")
                 // Test if we can properly execute stuff in /data
                 Info.noDataExec = !shell.newJob()
                     .add("$localBB sh -c '$localBB true'").exec().isSuccess
@@ -70,6 +71,18 @@ class ShellInit : Shell.Initializer() {
         }.exec()
 
         Info.init(shell)
+
+        // Cache Allow policy in DB so future launches skip the slow /data/app/ scan.
+        // This runs from the root shell (UID 0) so SQLITE_CMD is permitted.
+        if (shell.isRoot) {
+            val myUid = android.os.Process.myUid()
+            shell.newJob().add(
+                "\$MAGISKTMP/${BuildConfig.MAIN_BIN_NAME} --sqlite " +
+                "'INSERT OR IGNORE INTO policies (uid, policy, until, logging, notification) " +
+                "VALUES ($myUid, 2, 0, 0, 0)'"
+            ).exec()
+        }
+
         return true
     }
 }

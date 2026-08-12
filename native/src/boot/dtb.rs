@@ -32,7 +32,7 @@ pub(crate) struct Test {}
 
 pub(crate) fn print_dtb_usage() {
     eprintln!(
-        r#"Usage: magiskboot dtb <file> <action> [args...]
+        r#"Usage: mboot dtb <file> <action> [args...]
 Do dtb related actions to <file>.
 
 Supported actions:

@@ -59,9 +59,9 @@ for file in lib*.so; do
 done
 
 if $IS_RAMDISK; then
-  ./magiskboot decompress "$TARGET_FILE" ramdisk.cpio
+  ./mboot decompress "$TARGET_FILE" ramdisk.cpio
 else
-  ./magiskboot unpack "$TARGET_FILE"
+  ./mboot unpack "$TARGET_FILE"
 fi
 cp ramdisk.cpio ramdisk.cpio.orig
 
@@ -70,19 +70,19 @@ export KEEPFORCEENCRYPT=true
 
 echo "KEEPVERITY=$KEEPVERITY" > config
 echo "KEEPFORCEENCRYPT=$KEEPFORCEENCRYPT" >> config
-echo "PREINITDEVICE=$(./magisk --preinit-device)" >> config
+echo "PREINITDEVICE=$(./$MAIN_BIN_NAME --preinit-device)" >> config
 # For API 28, we also manually disable SystemAsRoot
 # Explicitly override skip_initramfs by setting RECOVERYMODE=true
 [ $API = "28" ] && echo 'RECOVERYMODE=true' >> config
 cat config
 
-[ -f magisk ] && mv magisk ms
-./magiskboot compress=xz ms ms.xz
-./magiskboot compress=xz stub.apk stub.xz
-./magiskboot compress=xz init-ld init-ld.xz
+[ -f "$MAIN_BIN_NAME" ] && mv "$MAIN_BIN_NAME" ms
+./mboot compress=xz ms ms.xz
+./mboot compress=xz stub.apk stub.xz
+./mboot compress=xz init-ld init-ld.xz
 
-./magiskboot cpio ramdisk.cpio \
-"add 0750 init magiskinit" \
+./mboot cpio ramdisk.cpio \
+"add 0750 init minit" \
 "mkdir 0750 overlay.d" \
 "mkdir 0750 overlay.d/sbin" \
 "add 0644 overlay.d/sbin/ms.xz ms.xz" \
@@ -95,8 +95,8 @@ cat config
 
 rm -f ramdisk.cpio.orig config *.xz
 if $IS_RAMDISK; then
-  ./magiskboot compress=gzip ramdisk.cpio "$OUTPUT_FILE"
+  ./mboot compress=gzip ramdisk.cpio "$OUTPUT_FILE"
 else
-  ./magiskboot repack "$TARGET_FILE" "$OUTPUT_FILE"
-  ./magiskboot cleanup
+  ./mboot repack "$TARGET_FILE" "$OUTPUT_FILE"
+  ./mboot cleanup
 fi

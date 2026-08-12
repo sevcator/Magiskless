@@ -18,11 +18,9 @@ static void zygiskd(int socket) {
         exit(-1);
 
 #if defined(__LP64__)
-    set_nice_name("zygiskd64");
-    LOGI("* Launching zygiskd64\n");
+    set_nice_name(ZYGISKD64);
 #else
-    set_nice_name("zygiskd32");
-    LOGI("* Launching zygiskd32\n");
+    set_nice_name(ZYGISKD32);
 #endif
 
     // Load modules
@@ -37,7 +35,7 @@ static void zygiskd(int socket) {
                     .flags = ANDROID_DLEXT_USE_LIBRARY_FD,
                     .library_fd = fd,
                 };
-                if (void *h = android_dlopen_ext("/jit-cache", RTLD_LAZY, &info)) {
+                if (void *h = android_dlopen_ext("/memfd:anon", RTLD_LAZY, &info)) {
                     *(void **) &entry = dlsym(h, "zygisk_companion_entry");
                 } else {
                     LOGW("Failed to dlopen zygisk module: %s\n", dlerror());

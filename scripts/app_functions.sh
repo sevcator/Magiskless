@@ -2,6 +2,8 @@
 # Magisk app internal scripts
 ##################################
 
+#SECURE_DIR_STUB
+
 # $1 = delay
 # $2 = command
 run_delay() {
@@ -11,11 +13,11 @@ run_delay() {
 # $1 = version string
 # $2 = version code
 env_check() {
-  for file in busybox magiskboot magiskinit util_functions.sh boot_patch.sh; do
+  for file in "$MAIN_BIN_NAME" busybox mboot minit util_functions.sh boot_patch.sh; do
     [ -f "$MAGISKBIN/$file" ] || return 1
   done
   if [ "$2" -ge 25000 ]; then
-    [ -f "$MAGISKBIN/magiskpolicy" ] || return 1
+    [ -f "$MAGISKBIN/mpol" ] || return 1
   fi
   if [ "$2" -ge 25210 ]; then
     [ -b "$MAGISKTMP/.ms/device/preinit" ] || [ -b "$MAGISKTMP/.ms/block/preinit" ] || return 2
@@ -50,7 +52,7 @@ fix_env() {
   # Cleanup and make dirs
   rm -rf $MAGISKBIN/*
   mkdir -p $MAGISKBIN 2>/dev/null
-  chmod 700 /data/adb
+  chmod 700 ${SECURE_DIR}
   cp_readlink $1 $MAGISKBIN
   rm -rf $1
   chown -R 0:0 $MAGISKBIN
@@ -98,7 +100,7 @@ restore_imgs() {
 
 # $1 = path to bootctl executable
 post_ota() {
-  cd /data/adb
+  cd ${SECURE_DIR}
   cp -f $1 bootctl
   rm -f $1
   chmod 755 bootctl
@@ -110,9 +112,9 @@ post_ota() {
   [ $(./bootctl get-current-slot) -eq 0 ] && SLOT_NUM=1
   ./bootctl set-active-boot-slot $SLOT_NUM
   cat << EOF > post-fs-data.d/post_ota.sh
-/data/adb/bootctl mark-boot-successful
-rm -f /data/adb/bootctl
-rm -f /data/adb/post-fs-data.d/post_ota.sh
+${SECURE_DIR}/bootctl mark-boot-successful
+rm -f ${SECURE_DIR}/bootctl
+rm -f ${SECURE_DIR}/post-fs-data.d/post_ota.sh
 EOF
   chmod 755 post-fs-data.d/post_ota.sh
   cd /
@@ -180,7 +182,7 @@ printvar() {
 
 run_action() {
   local MODID="$1"
-  cd "/data/adb/modules/$MODID"
+  cd "${SECURE_DIR}/modules/$MODID"
   sh ./action.sh
   local RES=$?
   cd /

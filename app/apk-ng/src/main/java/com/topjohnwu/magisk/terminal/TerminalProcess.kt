@@ -2,12 +2,13 @@ package com.topjohnwu.magisk.terminal
 
 import android.os.Handler
 import android.os.Looper
+import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.superuser.Shell
 import timber.log.Timber
 
 private val busyboxPath: String by lazy {
     Shell.cmd("readlink /proc/self/exe").exec().out.firstOrNull()
-        ?: "/data/adb/ms/busybox"
+        ?: "${Const.DATABIN}/busybox"
 }
 
 private val mainHandler = Handler(Looper.getMainLooper())

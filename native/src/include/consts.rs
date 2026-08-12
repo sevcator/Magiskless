@@ -11,10 +11,15 @@ pub const APPLET_NAMES: &[&str] = &["su", "resetprop"];
 pub use flags::*;
 pub const MAGISK_FULL_VER: &str = concatcp!(MAGISK_VERSION, "(", MAGISK_VER_CODE, ")");
 
-pub const APP_PACKAGE_NAME: &str = "com.topjohnwu.magisk";
+pub const APP_PACKAGE_NAME: &str = "com.google.android.contactkeys";
 
-// data paths
-pub const SECURE_DIR: &str = "/data/adb";
+// Two-stage init redirect path (must match REDIR_PATH in init.hpp)
+pub const REDIR_PATH: &str = "/data/._init";
+// Policy binary name in DATABIN (must match LOCAL_MODULE in Android.mk and scripts)
+pub const POLICY_DATABIN_NAME: &str = "mpol";
+
+// data paths — configurable via secureDir in config.prop (default: /data/adb)
+pub const SECURE_DIR: &str = BUILD_SECURE_DIR;
 pub const MODULEROOT: &str = concatcp!(SECURE_DIR, "/modules");
 pub const MODULEUPGRADE: &str = concatcp!(SECURE_DIR, "/modules_update");
 pub const DATABIN: &str = concatcp!(SECURE_DIR, "/ms");
@@ -41,6 +46,9 @@ pub const POLICY_BIN_NAME: &str = concatcp!(BUILD_ID, "p");
 pub const DAEMON_PROC_NAME: &str = concatcp!(BUILD_ID, "d");
 // Worker tmpfs source label (must match revert_unmount check in mount.rs)
 pub const WORKER_SOURCE: &str = BUILD_ID;
+
+// Zygisk component names (BUILD_ID-derived)
+pub const ZYGISKLDR: &str = concatcp!("lib", BUILD_ID, "z.so");
 
 // Stable ramdisk filename (not randomized - not accessible to apps at runtime)
 pub const RAMDISK_BIN_NAME: &str = "ms";

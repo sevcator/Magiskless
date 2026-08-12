@@ -26,7 +26,7 @@ static void set_script_env() {
     ssprintf(new_path, sizeof(new_path), "%s:%s", getenv("PATH"), get_magisk_tmp());
     setenv("PATH", new_path, 1);
     if (MagiskD::Get().zygisk_enabled())
-        setenv("ZYGISK_ENABLED", "1", 1);
+        setenv("ZYG_ENABLED", "1", 1);
 };
 
 void exec_script(Utf8CStr script) {
@@ -196,11 +196,10 @@ static void abort(FILE *fp, const char *fmt, ...) {
     exit(1);
 }
 
-constexpr char install_module_script[] = R"EOF(
-. /data/adb/ms/util_functions.sh
-install_module
-exit 0
-)EOF";
+constexpr char install_module_script[] =
+        ". " DATABIN "/util_functions.sh\n"
+        "install_module\n"
+        "exit 0\n";
 
 void install_module(Utf8CStr file) {
     if (getuid() != 0)

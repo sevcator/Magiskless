@@ -25,6 +25,8 @@ object Config {
     val versionCode: Int get() = get("magisk.versionCode")!!.toInt()
     val stubVersion: String get() = get("magisk.stubVersion")!!
     val abiList: List<String> get() = get("abiList")!!.split(",")
+    val secureDir: String get() = get("secureDir") ?: "/data/adb"
+    val mainBinName: String get() = get("mainBinName") ?: "ms"
 }
 
 fun Project.rootFile(path: String): File {

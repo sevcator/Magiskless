@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.Keep
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.BuildConfig.APP_PACKAGE_NAME
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.download.DownloadNotifier
@@ -47,7 +48,7 @@ class Environment : BaseTest {
 
         // It is possible that there are no suitable preinit partition to use
         fun preinit(): Boolean {
-            return Shell.cmd("magisk --preinit-device").exec().isSuccess
+            return Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --preinit-device").exec().isSuccess
         }
 
         fun lsposed(): Boolean {
@@ -58,7 +59,7 @@ class Environment : BaseTest {
             return Build.VERSION.SDK_INT >= 27
         }
 
-        private const val MODULE_UPDATE_PATH  = "/data/adb/modules_update"
+        private val MODULE_UPDATE_PATH  = "${Const.SECURE_DIR}/modules_update"
         private const val MODULE_ERROR = "Module zip processing incorrect"
         const val MOUNT_TEST = "mount_test"
         const val SEPOLICY_RULE = "sepolicy_rule"

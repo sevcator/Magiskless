@@ -4,6 +4,8 @@
 # Initialization
 #################
 
+#SECURE_DIR_STUB
+
 umask 022
 
 # echo before loading util_functions
@@ -25,8 +27,8 @@ ZIPFILE=$3
 
 mount /data 2>/dev/null
 
-[ -f /data/adb/ms/util_functions.sh ] || require_new_magisk
-. /data/adb/ms/util_functions.sh
+[ -f ${SECURE_DIR}/ms/util_functions.sh ] || require_new_magisk
+. ${SECURE_DIR}/ms/util_functions.sh
 [ $MAGISK_VER_CODE -lt 20400 ] && require_new_magisk
 
 install_module

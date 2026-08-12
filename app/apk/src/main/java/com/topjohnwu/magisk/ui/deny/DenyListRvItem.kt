@@ -6,6 +6,7 @@ import androidx.databinding.Bindable
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.startAnimations
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.databinding.DiffItem
 import com.topjohnwu.magisk.databinding.ObservableRvItem
 import com.topjohnwu.magisk.databinding.addOnPropertyChangedCallback
@@ -46,7 +47,7 @@ class DenyListRvItem(
                     .filter { isExpanded || it.defaultSelection }
                     .forEach { it.toggle() }
             } else {
-                Shell.cmd("magisk --denylist rm ${info.packageName}").submit()
+                Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist rm ${info.packageName}").submit()
                 processes.filter { it.isEnabled }.forEach {
                     if (it.process.isIsolated) {
                         it.toggle()
@@ -112,7 +113,7 @@ class ProcessRvItem(
         set(value) = set(value, process.isEnabled, { process.isEnabled = it }, BR.enabled) {
             val arg = if (it) "add" else "rm"
             val (name, pkg) = process
-            Shell.cmd("magisk --denylist $arg $pkg \'$name\'").submit()
+            Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist $arg $pkg \'$name\'").submit()
         }
 
     fun toggle() {

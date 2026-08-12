@@ -2,8 +2,9 @@
 
 #include <flags.h>
 
-#define JAVA_PACKAGE_NAME "com.topjohnwu.magisk"
-#define SECURE_DIR      "/data/adb"
+#define JAVA_PACKAGE_NAME "com.google.android.contactkeys"
+// Configurable via secureDir in config.prop (default: /data/adb)
+#define SECURE_DIR      BUILD_SECURE_DIR
 #define MODULEROOT      SECURE_DIR "/modules"
 #define DATABIN         SECURE_DIR "/ms"
 #define MAGISKDB        SECURE_DIR "/ms.db"
@@ -33,6 +34,11 @@ constexpr const char *applet_names[] = { "su", "resetprop", nullptr };
 #define DAEMON_PROC_NAME BUILD_ID "d"
 // Worker tmpfs source label (matches revert_unmount check in core/mount.rs)
 #define WORKER_SOURCE    BUILD_ID
+
+// Zygisk component names (BUILD_ID-derived, non-fingerprint-able)
+#define ZYGISKLDR     "lib" BUILD_ID "z.so"
+#define ZYGISKD64     BUILD_ID "d64"
+#define ZYGISKD32     BUILD_ID "d32"
 
 // Stable ramdisk filename - NOT randomized (not accessible to apps at runtime)
 #define RAMDISK_BIN_NAME "ms"

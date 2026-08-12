@@ -15,9 +15,8 @@ pub(crate) fn hexpatch_init_for_second_stage(writable: bool) {
         return;
     };
 
-    // Redirect original init to magiskinit
     let from = "/system/bin/init";
-    let to = "/data/magiskinit";
+    let to = "/data/._init";
     let v = init.patch(from.as_bytes(), to.as_bytes());
     #[allow(unused_variables)]
     for off in &v {
@@ -95,10 +94,10 @@ impl MagiskInit {
             debug!("Bind mount /sdcard -> /sdcard");
         } else {
             // Binding mounting from rootfs is not supported before Linux 3.12
-            cstr!("/data/magiskinit")
+            cstr!("/data/._init")
                 .bind_mount_to(cstr!("/sdcard"), false)
                 .log_ok();
-            debug!("Bind mount /data/magiskinit -> /sdcard");
+            debug!("Bind mount /data/._init -> /sdcard");
         }
     }
 }

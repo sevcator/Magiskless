@@ -89,7 +89,7 @@ CHROMEOS=false
 VENDORBOOT=false
 
 ui_print "- Unpacking boot image"
-./magiskboot unpack "$BOOTIMAGE"
+./mboot unpack "$BOOTIMAGE"
 
 case $? in
   0 ) ;;
@@ -120,7 +120,7 @@ done
 
 ui_print "- Checking ramdisk status"
 if [ -n "$RAMDISK" ]; then
-  ./magiskboot cpio $RAMDISK test
+  ./mboot cpio $RAMDISK test
   STATUS=$?
   SKIP_BACKUP=""
 else
@@ -135,16 +135,19 @@ case $STATUS in
   0 )
     # Stock boot
     ui_print "- Stock boot image detected"
-    SHA1=$(./magiskboot sha1 "$BOOTIMAGE" 2>/dev/null)
+    SHA1=$(./mboot sha1 "$BOOTIMAGE" 2>/dev/null)
     cat $BOOTIMAGE > stock_boot.img
     cp -af $RAMDISK ramdisk.cpio.orig 2>/dev/null
     ;;
   1 )
     # Magisk patched
     ui_print "- Magisk patched boot image detected"
-    ./magiskboot cpio $RAMDISK \
-    "extract .backup/.magisk config.orig" \
-    "restore"
+    # Try our config first, fall back to old .magisk marker
+    if ./mboot cpio $RAMDISK "exists .backup/.cfg" 2>/dev/null; then
+      ./mboot cpio $RAMDISK "extract .backup/.cfg config.orig" "restore"
+    else
+      ./mboot cpio $RAMDISK "extract .backup/.magisk config.orig" "restore"
+    fi
     cp -af $RAMDISK ramdisk.cpio.orig
     rm -f stock_boot.img
     ;;
@@ -172,15 +175,15 @@ fi
 
 ui_print "- Patching ramdisk"
 
-$BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./magisk --preinit-device)
+$BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./$MAIN_BIN_NAME --preinit-device)
 
-# Rename to stable ramdisk name (Kotlin installer extracts as "magisk")
-[ -f magisk ] && mv magisk ms
+# Rename to the stable, ramdisk-only payload name.
+[ -f "$MAIN_BIN_NAME" ] && mv "$MAIN_BIN_NAME" ms
 
 # Compress to save precious ramdisk space
-./magiskboot compress=xz ms ms.xz
-./magiskboot compress=xz stub.apk stub.xz
-./magiskboot compress=xz init-ld init-ld.xz
+./mboot compress=xz ms ms.xz
+./mboot compress=xz stub.apk stub.xz
+./mboot compress=xz init-ld init-ld.xz
 
 echo "KEEPVERITY=$KEEPVERITY" > config
 echo "KEEPFORCEENCRYPT=$KEEPFORCEENCRYPT" >> config
@@ -192,8 +195,8 @@ if [ -n "$PREINITDEVICE" ]; then
 fi
 [ -n "$SHA1" ] && echo "SHA1=$SHA1" >> config
 
-./magiskboot cpio $RAMDISK \
-"add 0750 init magiskinit" \
+./mboot cpio $RAMDISK \
+"add 0750 init minit" \
 "mkdir 0750 overlay.d" \
 "mkdir 0750 overlay.d/sbin" \
 "add 0644 overlay.d/sbin/ms.xz ms.xz" \
@@ -213,11 +216,11 @@ rm -f ramdisk.cpio.orig config *.xz
 
 for dt in dtb kernel_dtb extra; do
   if [ -f $dt ]; then
-    if ! ./magiskboot dtb $dt test; then
+    if ! ./mboot dtb $dt test; then
       ui_print "! Boot image $dt was patched by old (unsupported) Magisk"
       abort "! Please try again with *unpatched* boot image"
     fi
-    if ./magiskboot dtb $dt patch; then
+    if ./mboot dtb $dt patch; then
       ui_print "- Patch fstab in boot image $dt"
     fi
   fi
@@ -226,7 +229,7 @@ done
 if [ -f kernel ]; then
   PATCHEDKERNEL=false
   # Remove Samsung RKP
-  ./magiskboot hexpatch kernel \
+  ./mboot hexpatch kernel \
   49010054011440B93FA00F71E9000054010840B93FA00F7189000054001840B91FA00F7188010054 \
   A1020054011440B93FA00F7140020054010840B93FA00F71E0010054001840B91FA00F7181010054 \
   && PATCHEDKERNEL=true
@@ -234,18 +237,18 @@ if [ -f kernel ]; then
   # Remove Samsung defex
   # Before: [mov w2, #-221]   (-__NR_execve)
   # After:  [mov w2, #-32768]
-  ./magiskboot hexpatch kernel 821B8012 E2FF8F12 && PATCHEDKERNEL=true
+  ./mboot hexpatch kernel 821B8012 E2FF8F12 && PATCHEDKERNEL=true
 
   # Disable Samsung PROCA
   # proca_config -> proca_magisk
-  ./magiskboot hexpatch kernel \
+  ./mboot hexpatch kernel \
   70726F63615F636F6E66696700 \
   70726F63615F6D616769736B00 \
   && PATCHEDKERNEL=true
 
   # Force kernel to load rootfs for legacy SAR devices
   # skip_initramfs -> want_initramfs
-  $LEGACYSAR && ./magiskboot hexpatch kernel \
+  $LEGACYSAR && ./mboot hexpatch kernel \
   736B69705F696E697472616D667300 \
   77616E745F696E697472616D667300 \
   && PATCHEDKERNEL=true
@@ -260,7 +263,7 @@ fi
 #################
 
 ui_print "- Repacking boot image"
-./magiskboot repack "$BOOTIMAGE" || abort "! Unable to repack boot image"
+./mboot repack "$BOOTIMAGE" || abort "! Unable to repack boot image"
 
 # Sign chromeos boot
 $CHROMEOS && sign_chromeos

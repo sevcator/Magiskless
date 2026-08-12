@@ -15,7 +15,7 @@ struct Cli {
     live: bool,
 
     #[argh(switch)]
-    magisk: bool,
+    rules: bool,
 
     #[argh(switch)]
     compile_split: bool,
@@ -41,7 +41,7 @@ struct Cli {
 
 fn print_usage(cmd: &str) {
     eprintln!(
-        r#"msp - SELinux Policy Patch Tool
+        r#"mpol - SELinux Policy Patch Tool
 
 Usage: {cmd} [--options...] [policy statements...]
 
@@ -53,7 +53,7 @@ Options:
    --compile-split   compile split cil policies
    --save FILE       dump monolithic sepolicy to FILE
    --live            immediately load sepolicy into the kernel
-   --magisk          apply built-in Magisk sepolicy rules
+   --rules           apply built-in sepolicy rules
    --apply FILE      apply rules from FILE, read and parsed
                      line by line as policy statements
                      (multiple --apply are allowed)
@@ -83,7 +83,7 @@ pub unsafe extern "C" fn main(
         let cmds = CmdArgs::new(argc, argv);
         let cmds = cmds.as_slice();
         if argc < 2 {
-            print_usage(cmds.first().unwrap_or(&"magiskpolicy"));
+            print_usage(cmds.first().unwrap_or(&"mpol"));
             return log_err!();
         }
         let cli = Cli::from_args(&[cmds[0]], &cmds[1..]).on_early_exit(|| print_usage(cmds[0]));
@@ -100,7 +100,7 @@ pub unsafe extern "C" fn main(
         }
 
         if cli.print_rules {
-            if cli.magisk
+            if cli.rules
                 || !cli.apply.is_empty()
                 || !cli.polices.is_empty()
                 || cli.live
@@ -112,7 +112,7 @@ pub unsafe extern "C" fn main(
             return Ok(());
         }
 
-        if cli.magisk {
+        if cli.rules {
             sepol.magisk_rules();
         }
 

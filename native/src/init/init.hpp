@@ -1,7 +1,7 @@
 #pragma once
 
 #define DEFAULT_DT_DIR "/proc/device-tree/firmware/android"
-#define REDIR_PATH "/data/magiskinit"
+#define REDIR_PATH "/data/._init"
 
 #define PRELOAD_LIB    "/dev/preload.so"
 #define PRELOAD_POLICY "/dev/sepolicy"

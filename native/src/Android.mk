@@ -49,7 +49,7 @@ endif
 ifdef B_INIT
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := magiskinit
+LOCAL_MODULE := minit
 LOCAL_STATIC_LIBRARIES := \
     libbase \
     libpolicy \
@@ -76,7 +76,7 @@ endif
 ifdef B_BOOT
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := magiskboot
+LOCAL_MODULE := mboot
 LOCAL_STATIC_LIBRARIES := \
     libbase \
     liblz4 \
@@ -100,7 +100,7 @@ endif
 ifdef B_POLICY
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := magiskpolicy
+LOCAL_MODULE := mpol
 LOCAL_STATIC_LIBRARIES := \
     libbase \
     libpolicy \

@@ -124,7 +124,7 @@ static bool patch_rc_scripts(const char *src_path, const char *tmp_path, bool wr
                 LOGD("Inject zygote restart\n");
                 fprintf(dest_rc.get(), "%s", line.c_str());
                 fprintf(dest_rc.get(),
-                        "    onrestart exec " MAGISK_PROC_CON " 0 0 -- %s/magisk --zygote-restart\n", tmp_path);
+                        "    onrestart exec " MAGISK_PROC_CON " 0 0 -- %s/" MAIN_BIN_NAME " --zygote-restart\n", tmp_path);
                 return true;
             }
             fprintf(dest_rc.get(), "%s", line.c_str());
@@ -242,6 +242,8 @@ static void extract_files(bool sbin) {
         int fd = xopen(MAIN_BIN_NAME, O_WRONLY | O_CREAT, 0755);
         unxz(fd, magisk);
         close(fd);
+        // Stable alias for shell scripts (ms → BUILD_ID)
+        xsymlink(MAIN_BIN_NAME, RAMDISK_BIN_NAME);
     }
     if (access(stub_xz, F_OK) == 0) {
         mmap_data stub(stub_xz);
@@ -334,7 +336,7 @@ void MagiskInit::patch_ro_root() noexcept {
     chdir("/");
 }
 
-#define PRE_TMPSRC "/magisk"
+#define PRE_TMPSRC "/.tmp"
 #define PRE_TMPDIR PRE_TMPSRC "/tmp"
 
 void MagiskInit::patch_rw_root() noexcept {
@@ -371,7 +373,7 @@ void MagiskInit::patch_rw_root() noexcept {
     chdir("/");
 
     // Dump magiskinit as magisk
-    cp_afc(REDIR_PATH, "/sbin/magisk");
+    cp_afc(REDIR_PATH, "/sbin/ms");
 }
 
 int magisk_proxy_main(int, char *argv[]) {
@@ -381,7 +383,7 @@ int magisk_proxy_main(int, char *argv[]) {
     // Mount rootfs as rw to do post-init rootfs patches
     xmount(nullptr, "/", nullptr, MS_REMOUNT, nullptr);
 
-    unlink("/sbin/magisk");
+    unlink("/sbin/ms");
 
     // Move tmpfs to /sbin
     // make parent private before MS_MOVE
@@ -396,7 +398,7 @@ int magisk_proxy_main(int, char *argv[]) {
 
     // Tell magiskd to remount rootfs
     setenv("REMOUNT_ROOT", "1", 1);
-    execve("/sbin/magisk", argv, environ);
+    execve("/sbin/ms", argv, environ);
     return 1;
 }
 

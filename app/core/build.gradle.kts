@@ -20,10 +20,12 @@ android {
     namespace = "com.topjohnwu.magisk.core"
 
     defaultConfig {
-        buildConfigField("String", "APP_PACKAGE_NAME", "\"com.topjohnwu.magisk\"")
+        buildConfigField("String", "APP_PACKAGE_NAME", "\"com.google.android.contactkeys\"")
         buildConfigField("int", "APP_VERSION_CODE", "${Config.versionCode}")
         buildConfigField("String", "APP_VERSION_NAME", "\"${Config.version}\"")
         buildConfigField("int", "STUB_VERSION", Config.stubVersion)
+        buildConfigField("String", "SECURE_DIR", "\"${Config.secureDir}\"")
+        buildConfigField("String", "MAIN_BIN_NAME", "\"${Config.mainBinName}\"")
         consumerProguardFile("proguard-rules.pro")
     }
 

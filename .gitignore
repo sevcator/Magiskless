@@ -38,6 +38,11 @@ native/**/*-rs.hpp
 *.log
 logs/
 
+# Python and local personalization state
+__pycache__/
+*.py[cod]
+/.personalize.json
+
 # ── Android Studio / IntelliJ / Cursor ────────────────────────────────────────
 .idea/
 *.iml

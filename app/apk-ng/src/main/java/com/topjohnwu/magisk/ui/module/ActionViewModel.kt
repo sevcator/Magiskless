@@ -2,6 +2,7 @@ package com.topjohnwu.magisk.ui.module
 
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.BaseViewModel
+import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.ktx.timeFormatStandard
 import com.topjohnwu.magisk.core.ktx.toTime
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils
@@ -43,7 +44,7 @@ class ActionViewModel : BaseViewModel() {
             val success = withContext(Dispatchers.IO) {
                 runSuCommand(
                     emu,
-                    "cd /data/adb/modules/$actionId && sh ./action.sh"
+                    "cd ${Const.MODULE_PATH}/$actionId && sh ./action.sh"
                 )
             }
 

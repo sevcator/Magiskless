@@ -1,5 +1,6 @@
 #!/sbin/sh
 # ADDOND_VERSION=2
+#SECURE_DIR_STUB
 ########################################################
 #
 # Magisk Survival Script for ROMs with addon.d support
@@ -43,7 +44,7 @@ trampoline() {
 }
 
 # Always use the script in /data
-MAGISKBIN=/data/adb/ms
+MAGISKBIN=${SECURE_DIR}/ms
 [ "$0" = $MAGISKBIN/addon.d.sh ] || trampoline "$@"
 
 V1_FUNCS=/tmp/backuptool.functions
@@ -141,9 +142,10 @@ case "$1" in
       ui_print() { return; }
       get_flags
       find_boot_image
-      $MAGISKBIN/magiskboot unpack "$BOOTIMAGE"
-      $MAGISKBIN/magiskboot cpio ramdisk.cpio "extract .backup/.magisk config.orig"
-      $MAGISKBIN/magiskboot cleanup
+      $MAGISKBIN/mboot unpack "$BOOTIMAGE"
+      $MAGISKBIN/mboot cpio ramdisk.cpio "extract .backup/.cfg config.orig" 2>/dev/null || \
+        $MAGISKBIN/mboot cpio ramdisk.cpio "extract .backup/.magisk config.orig"
+      $MAGISKBIN/mboot cleanup
     fi
   ;;
   post-backup)

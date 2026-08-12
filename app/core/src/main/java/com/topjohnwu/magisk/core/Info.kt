@@ -33,7 +33,7 @@ object Info {
         private set
     var isVendorBoot = false
         private set
-    @JvmField val isZygiskEnabled = System.getenv("ZYGISK_ENABLED") == "1"
+    @JvmField val isZygiskEnabled = System.getenv("ZYG_ENABLED") == "1"
     @JvmStatic val isFDE get() = crypto == "block"
     @JvmStatic var ramdisk = false
         private set
@@ -70,12 +70,13 @@ object Info {
 
     fun init(shell: Shell) {
         if (shell.isRoot) {
-            val v = fastCmd(shell, "magisk -v").split(":")
+            val main = BuildConfig.MAIN_BIN_NAME
+            val v = fastCmd(shell, "$main -v").split(":")
             env = Env(
                 v[0], v.size >= 3 && v[2] == "D",
-                runCatching { fastCmd("magisk -V").toInt() }.getOrDefault(-1)
+                runCatching { fastCmd(shell, "$main -V").toInt() }.getOrDefault(-1)
             )
-            Config.denyList = fastCmdResult(shell, "magisk --denylist status")
+            Config.denyList = fastCmdResult(shell, "$main --denylist status")
         }
 
         val map = mutableMapOf<String, String>()

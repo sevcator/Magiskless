@@ -2,6 +2,7 @@ package com.topjohnwu.magisk.core
 
 import android.os.Build
 import android.os.Process
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.BuildConfig.APP_VERSION_CODE
 
 @Suppress("DEPRECATION")
@@ -14,8 +15,10 @@ object Const {
         if (Build.SUPPORTED_64_BIT_ABIS.isEmpty()) null
         else Build.SUPPORTED_32_BIT_ABIS.firstOrNull()
 
-    // Paths
-    const val MODULE_PATH  = "/data/adb/modules"
+    // Paths — SECURE_DIR is configurable via secureDir in config.prop (default: /data/adb)
+    val SECURE_DIR   = BuildConfig.SECURE_DIR
+    val DATABIN      = "${BuildConfig.SECURE_DIR}/ms"
+    val MODULE_PATH  = "${BuildConfig.SECURE_DIR}/modules"
     const val TMPDIR = "/dev/tmp"
     const val MAGISK_LOG = "/cache/magisk.log"
 

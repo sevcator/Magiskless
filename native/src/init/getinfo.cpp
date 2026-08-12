@@ -173,13 +173,16 @@ void BootConfig::init() noexcept {
     set(parse_cmdline(full_read("/proc/cmdline")));
     set(parse_bootconfig(full_read("/proc/bootconfig")));
 
-    parse_prop_file("/.backup/.magisk", [&](auto key, auto value) -> bool {
+    // Read recovery mode from backup config (our fork uses .cfg, legacy uses .magisk)
+    auto read_recovery = [&](auto key, auto value) -> bool {
         if (key == "RECOVERYMODE" && value == "true") {
             skip_initramfs = emulator || !check_key_combo();
             return false;
         }
         return true;
-    });
+    };
+    parse_prop_file("/.backup/.cfg", read_recovery);
+    parse_prop_file("/.backup/.magisk", read_recovery);
 
     if (dt_dir[0] == '\0')
         strscpy(dt_dir.data(), DEFAULT_DT_DIR, dt_dir.size());

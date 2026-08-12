@@ -188,7 +188,7 @@ struct Decompress {
 
 fn print_usage(cmd: &str) {
     eprintln!(
-        r#"magiskboot - Boot Image Modification Tool
+        r#"mboot - Boot Image Modification Tool
 
 Usage: {0} <action> [args...]
 
@@ -329,7 +329,7 @@ fn sign_cmd(
 fn boot_main(cmds: CmdArgs) -> LoggedResult<i32> {
     let mut cmds = cmds.0;
     if cmds.len() < 2 {
-        print_usage(cmds.first().unwrap_or(&"magiskboot"));
+        print_usage(cmds.first().unwrap_or(&"mboot"));
         return log_err!();
     }
 

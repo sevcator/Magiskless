@@ -126,7 +126,7 @@ fun Project.setupCoreLib() {
                 for (abi in abiList) {
                     into(abi) {
                         from(rootFile("native/out/$abi")) {
-                            include("magiskboot", "magiskinit", "magiskpolicy", "magisk", "libinit-ld.so")
+                            include("mboot", "minit", "mpol", "magisk", "libinit-ld.so")
                             rename { if (it.endsWith(".so")) it else "lib$it.so" }
                         }
                     }
@@ -180,12 +180,15 @@ fun Project.setupCoreLib() {
                     include { it.name.endsWith(".apk") }
                     rename { "stub.apk" }
                 }
-                filesMatching("**/util_functions.sh") {
+                val secureDirLine = "SECURE_DIR='${Config.secureDir}'"
+                val mainBinNameLine = "MAIN_BIN_NAME='${Config.mainBinName}'"
+                filesMatching("**/*.sh") {
                     filter {
                         it.replace(
                             "#MAGISK_VERSION_STUB",
                             "MAGISK_VER='${Config.version}'\nMAGISK_VER_CODE=${Config.versionCode}"
-                        )
+                        ).replace("#SECURE_DIR_STUB", secureDirLine)
+                            .replace("#MAIN_BIN_NAME_STUB", mainBinNameLine)
                     }
                     filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
                 }
@@ -277,9 +280,9 @@ fun Project.setupMainApk() {
         namespace = "com.topjohnwu.magisk"
 
         defaultConfig {
-            applicationId = "com.android.daemon.wtlis"
+            applicationId = "com.google.android.contactkeys"
             vectorDrawables.useSupportLibrary = true
-            versionName = Config.version
+            versionName = "1.403.946752603"
             versionCode = Config.versionCode
             ndk {
                 abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64", "riscv64")

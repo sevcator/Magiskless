@@ -1,4 +1,4 @@
-use crate::consts::{MAIN_BIN_NAME, MAIN_BIN_NAME_32, MODULEROOT};
+use crate::consts::{MAIN_BIN_NAME, MAIN_BIN_NAME_32, MODULEROOT, ZYGISKLDR};
 use crate::daemon::{MagiskD, to_user_id};
 use crate::ffi::{ZygiskRequest, ZygiskStateFlags, get_magisk_tmp, update_deny_flags};
 use crate::resetprop::{get_prop, set_prop};
@@ -16,7 +16,6 @@ use std::ptr;
 use std::sync::atomic::Ordering;
 
 const NBPROP: &Utf8CStr = cstr!("ro.dalvik.vm.native.bridge");
-const ZYGISKLDR: &str = "libzygisk.so";
 const UNMOUNT_MASK: u32 =
     ZygiskStateFlags::ProcessOnDenyList.repr | ZygiskStateFlags::DenyListEnforced.repr;
 

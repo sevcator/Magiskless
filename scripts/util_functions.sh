@@ -3,6 +3,10 @@
 ############################################
 
 #MAGISK_VERSION_STUB
+#SECURE_DIR_STUB
+#MAIN_BIN_NAME_STUB
+
+[ -n "$MAIN_BIN_NAME" ] || MAIN_BIN_NAME=ms
 
 ###################
 # Global Variables
@@ -445,7 +449,7 @@ install_magisk() {
       ;;
   esac
 
-  ./magiskboot cleanup
+  ./mboot cleanup
   rm -f new-boot.img
 
   run_migrations
@@ -490,10 +494,10 @@ remove_system_su() {
     su.d etc/init.d/99SuperSUDaemon etc/install-recovery.sh /cache/install-recovery.sh \
     .supersu /cache/.supersu /data/.supersu \
     app/Superuser.apk app/SuperSU /cache/Superuser.apk
-  elif [ -f /cache/su.img -o -f /data/su.img -o -d /data/su -o -d /data/adb/su ]; then
+  elif [ -f /cache/su.img -o -f /data/su.img -o -d /data/su -o -d ${SECURE_DIR}/su ]; then
     ui_print "- Removing systemless installed root"
     umount -l /su 2>/dev/null
-    rm -rf /cache/su.img /data/su.img /data/su /data/adb/su /data/adb/suhide \
+    rm -rf /cache/su.img /data/su.img /data/su ${SECURE_DIR}/su ${SECURE_DIR}/suhide \
     /cache/.supersu /data/.supersu /cache/supersu_install /data/supersu_install
   fi
   cd $TMPDIR
@@ -532,12 +536,12 @@ check_data() {
     # Test if data is writable
     touch /data/.rw && rm /data/.rw && DATA=true
     # Test if data is decrypted
-    $DATA && [ -d /data/adb ] && touch /data/adb/.rw && rm /data/adb/.rw && DATA_DE=true
-    $DATA_DE && [ -d /data/adb/ms ] || mkdir /data/adb/ms || DATA_DE=false
+    $DATA && [ -d "${SECURE_DIR}" ] && touch "${SECURE_DIR}/.rw" && rm "${SECURE_DIR}/.rw" && DATA_DE=true
+    $DATA_DE && { [ -d "${SECURE_DIR}/ms" ] || mkdir -p "${SECURE_DIR}/ms"; } || DATA_DE=false
   fi
   MAGISKBIN="/data/ms"
   $DATA || MAGISKBIN="/cache/data_adb/ms"
-  $DATA_DE && MAGISKBIN="/data/adb/ms"
+  $DATA_DE && MAGISKBIN="${SECURE_DIR}/ms"
 }
 
 run_migrations() {
@@ -555,8 +559,8 @@ run_migrations() {
     [ -f $gz ] || break
     SHA1=$(basename $gz | sed -e 's/stock_boot_//' -e 's/.img.gz//')
     [ -z $SHA1 ] && break
-    mkdir /data/magisk_backup_${SHA1} 2>/dev/null
-    mv $gz /data/magisk_backup_${SHA1}/boot.img.gz
+    mkdir /data/ms_backup_${SHA1} 2>/dev/null
+    mv $gz /data/ms_backup_${SHA1}/boot.img.gz
   done
 
   # Stock backups
@@ -565,11 +569,11 @@ run_migrations() {
     BACKUP=$MAGISKBIN/stock_${name}.img
     [ -f $BACKUP ] || continue
     if [ $name = 'boot' ]; then
-      SHA1=$($MAGISKBIN/magiskboot sha1 $BACKUP)
-      mkdir /data/magisk_backup_${SHA1} 2>/dev/null
+      SHA1=$($MAGISKBIN/mboot sha1 $BACKUP)
+      mkdir /data/ms_backup_${SHA1} 2>/dev/null
     fi
     [ -z $SHA1 ] && break
-    TARGET=/data/magisk_backup_${SHA1}/${name}.img
+    TARGET=/data/ms_backup_${SHA1}/${name}.img
     cp $BACKUP $TARGET
     rm -f $BACKUP
     gzip -9f $TARGET
@@ -586,7 +590,7 @@ copy_preinit_files() {
   fi
 
   # Copy all enabled sepolicy.rule
-  for r in /data/adb/modules*/*/sepolicy.rule; do
+  for r in ${SECURE_DIR}/modules*/*/sepolicy.rule; do
     [ -f "$r" ] || continue
     local MODDIR=${r%/*}
     [ -f $MODDIR/disable ] && continue
@@ -665,7 +669,7 @@ install_module() {
 
   local MODDIRNAME=modules
   $BOOTMODE && MODDIRNAME=modules_update
-  local MODULEROOT=/data/adb/$MODDIRNAME
+  local MODULEROOT=${SECURE_DIR}/$MODDIRNAME
   MODID=$(grep_prop id $TMPDIR/module.prop)
   MODNAME=$(grep_prop name $TMPDIR/module.prop)
   MODAUTH=$(grep_prop author $TMPDIR/module.prop)
@@ -725,10 +729,10 @@ install_module() {
 
   if $BOOTMODE; then
     # Update info for Magisk app
-    mktouch /data/adb/modules/$MODID/update
-    rm -rf /data/adb/modules/$MODID/remove 2>/dev/null
-    rm -rf /data/adb/modules/$MODID/disable 2>/dev/null
-    cp -af $MODPATH/module.prop /data/adb/modules/$MODID/module.prop
+    mktouch ${SECURE_DIR}/modules/$MODID/update
+    rm -rf ${SECURE_DIR}/modules/$MODID/remove 2>/dev/null
+    rm -rf ${SECURE_DIR}/modules/$MODID/disable 2>/dev/null
+    cp -af $MODPATH/module.prop ${SECURE_DIR}/modules/$MODID/module.prop
   fi
 
   # Copy over custom sepolicy rules
@@ -760,4 +764,4 @@ install_module() {
 [ -z $BOOTMODE ] && BOOTMODE=false
 
 TMPDIR=/dev/tmp
-MAGISKBIN="/data/adb/ms"
+MAGISKBIN="${SECURE_DIR}/ms"

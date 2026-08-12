@@ -2,6 +2,7 @@ use crate::consts::{
     MAIN_BIN_NAME, MAIN_BIN_NAME_32, MODULEMNT, MODULEROOT, MODULEUPGRADE, POLICY_BIN_NAME,
     WORKERDIR,
 };
+use base::const_format::concatcp;
 use crate::daemon::MagiskD;
 use crate::ffi::{ModuleInfo, exec_module_scripts, exec_script, get_magisk_tmp};
 use crate::mount::setup_module_mount;
@@ -418,13 +419,13 @@ impl FsNode {
             }
             FsNode::MagiskLink => {
                 if let Some(name) = path.real().file_name()
-                    && name == "supolicy"
+                    && name == "sp"
                 {
-                    module_log!("mklink", path.worker(), "./magiskpolicy");
-                    path.worker().create_symlink_to(cstr!("./magiskpolicy"))?;
+                    module_log!("mklink", path.worker(), concatcp!("./", POLICY_BIN_NAME));
+                    path.worker().create_symlink_to(cstr!(concatcp!("./", POLICY_BIN_NAME)))?;
                 } else {
-                    module_log!("mklink", path.worker(), "./magisk");
-                    path.worker().create_symlink_to(cstr!("./magisk"))?;
+                    module_log!("mklink", path.worker(), concatcp!("./", MAIN_BIN_NAME));
+                    path.worker().create_symlink_to(cstr!(concatcp!("./", MAIN_BIN_NAME)))?;
                 }
             }
             FsNode::Whiteout => {
@@ -468,7 +469,7 @@ fn inject_magisk_bins(system: &mut FsNode, is_emulator: bool) {
         // Inject applet symlinks
         children.insert("su".to_string(), FsNode::MagiskLink);
         children.insert("resetprop".to_string(), FsNode::MagiskLink);
-        children.insert("supolicy".to_string(), FsNode::MagiskLink);
+        children.insert("sp".to_string(), FsNode::MagiskLink);
     }
 
     // Strip /system prefix to insert correct node

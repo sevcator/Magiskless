@@ -86,11 +86,26 @@ object AppContext : ContextWrapper(null),
         }
         resources.patch()
 
+        // Use su from magisk tmpfs when the PATH symlink is broken (su -> ./magisk bug)
+        val suCmd = run {
+            val tmp = try {
+                Runtime.getRuntime()
+                    .exec(arrayOf(BuildConfig.MAIN_BIN_NAME, "--path"))
+                    .inputStream.bufferedReader().readLine()?.trim()
+            } catch (_: Exception) { null }
+            if (!tmp.isNullOrEmpty()) {
+                val candidate = java.io.File("$tmp/su")
+                if (candidate.exists() || java.io.File(candidate.canonicalPath).exists()) {
+                    candidate.absolutePath
+                } else null
+            } else null
+        }
         val shellBuilder = Shell.Builder.create()
             .setFlags(Shell.FLAG_MOUNT_MASTER)
             .setInitializers(ShellInit::class.java)
             .setContext(this)
-            .setTimeout(2)
+            .setTimeout(120)
+        if (suCmd != null) shellBuilder.setCommands(suCmd)
         Shell.setDefaultBuilder(shellBuilder)
         Shell.EXECUTOR = Dispatchers.IO.asExecutor()
         RootUtils.bindTask = RootService.bindOrTask(

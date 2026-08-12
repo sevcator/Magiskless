@@ -114,7 +114,7 @@ class AdditionalTest : BaseTest {
         assertNotNull("$SEPOLICY_RULE is not installed", modules.find { it.id == SEPOLICY_RULE })
         assertTrue(
             "Module sepolicy.rule is not applied",
-            Shell.cmd("magiskpolicy --print-rules | grep -q magisk_test").exec().isSuccess
+            Shell.cmd("mpol --print-rules | grep -q magisk_test").exec().isSuccess
         )
     }
 

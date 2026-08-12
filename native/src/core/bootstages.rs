@@ -96,12 +96,12 @@ impl MagiskD {
             let tmp = buf.append_path(get_magisk_tmp()).append_path(MAIN_BIN_NAME_32);
             magisk32.copy_to(tmp).log_ok();
         }
-        let magiskpolicy = cstr!(concatcp!(DATABIN, "/magiskpolicy"));
-        if magiskpolicy.exists() {
+        let mpol = cstr!(concatcp!(DATABIN, "/mpol"));
+        if mpol.exists() {
             let tmp = buf
                 .append_path(get_magisk_tmp())
                 .append_path(POLICY_BIN_NAME);
-            magiskpolicy.copy_to(tmp).log_ok();
+            mpol.copy_to(tmp).log_ok();
         }
 
         true

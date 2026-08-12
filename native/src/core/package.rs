@@ -1,4 +1,4 @@
-use crate::consts::{APP_PACKAGE_NAME, MAGISK_VER_CODE};
+use crate::consts::{APP_PACKAGE_NAME, MAGISK_VER_CODE, SECURE_DIR};
 use crate::daemon::{AID_APP_END, AID_APP_START, AID_USER_OFFSET, MagiskD, to_app_id};
 use crate::ffi::{DbEntryKey, get_magisk_tmp, install_apk, uninstall_pkg};
 use base::WalkResult::{Abort, Continue, Skip};
@@ -6,6 +6,7 @@ use base::{
     BufReadExt, Directory, FsPathBuilder, LoggedResult, ReadExt, ResultExt, Utf8CStrBuf,
     Utf8CString, cstr, error, fd_get_attr, warn,
 };
+use base::const_format::concatcp;
 use bit_set::BitSet;
 use nix::fcntl::OFlag;
 use std::collections::BTreeMap;
@@ -172,6 +173,32 @@ fn find_apk_path(pkg: &str) -> LoggedResult<Utf8CString> {
     Ok(buf.to_owned())
 }
 
+// Persistent root-only cache for the manager APK path.
+const APK_CACHE_FILE: &str = concatcp!(SECURE_DIR, "/.su_cache");
+
+fn find_orig_apk_path() -> LoggedResult<Utf8CString> {
+    // Fast path: read cached path from previous successful scan
+    if let Ok(cached) = std::fs::read_to_string(APK_CACHE_FILE) {
+        let cached = cached.trim();
+        if !cached.is_empty() && std::path::Path::new(cached).exists() {
+            let mut apk = cstr::buf::default();
+            apk.push_str(cached);
+            return Ok(apk.to_owned());
+        }
+        // Cached path is stale (APK reinstalled to a new path); remove and re-scan
+        let _ = std::fs::remove_file(APK_CACHE_FILE);
+    }
+
+    // Slow path: walk /data/app/ looking for the package directory.
+    // On a device with many apps this can take 30–60 s on encrypted storage.
+    let apk = find_apk_path(APP_PACKAGE_NAME)?;
+    if !apk.is_empty() {
+        // Persist the result so subsequent daemon starts are instant
+        let _ = std::fs::write(APK_CACHE_FILE, apk.to_string().as_bytes());
+    }
+    Ok(apk)
+}
+
 enum Status {
     Installed,
     NotInstalled,
@@ -289,7 +316,7 @@ impl ManagerInfo {
     }
 
     fn check_orig(&mut self, user: i32) -> Status {
-        let Ok(apk) = find_apk_path(APP_PACKAGE_NAME) else {
+        let Ok(apk) = find_orig_apk_path() else {
             return Status::NotInstalled;
         };
 

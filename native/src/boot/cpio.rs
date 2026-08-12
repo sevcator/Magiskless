@@ -145,7 +145,7 @@ struct List {
 
 pub(crate) fn print_cpio_usage() {
     eprintln!(
-        r#"Usage: magiskboot cpio <incpio> [commands...]
+        r#"Usage: mboot cpio <incpio> [commands...]
 
 Do cpio commands to <incpio> (modifications are done in-place).
 Each command is a single argument; add quotes for each command.
@@ -549,6 +549,7 @@ impl Cpio {
         }
         for file in [
             ".backup/.magisk",
+            ".backup/.cfg",
             "init.magisk.rc",
             "overlay/init.magisk.rc",
         ] {
@@ -778,7 +779,7 @@ pub(crate) fn cpio_commands(file: &Utf8CStr, cmds: &Vec<String>) -> LoggedResult
             continue;
         }
         let mut cmd = CpioCommand::from_args(
-            &["magiskboot", "cpio", file],
+            &["mboot", "cpio", file],
             cmd.split(' ')
                 .filter(|x| !x.is_empty())
                 .collect::<Vec<_>>()

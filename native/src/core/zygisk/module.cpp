@@ -351,7 +351,7 @@ void ZygiskContext::run_modules_pre(rust::Vec<int> &fds) {
             .flags = ANDROID_DLEXT_USE_LIBRARY_FD,
             .library_fd = fd,
         };
-        if (void *h = android_dlopen_ext("/jit-cache", RTLD_LAZY, &info)) {
+        if (void *h = android_dlopen_ext("/memfd:anon", RTLD_LAZY, &info)) {
             if (void *e = dlsym(h, "zygisk_module_entry")) {
                 modules.emplace_back(i, h, e);
             }
@@ -407,7 +407,7 @@ void ZygiskContext::app_specialize_pre() {
 void ZygiskContext::app_specialize_post() {
     run_modules_post();
     if (info_flags & +ZygiskStateFlags::ProcessIsMagiskApp) {
-        setenv("ZYGISK_ENABLED", "1", 1);
+        setenv("ZYG_ENABLED", "1", 1);
     }
 
     // Cleanups

@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
@@ -44,7 +45,7 @@ class SettingsViewModel : BaseViewModel() {
     fun toggleDenyList(enabled: Boolean) {
         _denyListEnabled.value = enabled
         val cmd = if (enabled) "enable" else "disable"
-        Shell.cmd("magisk --denylist $cmd").submit { result ->
+        Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist $cmd").submit { result ->
             if (result.isSuccess) {
                 Config.denyList = enabled
             } else {

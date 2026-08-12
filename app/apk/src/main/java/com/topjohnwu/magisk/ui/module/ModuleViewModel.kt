@@ -112,7 +112,7 @@ class ModuleViewModel : AsyncLoadViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val port = (8100..8999).random()
             // Start busybox httpd serving the module's webroot on a local port
-            Shell.cmd("busybox httpd -f -p $port -h /data/adb/modules/$id/webroot &>/dev/null &").exec()
+            Shell.cmd("busybox httpd -f -p $port -h ${Const.MODULE_PATH}/$id/webroot &>/dev/null &").exec()
             withContext(Dispatchers.Main) {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://127.0.0.1:$port/"))
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

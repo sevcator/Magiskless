@@ -50,7 +50,7 @@ wait_for_pm() {
 
 run_setup() {
   local variant=$1
-  adb shell 'PATH=$PATH:/debug_ramdisk magisk -v'
+  adb shell 'PATH=$PATH:/debug_ramdisk ms -v'
 
   # Install the Magisk app
   adb install -r -g out/app-${variant}.apk

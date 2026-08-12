@@ -19,10 +19,11 @@
 #####################################################################
 
 mount_tmpfs() {
-  # If a file name 'magisk' is in current directory, mount will fail
-  mv magisk magisk.tmp
-  mount -t tmpfs -o 'mode=0755' magisk $1
-  mv magisk.tmp magisk
+  # If a file matches the tmpfs source label, mount may treat it as a path.
+  local source=${MAIN_BIN_NAME:-ms}
+  [ -f "$source" ] && mv "$source" "$source.tmp"
+  mount -t tmpfs -o 'mode=0755' "$source" $1
+  [ -f "$source.tmp" ] && mv "$source.tmp" "$source"
 }
 
 mount_sbin() {
@@ -71,8 +72,10 @@ if $IS64BIT && [ -e "/system/bin/linker" ]; then
   chmod 755 magisk32
 fi
 
+[ -f magisk ] && mv magisk "$MAIN_BIN_NAME"
+
 # Stop zygote (and previous setup if exists)
-magisk --stop 2>/dev/null
+./$MAIN_BIN_NAME --stop 2>/dev/null
 stop
 if [ -d /debug_ramdisk ]; then
   umount -l /debug_ramdisk 2>/dev/null
@@ -127,22 +130,28 @@ fi
 # Magisk stuff
 mkdir -p $MAGISKBIN 2>/dev/null
 unzip -oj magisk.apk 'assets/*.sh' -d $MAGISKBIN
-mkdir /data/adb/modules 2>/dev/null
-mkdir /data/adb/post-fs-data.d 2>/dev/null
-mkdir /data/adb/service.d 2>/dev/null
+mkdir ${SECURE_DIR}/modules 2>/dev/null
+mkdir ${SECURE_DIR}/post-fs-data.d 2>/dev/null
+mkdir ${SECURE_DIR}/service.d 2>/dev/null
 
-for file in magisk magisk32 magiskpolicy stub.apk; do
+for file in "$MAIN_BIN_NAME" mpol stub.apk; do
+  [ -f "./$file" ] || continue
   chmod 755 ./$file
   cp -af ./$file $MAGISKTMP/$file
   cp -af ./$file $MAGISKBIN/$file
 done
-cp -af ./magiskboot $MAGISKBIN/magiskboot
-cp -af ./magiskinit $MAGISKBIN/magiskinit
+[ -f ./magisk32 ] && {
+  chmod 755 ./magisk32
+  cp -af ./magisk32 $MAGISKTMP/${MAIN_BIN_NAME}32
+  cp -af ./magisk32 $MAGISKBIN/magisk32
+}
+cp -af ./mboot $MAGISKBIN/mboot
+cp -af ./minit $MAGISKBIN/minit
 cp -af ./busybox $MAGISKBIN/busybox
 
-ln -s ./magisk $MAGISKTMP/su
-ln -s ./magisk $MAGISKTMP/resetprop
-ln -s ./magiskpolicy $MAGISKTMP/supolicy
+ln -s ./$MAIN_BIN_NAME $MAGISKTMP/su
+ln -s ./$MAIN_BIN_NAME $MAGISKTMP/resetprop
+ln -s ./mpol $MAGISKTMP/supolicy
 
 mkdir -p $MAGISKTMP/.ms/device
 mkdir -p $MAGISKTMP/.ms/worker
@@ -151,7 +160,7 @@ mount --make-private $MAGISKTMP/.ms/worker
 touch $MAGISKTMP/.ms/config
 
 export MAGISKTMP
-MAKEDEV=1 $MAGISKTMP/magisk --preinit-device 2>&1
+MAKEDEV=1 $MAGISKTMP/$MAIN_BIN_NAME --preinit-device 2>&1
 
 RULESCMD=""
 rule="$MAGISKTMP/.ms/preinit/sepolicy.rule"
@@ -160,18 +169,18 @@ rule="$MAGISKTMP/.ms/preinit/sepolicy.rule"
 # SELinux stuffs
 if [ -d /sys/fs/selinux ]; then
   if [ -f /vendor/etc/selinux/precompiled_sepolicy ]; then
-    ./magiskpolicy --load /vendor/etc/selinux/precompiled_sepolicy --live --magisk $RULESCMD 2>&1
+    ./mpol --load /vendor/etc/selinux/precompiled_sepolicy --live --rules $RULESCMD 2>&1
   elif [ -f /sepolicy ]; then
-    ./magiskpolicy --load /sepolicy --live --magisk $RULESCMD 2>&1
+    ./mpol --load /sepolicy --live --rules $RULESCMD 2>&1
   else
-    ./magiskpolicy --live --magisk $RULESCMD 2>&1
+    ./mpol --live --rules $RULESCMD 2>&1
   fi
 fi
 
 # Boot up
-$MAGISKTMP/magisk --post-fs-data
+$MAGISKTMP/$MAIN_BIN_NAME --post-fs-data
 start
-$MAGISKTMP/magisk --service
+$MAGISKTMP/$MAIN_BIN_NAME --service
 # Make sure reset nb prop after zygote starts
 sleep 2
-$MAGISKTMP/magisk --boot-complete
+$MAGISKTMP/$MAIN_BIN_NAME --boot-complete

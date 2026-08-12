@@ -155,6 +155,18 @@ abstract class MagiskInstallImpl protected constructor(
                 }
             }
 
+            // Native dispatch recognizes the generated runtime name, not the
+            // fixed APK packaging name (libmagisk.so -> magisk).
+            val packagedMain = File(installDir, "magisk")
+            val runtimeMain = File(installDir, BuildConfig.MAIN_BIN_NAME)
+            if (packagedMain != runtimeMain && packagedMain.exists()) {
+                if (!packagedMain.renameTo(runtimeMain)) {
+                    packagedMain.copyTo(runtimeMain, overwrite = true)
+                    packagedMain.delete()
+                }
+                runtimeMain.setExecutable(true)
+            }
+
             // Extract scripts
             for (script in listOf("util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk")) {
                 val dest = File(installDir, script)
@@ -300,10 +312,10 @@ abstract class MagiskInstallImpl protected constructor(
                     arrayOf(
                         "cd $installDir",
                         "chmod -R 755 .",
-                        "./magiskboot unpack boot.img",
-                        "./magiskboot repack boot.img",
+                        "./mboot unpack boot.img",
+                        "./mboot repack boot.img",
                         "cat new-boot.img > boot.img",
-                        "./magiskboot cleanup",
+                        "./mboot cleanup",
                         "rm -f new-boot.img",
                         "cd /").sh()
                     boot.copyTo(tarOut)
@@ -367,7 +379,7 @@ abstract class MagiskInstallImpl protected constructor(
             // Enqueue the shell command first, or the subsequent FIFO open will block
             val future = arrayOf(
                 "cd $installDir",
-                "./magiskboot extract $fifo",
+                "./mboot extract $fifo",
                 "cd /"
             ).eq()
 
@@ -543,7 +555,7 @@ abstract class MagiskInstallImpl protected constructor(
             "sh boot_patch.sh $srcBoot")
         val isSuccess = cmds.sh().isSuccess
 
-        shell.newJob().add("./magiskboot cleanup", "cd /").exec()
+        shell.newJob().add("./mboot cleanup", "cd /").exec()
 
         return isSuccess
     }

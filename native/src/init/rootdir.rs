@@ -1,4 +1,4 @@
-use crate::consts::{MAGISK_PROC_CON, ROOTMNT, ROOTOVL};
+use crate::consts::{MAGISK_PROC_CON, MAIN_BIN_NAME, ROOTMNT, ROOTOVL};
 use crate::ffi::MagiskInit;
 use base::nix::fcntl::OFlag;
 use base::{
@@ -19,18 +19,18 @@ pub fn inject_magisk_rc(fd: RawFd, tmp_dir: &Utf8CStr) {
         file,
         r#"
 on post-fs-data
-    exec {0} 0 0 -- {1}/magisk --post-fs-data
+    exec {0} 0 0 -- {1}/{2} --post-fs-data
 
 on property:vold.decrypt=trigger_restart_framework
-    exec {0} 0 0 -- {1}/magisk --service
+    exec {0} 0 0 -- {1}/{2} --service
 
 on nonencrypted
-    exec {0} 0 0 -- {1}/magisk --service
+    exec {0} 0 0 -- {1}/{2} --service
 
 on property:sys.boot_completed=1
-    exec {0} 0 0 -- {1}/magisk --boot-complete
+    exec {0} 0 0 -- {1}/{2} --boot-complete
 "#,
-        MAGISK_PROC_CON, tmp_dir
+        MAGISK_PROC_CON, tmp_dir, MAIN_BIN_NAME
     )
     .ok();
 
@@ -41,7 +41,7 @@ pub struct OverlayAttr(Utf8CString, Utf8CString);
 
 impl MagiskInit {
     pub(crate) fn parse_config_file(&mut self) {
-        if let Ok(fd) = cstr!("/data/.backup/.magisk").open(OFlag::O_RDONLY) {
+        if let Ok(fd) = cstr!("/data/.backup/.cfg").open(OFlag::O_RDONLY) {
             let mut reader = BufReader::new(fd);
             reader.for_each_prop(|key, val| {
                 if key == "PREINITDEVICE" {

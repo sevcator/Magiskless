@@ -56,6 +56,7 @@ cd $BINDIR
 for file in lib*.so; do mv "$file" "${file:3:${#file}-6}"; done
 cd /
 cp -af $INSTALLER/lib/$ABI32/libmagisk.so $BINDIR/magisk32 2>/dev/null
+[ -f $BINDIR/magisk ] && mv $BINDIR/magisk $BINDIR/$MAIN_BIN_NAME
 
 # Check if system root is installed and remove
 $BOOTMODE || remove_system_su
@@ -82,7 +83,7 @@ if [ -d /system/addon.d ]; then
   ui_print "- Adding addon.d survival script"
   blockdev --setrw /dev/block/mapper/system$SLOT 2>/dev/null
   mount -o rw,remount /system || mount -o rw,remount /
-  ADDOND=/system/addon.d/99-magisk.sh
+  ADDOND=/system/addon.d/99-ms.sh
   cp -af $COMMONDIR/addon.d.sh $ADDOND
   chmod 755 $ADDOND
 fi

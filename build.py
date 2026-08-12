@@ -12,6 +12,7 @@ import string
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 from pathlib import Path
 from zipfile import ZipFile
@@ -78,9 +79,11 @@ abi_alias = {
     "x64": "x86_64",
 }
 default_abis = support_abis.keys() - {"riscv64"}
-support_targets = {"magisk", "magiskinit", "magiskboot", "magiskpolicy", "resetprop"}
+support_targets = {"magisk", "minit", "mboot", "mpol", "resetprop"}
 default_targets = support_targets - {"resetprop"}
 rust_targets = default_targets.copy()
+# Map from binary target names to Rust crate (cargo package) names
+rust_crate_map = {"minit": "magiskinit", "mboot": "magiskboot", "mpol": "magiskpolicy"}
 clean_targets = {"native", "cpp", "rust", "app"}
 ondk_version = "r30.1"
 
@@ -170,7 +173,7 @@ def clean_elf():
         cmds.append("--verbose")
     cmds.append("--")
     cmds.extend(glob.glob("native/out/*/magisk"))
-    cmds.extend(glob.glob("native/out/*/magiskpolicy"))
+    cmds.extend(glob.glob("native/out/*/mpol"))
     run_cargo(cmds)
 
 
@@ -207,11 +210,11 @@ def build_cpp_src(targets: set[str]):
         cmds.append("B_MAGISK=1")
         clean = True
 
-    if "magiskpolicy" in targets:
+    if "mpol" in targets:
         cmds.append("B_POLICY=1")
         clean = True
 
-    if "magiskinit" in targets:
+    if "minit" in targets:
         cmds.append("B_PRELOAD=1")
 
     if "resetprop" in targets:
@@ -223,10 +226,10 @@ def build_cpp_src(targets: set[str]):
 
     cmds.clear()
 
-    if "magiskinit" in targets:
+    if "minit" in targets:
         cmds.append("B_INIT=1")
 
-    if "magiskboot" in targets:
+    if "mboot" in targets:
         cmds.append("B_BOOT=1")
 
     if cmds:
@@ -280,7 +283,8 @@ def build_rust_src(targets: set[str]):
         cmds.append(triple)
 
     for tgt in targets:
-        cmds[2] = tgt
+        cargo_tgt = rust_crate_map.get(tgt, tgt)
+        cmds[2] = cargo_tgt
         proc = run_cargo(cmds)
         if proc.returncode != 0:
             error("Build binary failed!")
@@ -293,8 +297,9 @@ def build_rust_src(targets: set[str]):
         arch_out = native_out / arch
         arch_out.mkdir(mode=0o755, exist_ok=True)
         for tgt in targets:
-            source = rust_out / triple / profile / f"lib{tgt}.a"
-            target = arch_out / f"lib{tgt}-rs.a"
+            cargo_tgt = rust_crate_map.get(tgt, tgt)
+            source = rust_out / triple / profile / f"lib{cargo_tgt}.a"
+            target = arch_out / f"lib{cargo_tgt}-rs.a"
             mv(source, target)
 
 
@@ -312,11 +317,42 @@ def write_if_diff(file_name: Path, text: str):
 def dump_flag_header():
     build_id = ''.join(random.choices(string.ascii_lowercase, k=5))
 
+    # randomizeSecureDir=true generates a random /data/.<id> path each build
+    if config.get("randomizeSecureDir", "false").lower() == "true":
+        secure_dir = "/data/." + ''.join(random.choices(string.ascii_lowercase, k=5))
+    else:
+        secure_dir = config.get("secureDir", "/data/adb")
+    if (
+        not re.fullmatch(r"/data/[A-Za-z0-9._/-]+", secure_dir)
+        or "/../" in f"{secure_dir}/"
+        or secure_dir.endswith("/")
+    ):
+        error(f'Invalid secureDir: "{secure_dir}"')
+
+    # Build spoof values (empty string = disabled)
+    spoof_fp = config.get("spoofFingerprint", "")
+    spoof_mfr = config.get("spoofManufacturer", "")
+    spoof_model = config.get("spoofModel", "")
+    spoof_product = config.get("spoofProduct", "")
+    spoof_device = config.get("spoofDevice", "")
+    spoof_bid = config.get("spoofBuildId", "")
+    spoof_patch = config.get("spoofSecurityPatch", "")
+    spoof_ver = config.get("spoofVersionRelease", "")
+
     flag_txt = "#pragma once\n"
     flag_txt += f'#define MAGISK_VERSION      "{config["version"]}"\n'
     flag_txt += f'#define MAGISK_VER_CODE     {config["versionCode"]}\n'
     flag_txt += f"#define MAGISK_DEBUG        {0 if args.release else 1}\n"
     flag_txt += f'#define BUILD_ID            "{build_id}"\n'
+    flag_txt += f'#define BUILD_SECURE_DIR    "{secure_dir}"\n'
+    flag_txt += f'#define SPOOF_FINGERPRINT   "{spoof_fp}"\n'
+    flag_txt += f'#define SPOOF_MANUFACTURER  "{spoof_mfr}"\n'
+    flag_txt += f'#define SPOOF_MODEL         "{spoof_model}"\n'
+    flag_txt += f'#define SPOOF_PRODUCT       "{spoof_product}"\n'
+    flag_txt += f'#define SPOOF_DEVICE        "{spoof_device}"\n'
+    flag_txt += f'#define SPOOF_BUILD_ID      "{spoof_bid}"\n'
+    flag_txt += f'#define SPOOF_SECURITY_PATCH "{spoof_patch}"\n'
+    flag_txt += f'#define SPOOF_VERSION_RELEASE "{spoof_ver}"\n'
 
     native_gen_path = Path("native", "out", "generated")
     native_gen_path.mkdir(mode=0o755, parents=True, exist_ok=True)
@@ -325,6 +361,15 @@ def dump_flag_header():
     rust_flag_txt = f'pub const MAGISK_VERSION: &str = "{config["version"]}";\n'
     rust_flag_txt += f'pub const MAGISK_VER_CODE: i32 = {config["versionCode"]};\n'
     rust_flag_txt += f'pub const BUILD_ID: &str = "{build_id}";\n'
+    rust_flag_txt += f'pub const BUILD_SECURE_DIR: &str = "{secure_dir}";\n'
+    rust_flag_txt += f'pub const SPOOF_FINGERPRINT: &str = "{spoof_fp}";\n'
+    rust_flag_txt += f'pub const SPOOF_MANUFACTURER: &str = "{spoof_mfr}";\n'
+    rust_flag_txt += f'pub const SPOOF_MODEL: &str = "{spoof_model}";\n'
+    rust_flag_txt += f'pub const SPOOF_PRODUCT: &str = "{spoof_product}";\n'
+    rust_flag_txt += f'pub const SPOOF_DEVICE: &str = "{spoof_device}";\n'
+    rust_flag_txt += f'pub const SPOOF_BUILD_ID: &str = "{spoof_bid}";\n'
+    rust_flag_txt += f'pub const SPOOF_SECURITY_PATCH: &str = "{spoof_patch}";\n'
+    rust_flag_txt += f'pub const SPOOF_VERSION_RELEASE: &str = "{spoof_ver}";\n'
     write_if_diff(native_gen_path / "flags.rs", rust_flag_txt)
 
 
@@ -382,12 +427,13 @@ def find_jdk():
     try:
         proc = subprocess.run(
             "javac -version",
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             env=env,
             shell=True,
+            text=True,
         )
-        no_jdk = proc.returncode != 0
+        no_jdk = proc.returncode != 0 or not proc.stdout.strip().startswith("javac 21")
     except FileNotFoundError:
         no_jdk = True
 
@@ -400,6 +446,16 @@ def find_jdk():
     return env
 
 
+def _read_generated_flag(name: str, fallback: str) -> str:
+    flags_h = Path("native", "out", "generated", "flags.h")
+    if flags_h.exists():
+        for line in flags_h.read_text().splitlines():
+            match = re.fullmatch(rf'#define\s+{re.escape(name)}\s+"([^"]*)"', line)
+            if match:
+                return match.group(1)
+    return fallback
+
+
 def build_apk(module: str):
     ensure_paths()
     env = find_jdk()
@@ -410,7 +466,10 @@ def build_apk(module: str):
     gradle_build_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
     write_if_diff(
         gradle_build_dir / "flags.prop",
-        f"version={config['version']}\nabiList={','.join(build_abis.keys())}\n",
+        f"version={config['version']}\n"
+        f"abiList={','.join(build_abis.keys())}\n"
+        f"mainBinName={_read_generated_flag('BUILD_ID', 'ms')}\n"
+        f"secureDir={_read_generated_flag('BUILD_SECURE_DIR', config.get('secureDir', '/data/adb'))}\n",
     )
 
     os.chdir("app")
@@ -595,19 +654,33 @@ def setup_ndk():
     ensure_paths()
     url = f"https://github.com/topjohnwu/ondk/releases/download/{ondk_version}/ondk-{ondk_version}-{os_name}.tar.xz"
     ndk_archive = url.split("/")[-1]
-    ondk_path = Path(ndk_root, f"ondk-{ondk_version}")
+    staging_dir = Path(tempfile.mkdtemp(prefix=".magisk-ondk-", dir=ndk_root))
 
     header(f"* Downloading and extracting {ndk_archive}")
-    rm_rf(ondk_path)
-    with urllib.request.urlopen(url) as response:
-        with tarfile.open(mode="r|xz", fileobj=response) as tar:
-            if hasattr(tarfile, "data_filter"):
-                tar.extractall(ndk_root, filter="tar")
-            else:
-                tar.extractall(ndk_root)
+    try:
+        with urllib.request.urlopen(url) as response:
+            # Python 3.14 may need to seek backwards while resolving links in
+            # the archive, which is impossible with tarfile's streaming mode.
+            with tempfile.TemporaryFile() as archive:
+                shutil.copyfileobj(response, archive)
+                archive.seek(0)
+                with tarfile.open(mode="r:xz", fileobj=archive) as tar:
+                    if hasattr(tarfile, "data_filter"):
+                        tar.extractall(staging_dir, filter="tar")
+                    else:
+                        tar.extractall(staging_dir)
 
-    rm_rf(ndk_path)
-    mv(ondk_path, ndk_path)
+        markers = list(staging_dir.rglob("ONDK_VERSION"))
+        if len(markers) != 1 or markers[0].read_text().strip() != ondk_version:
+            error(f"Invalid {ndk_archive} layout")
+        extracted_ndk_path = markers[0].parent
+
+        if ndk_path.exists():
+            rm_rf(ndk_path)
+        shutil.move(extracted_ndk_path, ndk_path)
+    finally:
+        if staging_dir.exists():
+            rm_rf(staging_dir)
 
 
 def setup_rustup():

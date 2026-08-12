@@ -87,7 +87,7 @@ impl MagiskInit {
         .check_os_err("mount", Some("/data"), Some("tmpfs"))
         .log_ok();
 
-        cstr!("/init").copy_to(cstr!("/data/magiskinit")).ok();
+        cstr!("/init").copy_to(cstr!("/data/._init")).ok();
         cstr!("/.backup").copy_to(cstr!("/data/.backup")).ok();
         cstr!("/overlay.d").copy_to(cstr!("/data/overlay.d")).ok();
     }
