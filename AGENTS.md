@@ -19,7 +19,7 @@ Guidelines and instructions for AI models and automated agents operating in the 
 
 - **Build Complete Project (APK + Native):** `./build.py all`
 - **Build Native Components:** `./build.py native [target...]`
-- **Build Application Targets:** `./build.py app`, `./build.py stub`, `./build.py test`
+- **Build Application Targets:** `./build.py app`, `./build.py stub`
 - **Rust Verification & Linting:** `./build.py clippy`, `./build.py cargo <cargo-commands...>`
 - **Clean Build Artifacts:** `./build.py clean [native|cpp|rust|java|app]`
 

@@ -15,7 +15,6 @@ import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.AppMigration
-import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.superuser.Shell
@@ -39,18 +38,18 @@ class SplashController<T>(private val activity: T)
 
     private var shouldCreateUiOnResume = false
 
+    val showingSplash: Boolean
+        get() = !splashShown
+
     fun preOnCreate() {
         if (isRunningAsStub && !splashShown) {
             StartupTheme.apply(activity, stub = true)
+        } else if (!isRunningAsStub) {
+            activity.installSplashScreen().setKeepOnScreenCondition { !splashShown }
         }
     }
 
     fun onCreate(savedInstanceState: Bundle?) {
-        if (!isRunningAsStub) {
-            val splashScreen = activity.installSplashScreen()
-            splashScreen.setKeepOnScreenCondition { !splashShown }
-        }
-
         if (splashShown) {
             doCreateUi(savedInstanceState)
         } else {
@@ -142,6 +141,5 @@ class SplashController<T>(private val activity: T)
         Notifications.setup()
         Shortcuts.setupDynamic(this)
 
-        RootUtils.Connection.await()
     }
 }

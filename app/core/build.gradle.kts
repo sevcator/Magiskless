@@ -60,9 +60,4 @@ dependencies {
     implementation(libs.collection.ktx)
     implementation(libs.profileinstaller)
 
-    // We also implement all our tests in this module.
-    // However, we don't want to bundle test dependencies.
-    // That's why we make it compileOnly.
-    compileOnly(libs.test.junit)
-    compileOnly(libs.test.uiautomator)
 }

@@ -69,7 +69,6 @@ void exec_common_scripts(Utf8CStr stage);
 void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_list);
 void exec_script(Utf8CStr script);
 void clear_pkg(const char *pkg, int user_id);
-[[noreturn]] void install_module(Utf8CStr file);
 
 // Denylist
 extern std::atomic<bool> denylist_enforced;

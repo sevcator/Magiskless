@@ -31,6 +31,10 @@ object Theme {
 
     fun apply(activity: Activity) {
         activity.setTheme(R.style.ThemeFoundationMD2)
+        applyOverlays(activity)
+    }
+
+    fun applyOverlays(activity: Activity) {
         activity.theme.applyStyle(primaryStyles[Config.accentPrimary.coerceIn(0, COLOR_COUNT - 1)], true)
         activity.theme.applyStyle(
             secondaryStyles[Config.accentSecondary.coerceIn(0, COLOR_COUNT - 1)],

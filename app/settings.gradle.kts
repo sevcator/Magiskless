@@ -8,4 +8,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Reisenless"
-include(":apk", ":core", ":shared", ":stub", ":stub-res", ":test")
+include(":apk", ":core", ":shared", ":stub", ":stub-res")

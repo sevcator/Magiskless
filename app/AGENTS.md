@@ -16,7 +16,6 @@ Multi-module Gradle project structure:
 - **`:shared`** (`shared/`): Shared utilities and common data structures.
 - **`:stub`** (`stub/`): Lightweight stub app loader for hidden installs.
 - **`:stub-res`** (`stub-res/`): Stub-specific Android resources.
-- **`:test`** (`test/`): Application testing target.
 - **`buildSrc`** (`buildSrc/`): Custom Gradle plugins and build logic.
 
 ## 3. Development Guidelines
@@ -33,5 +32,4 @@ Prefix commands with `../scripts/env.py`:
 - **Build All Variants:** `../scripts/env.py ./gradlew assembleDebug`
 - **Build Stub APK:** `../scripts/env.py ./gradlew :stub:assembleDebug`
 - **Run Lint:** `../scripts/env.py ./gradlew lint`
-- **Run Unit Tests:** `../scripts/env.py ./gradlew test`
 - **Clean Artifacts:** `../scripts/env.py ./gradlew clean`

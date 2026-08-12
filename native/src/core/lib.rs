@@ -161,7 +161,6 @@ pub mod ffi {
         fn exec_module_scripts(state: Utf8CStrRef, modules: &Vec<ModuleInfo>);
         fn install_apk(apk: Utf8CStrRef);
         fn uninstall_pkg(apk: Utf8CStrRef);
-        fn install_module(zip: Utf8CStrRef);
 
         // Denylist
         fn denylist_cli(args: &mut Vec<String>) -> i32;

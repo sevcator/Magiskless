@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="SplashTheme">
+        <item name="postSplashScreenTheme">@style/ThemeFoundationMD2</item>
+    </style>
+
     <style name="ThemeFoundationMD2" parent="Foundation.Default">
         <item name="colorPrimary">#4EAFF5</item>
         <item name="colorPrimaryVariant">#804EAFF5</item>

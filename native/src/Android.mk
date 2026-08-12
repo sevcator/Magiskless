@@ -110,25 +110,6 @@ include $(BUILD_EXECUTABLE)
 
 endif
 
-ifdef B_PROP
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := resetprop
-LOCAL_STATIC_LIBRARIES := \
-    libbase \
-    libsystemproperties \
-    libmagisk-rs
-
-LOCAL_SRC_FILES := \
-    core/applet_stub.cpp \
-    core/resetprop/sys.cpp \
-    core/core-rs.cpp
-
-LOCAL_CFLAGS := -DAPPLET_STUB_MAIN=resetprop_main
-include $(BUILD_EXECUTABLE)
-
-endif
-
 ########################
 # Libraries
 ########################

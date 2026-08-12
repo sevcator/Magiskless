@@ -37,3 +37,13 @@ The app no longer follows the system theme, uses Android dynamic colors, or expo
 The primary app ID is `io.sevcator.reisenless`. Hidden installs still use generated package IDs, and the stub retains its fixed loader namespace because it is rewritten during hiding. User-facing Magisk branding is Reisenless, while low-level Magisk protocol, binary, database, and source identifiers remain unchanged for compatibility.
 
 The startup color is stored independently from the light/dark and accent selections. Pink is the default. Pink, purple, blue, green, amber, red, and teal use the white Reisen silhouette; white uses the black silhouette to preserve contrast. The original root-level image is copied into the Android drawable resources and removed so there is a single packaged source of truth.
+
+## Startup lifecycle
+
+The platform splash is installed before `Activity.onCreate`, and the final activity theme plus accent overlays are established before view inflation. UI creation no longer waits for the root Binder service; root-backed operations connect lazily. Shell initialization has a bounded timeout so a missing or incompatible installed daemon cannot leave the application permanently on its logo.
+
+## Runtime and repository scope
+
+The main native binary remains because it is the superuser daemon, module mount engine, Zygisk coordinator, boot-stage dispatcher, and settings database endpoint. Only its redundant `--install-module` CLI command was removed; module installation in the application remains. The separate resetprop executable target was removed, while the embedded resetprop applet used by modules and the daemon remains.
+
+The standalone test APK, downloaded third-party test modules, Cuttlefish scripts, and emulator-matrix CI jobs are not release inputs and were removed. CI now performs one release native build and one release APK build, then uploads the APK.

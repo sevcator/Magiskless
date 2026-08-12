@@ -68,6 +68,11 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
     override fun onCreate(savedInstanceState: Bundle?) {
         StartupTheme.apply(this)
         splashController.preOnCreate()
+        if (isRunningAsStub && !splashController.showingSplash) {
+            Theme.apply(this)
+        } else if (!isRunningAsStub) {
+            Theme.applyOverlays(this)
+        }
         super.onCreate(savedInstanceState)
         splashController.onCreate(savedInstanceState)
     }
@@ -79,7 +84,6 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
 
     @SuppressLint("InlinedApi")
     override fun onCreateUi(savedInstanceState: Bundle?) {
-        Theme.apply(this)
         setContentView()
         showUnsupportedMessage()
         askForHomeShortcut()

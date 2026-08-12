@@ -1,6 +1,6 @@
 use crate::consts::{APPLET_NAMES, MAGISK_VER_CODE, MAGISK_VERSION, POST_FS_DATA_WAIT_TIME};
 use crate::daemon::connect_daemon;
-use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, install_module, unlock_blocks};
+use crate::ffi::{RequestCode, denylist_cli, get_magisk_tmp, unlock_blocks};
 use crate::mount::find_preinit_device;
 use crate::selinux::restorecon;
 use crate::socket::{Decodable, Encodable};
@@ -24,7 +24,6 @@ Options:
    -V                        print running daemon version code
    --list                    list all available applets
    --remove-modules [-n]     remove all modules, reboot if -n is not provided
-   --install-module ZIP      install a module zip file
 
 Advanced Options (Internal APIs):
    --daemon                  manually start ms daemon
@@ -61,7 +60,6 @@ enum MagiskAction {
     VersionCode(VersionCode),
     List(ListApplets),
     RemoveModules(RemoveModules),
-    InstallModule(InstallModule),
     Daemon(StartDaemon),
     Stop(StopDaemon),
     PostFsData(PostFsData),
@@ -99,13 +97,6 @@ struct ListApplets {}
 struct RemoveModules {
     #[argh(switch, short = 'n')]
     no_reboot: bool,
-}
-
-#[derive(FromArgs)]
-#[argh(subcommand, name = "--install-module")]
-struct InstallModule {
-    #[argh(positional)]
-    zip: Utf8CString,
 }
 
 #[derive(FromArgs)]
@@ -210,9 +201,6 @@ impl MagiskAction {
                 let do_reboot = !no_reboot;
                 do_reboot.encode(&mut fd)?;
                 return Ok(i32::decode(&mut fd)?);
-            }
-            InstallModule(self::InstallModule { zip }) => {
-                install_module(&zip);
             }
             Daemon(_) => {
                 let _ = connect_daemon(RequestCode::START_DAEMON, true)?;

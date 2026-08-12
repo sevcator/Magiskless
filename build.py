@@ -80,8 +80,8 @@ abi_alias = {
     "x64": "x86_64",
 }
 default_abis = support_abis.keys() - {"riscv64"}
-support_targets = {"magisk", "minit", "mboot", "mpol", "resetprop"}
-default_targets = support_targets - {"resetprop"}
+support_targets = {"magisk", "minit", "mboot", "mpol"}
+default_targets = support_targets.copy()
 rust_targets = default_targets.copy()
 # Map from binary target names to Rust crate (cargo package) names
 rust_crate_map = {"minit": "magiskinit", "mboot": "magiskboot", "mpol": "magiskpolicy"}
@@ -218,9 +218,6 @@ def build_cpp_src(targets: set[str]):
     if "minit" in targets:
         cmds.append("B_PRELOAD=1")
 
-    if "resetprop" in targets:
-        cmds.append("B_PROP=1")
-
     if cmds:
         run_ndk_build(cmds)
         collect_ndk_build()
@@ -262,8 +259,6 @@ def run_cargo(cmds: list[str]):
 
 def build_rust_src(targets: set[str]):
     targets = targets.copy()
-    if "resetprop" in targets:
-        targets.add("magisk")
     targets = targets & rust_targets
     if not targets:
         return
@@ -609,20 +604,6 @@ def build_stub():
     header(f"Output: {apk}")
 
 
-def build_test():
-    old_release = args.release
-    # Test APK has to be built as release to prevent classname clash
-    args.release = True
-    try:
-        header("* Building the test app")
-        source = build_apk(":test")
-        target = source.parent / "test.apk"
-        mv(source, target)
-        header(f"Output: {target}")
-    finally:
-        args.release = old_release
-
-
 ################
 # Build General
 ################
@@ -666,7 +647,6 @@ def cleanup():
 def build_all():
     build_native()
     build_app()
-    build_test()
 
 
 ############
@@ -695,7 +675,6 @@ def gen_ide():
             "B_BOOT=1",
             "B_POLICY=1",
             "B_PRELOAD=1",
-            "B_PROP=1",
             "B_CRT0=1",
             "compile_commands.json",
         ]
@@ -1004,8 +983,6 @@ def parse_args():
 
     stub_parser = subparsers.add_parser("stub", help="build the stub app")
 
-    test_parser = subparsers.add_parser("test", help="build the test app")
-
     clean_parser = subparsers.add_parser("clean", help="cleanup")
     clean_parser.add_argument(
         "targets", nargs="*", help="native, cpp, rust, java, or empty to clean all"
@@ -1062,7 +1039,6 @@ def parse_args():
     gen_parser.set_defaults(func=gen_ide)
     app_parser.set_defaults(func=build_app)
     stub_parser.set_defaults(func=build_stub)
-    test_parser.set_defaults(func=build_test)
     emu_parser.set_defaults(func=setup_avd)
     avd_patch_parser.set_defaults(func=patch_avd_file)
     clean_parser.set_defaults(func=cleanup)

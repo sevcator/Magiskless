@@ -116,7 +116,7 @@ object AppContext : ContextWrapper(null),
             .setFlags(Shell.FLAG_MOUNT_MASTER)
             .setInitializers(ShellInit::class.java)
             .setContext(this)
-            .setTimeout(120)
+            .setTimeout(20)
         if (suCmd != null) shellBuilder.setCommands(suCmd)
         Shell.setDefaultBuilder(shellBuilder)
         Shell.EXECUTOR = Dispatchers.IO.asExecutor()
