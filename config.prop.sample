@@ -69,6 +69,8 @@ keyPass=string
 # Randomize the binary/daemon names each build (default: true)
 # Binary names are derived from a random 5-char BUILD_ID so every
 # build produces unique executable names — no shared string across installs.
+# Set false for the stable BUILD_ID "ms". Partial native builds preserve the
+# identity of the existing full native output and reject configuration changes.
 # randomizeName=true
 
 # Randomize the secure storage path each build instead of using secureDir above

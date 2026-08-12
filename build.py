@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import glob
+import json
 import multiprocessing
 import os
 import platform
@@ -253,7 +254,10 @@ def run_cargo(cmds: list[str]):
         env["DYLD_FALLBACK_LIBRARY_PATH"] = str(rust_sysroot / "lib")
     elif os_name == "linux":
         env["LD_LIBRARY_PATH"] = str(rust_sysroot / "lib")
-    return execv(["cargo", *cmds], env)
+    proc = execv(["cargo", *cmds], env)
+    if proc.returncode != 0:
+        error(f"Cargo command failed with exit code {proc.returncode}")
+    return proc
 
 
 def build_rust_src(targets: set[str]):
@@ -306,16 +310,69 @@ def build_rust_src(targets: set[str]):
 def write_if_diff(file_name: Path, text: str):
     do_write = True
     if file_name.exists():
-        with open(file_name, "r") as f:
+        with open(file_name, "r", encoding="utf-8") as f:
             orig = f.read()
         do_write = orig != text
     if do_write:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
 
 
+def _build_flag_metadata():
+    return {
+        "version": config["version"],
+        "versionCode": config["versionCode"],
+        "release": args.release,
+        "randomizeName": config.get("randomizeName", "true").lower() == "true",
+        "secureDir": config.get("secureDir", "/data/adb"),
+        "randomizeSecureDir": config.get("randomizeSecureDir", "false").lower()
+        == "true",
+        "spoofFingerprint": config.get("spoofFingerprint", ""),
+        "spoofManufacturer": config.get("spoofManufacturer", ""),
+        "spoofModel": config.get("spoofModel", ""),
+        "spoofProduct": config.get("spoofProduct", ""),
+        "spoofDevice": config.get("spoofDevice", ""),
+        "spoofBuildId": config.get("spoofBuildId", ""),
+        "spoofSecurityPatch": config.get("spoofSecurityPatch", ""),
+        "spoofVersionRelease": config.get("spoofVersionRelease", ""),
+    }
+
+
+def _validate_generated_flags(action: str):
+    native_gen_path = Path("native", "out", "generated")
+    flags_h = native_gen_path / "flags.h"
+    flags_rs = native_gen_path / "flags.rs"
+    metadata_file = native_gen_path / "flags.json"
+    if not flags_h.exists() or not flags_rs.exists() or not metadata_file.exists():
+        error(f"Native build identity is missing. {action}")
+
+    try:
+        metadata = json.loads(metadata_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        error(f"Native build identity is invalid. {action}")
+
+    if metadata != _build_flag_metadata():
+        error(f"Native build identity does not match this configuration. {action}")
+
+    build_id = _read_generated_flag("BUILD_ID", "")
+    secure_dir = _read_generated_flag("BUILD_SECURE_DIR", "")
+    if not re.fullmatch(r"[a-z]{2,16}", build_id) or not secure_dir:
+        error(f"Native build identity is invalid. {action}")
+
+
+def _escape_flag_string(value: str) -> str:
+    return (
+        value.replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\t", "\\t")
+    )
+
+
 def dump_flag_header():
-    build_id = ''.join(random.choices(string.ascii_lowercase, k=5))
+    if config.get("randomizeName", "true").lower() == "true":
+        build_id = ''.join(random.choices(string.ascii_lowercase, k=5))
+    else:
+        build_id = "ms"
 
     # randomizeSecureDir=true generates a random /data/.<id> path each build
     if config.get("randomizeSecureDir", "false").lower() == "true":
@@ -339,8 +396,18 @@ def dump_flag_header():
     spoof_patch = config.get("spoofSecurityPatch", "")
     spoof_ver = config.get("spoofVersionRelease", "")
 
+    version = _escape_flag_string(config["version"])
+    spoof_fp = _escape_flag_string(spoof_fp)
+    spoof_mfr = _escape_flag_string(spoof_mfr)
+    spoof_model = _escape_flag_string(spoof_model)
+    spoof_product = _escape_flag_string(spoof_product)
+    spoof_device = _escape_flag_string(spoof_device)
+    spoof_bid = _escape_flag_string(spoof_bid)
+    spoof_patch = _escape_flag_string(spoof_patch)
+    spoof_ver = _escape_flag_string(spoof_ver)
+
     flag_txt = "#pragma once\n"
-    flag_txt += f'#define MAGISK_VERSION      "{config["version"]}"\n'
+    flag_txt += f'#define MAGISK_VERSION      "{version}"\n'
     flag_txt += f'#define MAGISK_VER_CODE     {config["versionCode"]}\n'
     flag_txt += f"#define MAGISK_DEBUG        {0 if args.release else 1}\n"
     flag_txt += f'#define BUILD_ID            "{build_id}"\n'
@@ -358,7 +425,7 @@ def dump_flag_header():
     native_gen_path.mkdir(mode=0o755, parents=True, exist_ok=True)
     write_if_diff(native_gen_path / "flags.h", flag_txt)
 
-    rust_flag_txt = f'pub const MAGISK_VERSION: &str = "{config["version"]}";\n'
+    rust_flag_txt = f'pub const MAGISK_VERSION: &str = "{version}";\n'
     rust_flag_txt += f'pub const MAGISK_VER_CODE: i32 = {config["versionCode"]};\n'
     rust_flag_txt += f'pub const BUILD_ID: &str = "{build_id}";\n'
     rust_flag_txt += f'pub const BUILD_SECURE_DIR: &str = "{secure_dir}";\n'
@@ -371,6 +438,10 @@ def dump_flag_header():
     rust_flag_txt += f'pub const SPOOF_SECURITY_PATCH: &str = "{spoof_patch}";\n'
     rust_flag_txt += f'pub const SPOOF_VERSION_RELEASE: &str = "{spoof_ver}";\n'
     write_if_diff(native_gen_path / "flags.rs", rust_flag_txt)
+    write_if_diff(
+        native_gen_path / "flags.json",
+        json.dumps(_build_flag_metadata(), indent=2, sort_keys=True) + "\n",
+    )
 
 
 def ensure_toolchain():
@@ -403,7 +474,19 @@ def build_native():
 
     header("* Building: " + " ".join(targets))
 
-    dump_flag_header()
+    # Rebuilding only some binaries with a new random identity leaves the
+    # native output internally inconsistent. Partial builds must reuse the
+    # exact flags of the existing output set; full builds rotate the identity.
+    if default_targets.issubset(targets):
+        dump_flag_header()
+    else:
+        flags_h = Path("native", "out", "generated", "flags.h")
+        if flags_h.exists():
+            _validate_generated_flags(
+                "Run a full native build before changing build configuration."
+            )
+        else:
+            dump_flag_header()
     build_rust_src(targets)
     build_cpp_src(targets)
 
@@ -449,7 +532,7 @@ def find_jdk():
 def _read_generated_flag(name: str, fallback: str) -> str:
     flags_h = Path("native", "out", "generated", "flags.h")
     if flags_h.exists():
-        for line in flags_h.read_text().splitlines():
+        for line in flags_h.read_text(encoding="utf-8").splitlines():
             match = re.fullmatch(rf'#define\s+{re.escape(name)}\s+"([^"]*)"', line)
             if match:
                 return match.group(1)
@@ -499,6 +582,9 @@ def build_apk(module: str):
 
 
 def build_app():
+    _validate_generated_flags(
+        "Build native binaries with the same mode and configuration first."
+    )
     header("* Building the Magisk app")
     apk = build_apk(":apk")
 
@@ -828,11 +914,11 @@ def ensure_adb():
 
 def parse_props(file: Path) -> dict[str, str]:
     props = {}
-    with open(file, "r") as f:
+    with open(file, "r", encoding="utf-8") as f:
         for line in [l.strip(" \t\r\n") for l in f]:
             if line.startswith("#") or len(line) == 0:
                 continue
-            prop = line.split("=")
+            prop = line.split("=", 1)
             if len(prop) != 2:
                 continue
             key = prop[0].strip(" \t\r\n")

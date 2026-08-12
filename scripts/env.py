@@ -164,4 +164,4 @@ cpu_count = multiprocessing.cpu_count()
 if __name__ == "__main__":
     ensure_cargo()
     ensure_jdk()
-    subprocess.run(sys.argv[1:])
+    raise SystemExit(subprocess.run(sys.argv[1:]).returncode)

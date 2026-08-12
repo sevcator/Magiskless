@@ -1,12 +1,13 @@
+#[cfg(target_pointer_width = "64")]
+use crate::consts::MAIN_BIN_NAME_32;
 use crate::consts::{
-    MAIN_BIN_NAME, MAIN_BIN_NAME_32, MODULEMNT, MODULEROOT, MODULEUPGRADE, POLICY_BIN_NAME,
-    WORKERDIR,
+    MAIN_BIN_NAME, MODULEMNT, MODULEROOT, MODULEUPGRADE, POLICY_BIN_NAME, WORKERDIR,
 };
-use base::const_format::concatcp;
 use crate::daemon::MagiskD;
 use crate::ffi::{ModuleInfo, exec_module_scripts, exec_script, get_magisk_tmp};
 use crate::mount::setup_module_mount;
 use crate::resetprop::load_prop_file;
+use base::const_format::concatcp;
 use base::{
     DirEntry, Directory, FsPathBuilder, LoggedResult, OsResult, ResultExt, SilentLogExt, Utf8CStr,
     Utf8CStrBuf, Utf8CString, WalkResult, clone_attr, cstr, debug, error, info, libc, raw_cstr,
@@ -422,10 +423,12 @@ impl FsNode {
                     && name == "sp"
                 {
                     module_log!("mklink", path.worker(), concatcp!("./", POLICY_BIN_NAME));
-                    path.worker().create_symlink_to(cstr!(concatcp!("./", POLICY_BIN_NAME)))?;
+                    path.worker()
+                        .create_symlink_to(cstr!(concatcp!("./", POLICY_BIN_NAME)))?;
                 } else {
                     module_log!("mklink", path.worker(), concatcp!("./", MAIN_BIN_NAME));
-                    path.worker().create_symlink_to(cstr!(concatcp!("./", MAIN_BIN_NAME)))?;
+                    path.worker()
+                        .create_symlink_to(cstr!(concatcp!("./", MAIN_BIN_NAME)))?;
                 }
             }
             FsNode::Whiteout => {
