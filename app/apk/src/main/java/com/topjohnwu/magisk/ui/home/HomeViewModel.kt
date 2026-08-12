@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.home
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -29,9 +30,6 @@ class HomeViewModel : AsyncLoadViewModel() {
 
     val magiskTitleBarrierIds =
         intArrayOf(R.id.home_magisk_icon, R.id.home_magisk_title, R.id.home_magisk_button)
-    val appTitleBarrierIds =
-        intArrayOf(R.id.home_manager_icon, R.id.home_manager_title)
-
     @get:Bindable
     var isNoticeVisible = Config.safetyNotice
         set(value) = set(value, field, { field = it }, BR.noticeVisible)
@@ -56,10 +54,6 @@ class HomeViewModel : AsyncLoadViewModel() {
                 CoreR.string.not_available.toString()
         }
 
-    val managerInstalledVersion
-        get() = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" +
-            if (BuildConfig.DEBUG) " (D)" else ""
-
     val extraBindings = bindExtra {
         it.put(BR.viewModel, this)
     }
@@ -74,6 +68,7 @@ class HomeViewModel : AsyncLoadViewModel() {
 
     override fun onNetworkChanged(network: Boolean) {}
 
+    @SuppressLint("UnsafeImplicitIntentLaunch")
     fun onLinkPressed(link: String) = object : ViewEvent(), ContextExecutor {
         override fun invoke(context: Context) {
             val intent = Intent(Intent.ACTION_VIEW, link.toUri())

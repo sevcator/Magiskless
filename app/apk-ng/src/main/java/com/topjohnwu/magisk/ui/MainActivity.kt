@@ -149,7 +149,6 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                                     LaunchedEffect(key) {
                                         if (vm.actionId.isEmpty()) {
                                             vm.actionId = key.id
-                                            vm.actionName = key.name
                                             vm.startRunAction()
                                         }
                                     }

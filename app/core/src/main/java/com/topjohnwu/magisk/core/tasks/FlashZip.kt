@@ -10,7 +10,6 @@ import com.topjohnwu.magisk.core.utils.MediaStoreUtils.inputStream
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -69,7 +68,6 @@ open class FlashZip(
                 true
             }
         } catch (e: IOException) {
-            Timber.e(e)
             false
         } finally {
             Shell.cmd("cd /", "rm -rf $installDir ${Const.TMPDIR}").submit()

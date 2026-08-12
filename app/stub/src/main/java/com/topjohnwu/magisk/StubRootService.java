@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -36,8 +35,6 @@ public class StubRootService extends ContextWrapper {
             ctor.setAccessible(true);
             Object service = ctor.newInstance(this);
             DynLoad.attachContext(service, base);
-        } catch (Exception e) {
-            Log.e(StubRootService.class.getSimpleName(), "", e);
-        }
+        } catch (Exception ignored) {}
     }
 }

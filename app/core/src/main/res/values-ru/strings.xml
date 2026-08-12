@@ -3,7 +3,6 @@
     <!--Sections-->
     <string name="modules">Модули</string>
     <string name="superuser">Superuser</string> <!--Do not translate! #6016-->
-    <string name="logs">Логи</string>
     <string name="settings">Настройки</string>
     <string name="install">Установка</string>
     <string name="section_home">Главная</string>
@@ -68,8 +67,6 @@
     <string name="su_snack_deny">%1$s отказано в правах суперпользователя</string>
     <string name="su_snack_notif_on">Уведомления для %1$s включены</string>
     <string name="su_snack_notif_off">Уведомления для %1$s отключены</string>
-    <string name="su_snack_log_on">Логирование для %1$s включено</string>
-    <string name="su_snack_log_off">Логирование для %1$s отключено</string>
     <string name="su_revoke_title">Сброс настроек прав</string>
     <string name="su_revoke_msg">Сбросить настройки для %1$s?</string>
     <string name="toast">Всплывающие уведомления</string>
@@ -80,11 +77,6 @@
     <string name="superuser_policy_none">Приложения ещё не запрашивали права суперпользователя</string>
 
     <!--Logs-->
-    <string name="log_data_none">Логи отсутствуют</string>
-    <string name="log_data_magisk_none">Логи отсутствуют</string>
-    <string name="menuSaveLog">Сохранить логи</string>
-    <string name="menuClearLog">Очистить логи</string>
-    <string name="logs_cleared">Логи успешно очищены</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">Целевой UID: %1$d</string>
     <string name="target_pid">Целевой PID пространства имён: %s</string>
@@ -243,4 +235,18 @@
     <string name="reboot_apply_change">Перезагрузите устройство для применения изменений</string>
     <string name="restore_app_confirmation">Это действие восстановит пересобранное для скрытия приложение к исходному состоянию. Вы действительно хотите продолжить?</string>
 
+    <string name="restrict">Ограничить</string>
+    <string name="reboot_safe_mode">Безопасный режим</string>
+    <string name="module_action">Действие</string>
+    <string name="settings_update_debug">Отладка</string>
+    <string name="settings_su_restrict_title">Ограничение возможностей root</string>
+    <string name="settings_su_restrict_summary">По умолчанию ограничивать возможности новых приложений с правами суперпользователя. Предупреждение: это нарушит работу большинства приложений. Не включайте эту функцию, если не понимаете последствий.</string>
+    <string name="download_dialog_title">Введите URL-адрес образа</string>
+    <string name="download_dialog_msg">Полный OTA-образ или заводской образ</string>
+    <string name="close">Закрыть</string>
+    <string name="running">Выполняется</string>
+    <string name="done_action">Действие %1$s выполнено</string>
+    <string name="settings_sulist_title">SuList</string>
+    <string name="settings_sulist_summary">Только приложения из SuList могут запрашивать root-доступ. Все остальные запросы автоматически отклоняются.</string>
+    <string name="webui">Веб-интерфейс</string>
 </resources>

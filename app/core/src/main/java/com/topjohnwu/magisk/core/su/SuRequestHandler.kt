@@ -11,7 +11,6 @@ import com.topjohnwu.magisk.core.model.su.SuPolicy
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.DataOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -58,7 +57,6 @@ class SuRequestHandler(
         val pid = intent.getIntExtra("pid", -1)
         val fifo = intent.getStringExtra("fifo")
         if (uid <= 0 || pid <= 0 || fifo == null) {
-            Timber.e("Unexpected extras: uid=[${uid}], pid=[${pid}], fifo=[${fifo}]")
             return false
         }
         output = File(fifo)
@@ -70,12 +68,10 @@ class SuRequestHandler(
                 sharedUserId = name.split(":")[0]
             }
         } catch (e: PackageManager.NameNotFoundException) {
-            Timber.e(e)
             respond(SuPolicy.DENY, -1)
             return false
         }
         if (!output.canWrite()) {
-            Timber.e("Cannot write to $output")
             return false
         }
         return true
@@ -100,7 +96,6 @@ class SuRequestHandler(
                     it.flush()
                 }
             } catch (e: IOException) {
-                Timber.e(e)
             }
             if (time >= 0) {
                 policyDB.update(policy)

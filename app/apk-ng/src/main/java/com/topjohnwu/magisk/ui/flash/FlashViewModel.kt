@@ -10,14 +10,11 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.ktx.reboot
 import com.topjohnwu.magisk.core.ktx.synchronized
-import com.topjohnwu.magisk.core.ktx.timeFormatStandard
-import com.topjohnwu.magisk.core.ktx.toTime
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils.displayName
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils.inputStream
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils.outputStream
 import com.topjohnwu.magisk.terminal.TerminalEmulator
 import com.topjohnwu.magisk.terminal.appendLineOnMain
 import com.topjohnwu.magisk.terminal.runSuCommand
@@ -30,7 +27,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -52,11 +48,9 @@ class FlashViewModel : BaseViewModel() {
 
     // --- TerminalScreen mode (FLASH_ZIP) ---
 
-    private var emulator: TerminalEmulator? = null
     private val emulatorReady = CompletableDeferred<TerminalEmulator>()
 
     fun onEmulatorCreated(emu: TerminalEmulator) {
-        emulator = emu
         emulatorReady.complete(emu)
     }
 
@@ -154,13 +148,13 @@ class FlashViewModel : BaseViewModel() {
                 val name = uri.displayName
                 null to Triple(installDir, zipFile, name)
             } catch (e: IOException) {
-                Timber.e(e)
                 "Unable to extract files" to null
             }
         }
 
         val (error, prepResult) = result
         if (prepResult == null) {
+            withContext(Dispatchers.IO) { installDir.deleteRecursively() }
             emu.appendLineOnMain("! ${error ?: "Installation failed"}")
             _flashState.value = State.FAILED
             return
@@ -181,29 +175,6 @@ class FlashViewModel : BaseViewModel() {
 
         Shell.cmd("cd /", "rm -rf $dir ${Const.TMPDIR}").submit()
         _flashState.value = if (success) State.SUCCESS else State.FAILED
-    }
-
-    fun saveLog() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val name = "magisk_install_log_%s.log".format(
-                System.currentTimeMillis().toTime(timeFormatStandard)
-            )
-            val file = MediaStoreUtils.getFile(name)
-            file.uri.outputStream().bufferedWriter().use { writer ->
-                val transcript = emulator?.screen?.transcriptText
-                if (transcript != null) {
-                    writer.write(transcript)
-                } else {
-                    synchronized(logItems) {
-                        logItems.forEach {
-                            writer.write(it)
-                            writer.newLine()
-                        }
-                    }
-                }
-            }
-            showSnackbar(file.toString())
-        }
     }
 
     fun restartPressed() = reboot()

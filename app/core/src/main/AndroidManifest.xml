@@ -51,11 +51,6 @@
             android:exported="false"
             android:grantUriPermissions="true" />
 
-        <!-- We don't invalidate Room -->
-        <service
-            android:name="androidx.room.MultiInstanceInvalidationService"
-            tools:node="remove" />
-
         <!-- We handle initialization ourselves -->
         <provider
             android:name="androidx.startup.InitializationProvider"

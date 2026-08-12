@@ -140,22 +140,6 @@ class SuperuserViewModel(
         }
     }
 
-    fun updateLogging(item: PolicyRvItem) {
-        viewModelScope.launch {
-            db.update(item.item)
-            val res = when {
-                item.item.logging -> R.string.su_snack_log_on
-                else -> R.string.su_snack_log_off
-            }
-            itemsPolicies.forEach {
-                if (it.item.uid == item.item.uid) {
-                    it.notifyPropertyChanged(BR.shouldLog)
-                }
-            }
-            SnackbarEvent(res.asText(item.appName)).publish()
-        }
-    }
-
     fun updatePolicy(item: PolicyRvItem, policy: Int) {
         val items = itemsPolicies.filter { it.item.uid == item.item.uid }
         fun updateState() {

@@ -57,6 +57,8 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "log_with_rs"]
         fn log_from_cxx(level: LogLevelCxx, msg: Utf8CStrRef);
+        #[cxx_name = "logging_enabled"]
+        fn logging_enabled_from_cxx(level: LogLevelCxx) -> bool;
         fn cmdline_logging();
         fn parse_prop_file_rs(name: Utf8CStrRef, f: &FnBoolStrStr);
         #[cxx_name = "file_readline"]

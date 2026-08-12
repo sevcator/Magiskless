@@ -3,7 +3,6 @@
     <!--Sections-->
     <string name="modules">Modules</string>
     <string name="superuser">Superuser</string>
-    <string name="logs">Logs</string>
     <string name="settings">Settings</string>
     <string name="install">Install</string>
     <string name="section_home">Home</string>
@@ -68,8 +67,6 @@
     <string name="su_snack_deny">Superuser rights of %1$s are denied</string>
     <string name="su_snack_notif_on">Notifications of %1$s are enabled</string>
     <string name="su_snack_notif_off">Notifications of %1$s are disabled</string>
-    <string name="su_snack_log_on">Logging of %1$s is enabled</string>
-    <string name="su_snack_log_off">Logging of %1$s is disabled</string>
     <string name="su_revoke_title">Revoke?</string>
     <string name="su_revoke_msg">Confirm to revoke %1$s Superuser rights</string>
     <string name="toast">Toast</string>
@@ -79,11 +76,6 @@
     <string name="superuser_policy_none">No apps have asked for Superuser permission yet.</string>
 
     <!--Logs-->
-    <string name="log_data_none">You\'re log-free. Try using your root apps more.</string>
-    <string name="log_data_magisk_none">Magisk logs are empty, that\'s weird.</string>
-    <string name="menuSaveLog">Save log</string>
-    <string name="menuClearLog">Clear log now</string>
-    <string name="logs_cleared">Log successfully cleared</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">Target UID: %1$d</string>
     <string name="target_pid">Target PID: %s</string>

@@ -150,30 +150,6 @@
                         android:background="?colorSurfaceSurfaceVariant" />
 
                     <Button
-                        android:id="@+id/policy_log"
-                        style="@style/WidgetFoundation.Button.Text"
-                        isSelected="@{item.shouldLog}"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:minHeight="24dp"
-                        android:onClick="@{() -> item.toggleLog()}"
-                        android:text="@string/logs"
-                        android:textAllCaps="false"
-                        android:textAppearance="@style/AppearanceFoundation.Tiny"
-                        android:textColor="@color/color_state_primary_transient"
-                        app:icon="@drawable/ic_bug_md2"
-                        app:iconTint="@color/color_state_primary_transient"
-                        app:tint="@color/color_state_primary_transient" />
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginTop="@dimen/l_50"
-                        android:layout_marginBottom="@dimen/l_50"
-                        android:background="?colorSurfaceSurfaceVariant" />
-
-                    <Button
                         android:id="@+id/policy_delete"
                         style="@style/WidgetFoundation.Button.Text"
                         android:layout_width="0dp"

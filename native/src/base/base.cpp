@@ -258,6 +258,7 @@ size_t strscpy(char *dest, const char *src, size_t size) {
 
 #undef vsnprintf
 static int fmt_and_log_with_rs(LogLevel level, const char *fmt, va_list ap) {
+    if (!logging_enabled(level)) return 0;
     constexpr int sz = 4096;
     char buf[sz];
     buf[0] = '\0';
@@ -286,6 +287,7 @@ extern "C" int magisk_log_print(int prio, const char *tag, const char *fmt, ...)
     default:
         return 0;
     }
+    if (!logging_enabled(level)) return 0;
 
     char fmt_buf[4096];
     auto len = strscpy(fmt_buf, tag, sizeof(fmt_buf) - 1);

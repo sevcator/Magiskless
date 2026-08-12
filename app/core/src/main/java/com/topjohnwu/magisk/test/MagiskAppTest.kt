@@ -40,10 +40,8 @@ class MagiskAppTest : BaseTest {
         Config.suAutoResponse = Config.Value.SU_AUTO_ALLOW
         Config.prefs.edit().commit()
 
-        // Inject an undetermined + mute logging policy for ADB shell
         val policy = SuPolicy(
             uid = 2000,
-            logging = false,
             notification = false,
             remain = 0L
         )

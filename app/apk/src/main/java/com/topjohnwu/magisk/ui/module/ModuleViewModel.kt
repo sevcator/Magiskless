@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.module
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import androidx.databinding.Bindable
@@ -107,6 +108,7 @@ class ModuleViewModel : AsyncLoadViewModel() {
         MainDirections.actionActionFragment(id, name).navigate()
     }
 
+    @SuppressLint("UnsafeImplicitIntentLaunch")
     fun openWebUi(item: LocalModuleRvItem) {
         val id = item.item.id
         viewModelScope.launch(Dispatchers.IO) {

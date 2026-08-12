@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.IOException
 import kotlin.coroutines.resume
 
@@ -344,7 +343,6 @@ fun MarkdownTextAsync(getMarkdownText: suspend () -> String) {
         try {
             mdText = withContext(Dispatchers.IO) { getMarkdownText() }
         } catch (e: IOException) {
-            Timber.e(e)
             error = true
         }
     }

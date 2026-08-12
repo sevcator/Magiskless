@@ -49,8 +49,6 @@ import com.topjohnwu.magisk.core.model.module.LocalModule
 import com.topjohnwu.magisk.ui.home.HomeScreen
 import com.topjohnwu.magisk.ui.home.HomeViewModel
 import com.topjohnwu.magisk.ui.install.InstallViewModel
-import com.topjohnwu.magisk.ui.log.LogScreen
-import com.topjohnwu.magisk.ui.log.LogViewModel
 import com.topjohnwu.magisk.ui.module.ModuleScreen
 import com.topjohnwu.magisk.ui.module.ModuleViewModel
 import com.topjohnwu.magisk.ui.navigation.CollectNavEvents
@@ -66,7 +64,6 @@ enum class Tab(val titleRes: Int, val iconRes: Int) {
     MODULES(CoreR.string.modules, R.drawable.ic_module),
     SUPERUSER(CoreR.string.superuser, CoreR.drawable.ic_superuser),
     HOME(CoreR.string.section_home, R.drawable.ic_home),
-    LOG(CoreR.string.logs, R.drawable.ic_bug),
     SETTINGS(CoreR.string.settings, R.drawable.ic_settings);
 }
 
@@ -111,11 +108,6 @@ fun MainScreen(initialTab: Int = Tab.HOME.ordinal) {
                         vm.startLoading()
                     }
                     SuperuserScreen(vm)
-                }
-                Tab.LOG -> {
-                    val vm: LogViewModel = viewModel(factory = VMFactory)
-                    LaunchedEffect(Unit) { vm.startLoading() }
-                    LogScreen(vm)
                 }
                 Tab.MODULES -> {
                     val vm: ModuleViewModel = viewModel(factory = VMFactory)

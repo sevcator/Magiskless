@@ -25,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.lang.ref.WeakReference
 import kotlin.system.exitProcess
 
@@ -44,12 +43,7 @@ object AppContext : ContextWrapper(null),
     private var profileInstallScheduled = false
 
     init {
-        // Always log full stack trace with Timber
-        Timber.plant(Timber.DebugTree())
-        Thread.setDefaultUncaughtExceptionHandler { _, e ->
-            Timber.e(e)
-            exitProcess(1)
-        }
+        Thread.setDefaultUncaughtExceptionHandler { _, _ -> exitProcess(1) }
 
         Os.setenv("PATH", "${Os.getenv("PATH")}:/debug_ramdisk:/sbin", true)
     }
@@ -86,6 +80,14 @@ object AppContext : ContextWrapper(null),
         application = app
         val base = app.baseContext
         attachBaseContext(base)
+        base.deleteDatabase("sulogs.db")
+        listOf("stub.apk", "test.apk", "patched.apk").forEach {
+            java.io.File(base.cacheDir, it).delete()
+        }
+        base.cacheDir.listFiles { file -> file.extension == "md" }?.forEach { it.delete() }
+        java.io.File(base.cacheDir, "app-migration").deleteRecursively()
+        java.io.File(base.cacheDir, "flash").deleteRecursively()
+        java.io.File(base.filesDir.parentFile, "install").deleteRecursively()
         app.registerActivityLifecycleCallbacks(this)
         app.registerComponentCallbacks(this)
 

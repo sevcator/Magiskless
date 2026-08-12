@@ -27,6 +27,7 @@ android {
 
     defaultConfig {
         proguardFile("proguard-rules.pro")
+        resourceConfigurations += listOf("en", "ru", "zh-rCN", "zh-rTW")
     }
 
     buildTypes {

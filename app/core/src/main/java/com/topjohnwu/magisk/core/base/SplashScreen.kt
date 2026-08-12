@@ -13,7 +13,6 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
-import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.AppMigration
@@ -22,7 +21,6 @@ import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.io.File
 import java.io.IOException
 
@@ -93,34 +91,31 @@ class SplashController<T>(private val activity: T)
     }
 
     private fun T.initializeApp() {
-        val prevPkg = launchPackage
+        val prevPkg = intent.getStringExtra(Const.Key.PREV_PACKAGE)
         val prevConfig = intent.getBundleExtra(Const.Key.PREV_CONFIG)
-        val isPackageMigration = prevPkg != null && prevConfig != null
+        val migrationSource = AppMigration.pendingMigrationSource(this, prevPkg)
+        val authenticatedConfig = migrationSource != null &&
+            prevPkg == migrationSource &&
+            prevConfig != null
 
-        Config.init(prevConfig)
+        Config.init(if (authenticatedConfig) prevConfig else null)
 
-        if (packageName != APP_PACKAGE_NAME) {
-            runCatching {
-                // Hidden, remove com.topjohnwu.magisk if exist as it could be malware
-                packageManager.getApplicationInfo(APP_PACKAGE_NAME, 0)
-                Shell.cmd("(pm uninstall $APP_PACKAGE_NAME)& >/dev/null 2>&1").exec()
-            }
+        if (packageName == APP_PACKAGE_NAME) {
+            Config.suManager = ""
         } else {
-            if (Config.suManager.isNotEmpty()) {
-                Config.suManager = ""
-            }
-            if (isPackageMigration) {
-                Shell.cmd("(pm uninstall $prevPkg)& >/dev/null 2>&1").exec()
-            }
+            Config.suManager = packageName
         }
 
-        if (isPackageMigration) {
+        if (migrationSource != null && AppMigration.completeMigration(this, migrationSource)) {
+            intent.removeExtra(Const.Key.PREV_PACKAGE)
+            intent.removeExtra(Const.Key.PREV_CONFIG)
             runOnUiThread {
-                // Relaunch the process after package migration
                 StubApk.restartProcess(this)
             }
             return
         }
+
+        Shell.cmd("rm -f /cache/magisk.log").exec()
 
         // Validate stub APK
         if (isRunningAsStub && (
@@ -139,7 +134,6 @@ class SplashController<T>(private val activity: T)
                                 startActivity(it)
                             }
                         } catch (e: IOException) {
-                            Timber.e(e)
                         }
                     }
                 }
@@ -150,10 +144,6 @@ class SplashController<T>(private val activity: T)
         Notifications.setup()
         Shortcuts.setupDynamic(this)
 
-        // Pre-fetch network services
-        ServiceLocator.networkService
-
-        // Wait for root service
         RootUtils.Connection.await()
     }
 }

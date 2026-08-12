@@ -11,7 +11,6 @@ import com.topjohnwu.magisk.view.MagiskDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.IOException
 import com.topjohnwu.magisk.core.R as CoreR
 
@@ -30,7 +29,6 @@ abstract class MarkDownDialog : DialogBuilder {
                     val text = withContext(Dispatchers.IO) { getMarkdownText() }
                     ServiceLocator.markwon.setMarkdown(tv, text)
                 } catch (e: IOException) {
-                    Timber.e(e)
                     tv.setText(CoreR.string.download_file_error)
                 }
             }

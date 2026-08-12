@@ -31,7 +31,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import timber.log.Timber
 import java.io.InputStream
 
 /**
@@ -159,7 +158,6 @@ class DownloadEngine(session: DownloadSession) : DownloadSession by session, Dow
                     notifyFinish(subject)
                 }
             } catch (e: Exception) {
-                Timber.e(e)
                 notifyFail(subject)
             }
         }

@@ -20,9 +20,7 @@ public class ByteArrayStream extends ByteArrayOutputStream {
                 write(buffer, 0, read);
                 len -= read;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException ignored) {}
     }
 
     public ByteArrayInputStream getInputStream() {

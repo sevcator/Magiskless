@@ -27,7 +27,6 @@ import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
-import timber.log.Timber
 import java.io.File
 import java.io.PrintStream
 
@@ -70,10 +69,8 @@ class Environment : BaseTest {
         const val UPGRADE_TEST = "upgrade_test"
     }
 
-    object TimberLog : CallbackList<String>(Runnable::run) {
-        override fun onAddElement(e: String) {
-            Timber.i(e)
-        }
+    object ConsoleOutput : CallbackList<String>(Runnable::run) {
+        override fun onAddElement(e: String) {}
     }
 
     private fun checkModuleZip(file: File) {
@@ -214,7 +211,7 @@ class Environment : BaseTest {
         runBlocking {
             assertTrue(
                 "Magisk setup failed",
-                MagiskInstaller.Emulator(TimberLog, TimberLog).exec()
+                MagiskInstaller.Emulator(ConsoleOutput, ConsoleOutput).exec()
             )
         }
 
@@ -233,7 +230,7 @@ class Environment : BaseTest {
             if (shamiko()) {
                 assertTrue(
                     "Shamiko installation failed",
-                    FlashZip(shamiko.toUri(), TimberLog, TimberLog).exec()
+                    FlashZip(shamiko.toUri(), ConsoleOutput, ConsoleOutput).exec()
                 )
             }
         }
@@ -247,7 +244,7 @@ class Environment : BaseTest {
             if (lsposed()) {
                 assertTrue(
                     "LSPosed installation failed",
-                    FlashZip(lsp.toUri(), TimberLog, TimberLog).exec()
+                    FlashZip(lsp.toUri(), ConsoleOutput, ConsoleOutput).exec()
                 )
             }
         }

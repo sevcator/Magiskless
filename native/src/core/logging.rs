@@ -1,10 +1,8 @@
-use base::{LogLevel, Utf8CStr, update_logger};
-
-fn noop(_level: LogLevel, _msg: &Utf8CStr) {}
+use base::disable_logging;
 
 pub fn android_logging() {
-    update_logger(|logger| logger.write = noop);
+    disable_logging();
 }
 pub fn zygisk_logging() {
-    update_logger(|logger| logger.write = noop);
+    disable_logging();
 }

@@ -9,6 +9,7 @@ android {
         applicationId = "com.topjohnwu.magisk.test"
         versionCode = 1
         versionName = "1.0"
+        resourceConfigurations += listOf("en", "ru", "zh-rCN", "zh-rTW")
         proguardFile("proguard-rules.pro")
     }
 

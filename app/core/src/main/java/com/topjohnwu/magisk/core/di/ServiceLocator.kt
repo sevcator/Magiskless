@@ -3,15 +3,12 @@ package com.topjohnwu.magisk.core.di
 import android.annotation.SuppressLint
 import android.content.Context
 import android.text.method.LinkMovementMethod
-import androidx.room.Room
 import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.Const
-import com.topjohnwu.magisk.core.data.SuLogDatabase
 import com.topjohnwu.magisk.core.data.magiskdb.PolicyDao
 import com.topjohnwu.magisk.core.data.magiskdb.SettingsDao
 import com.topjohnwu.magisk.core.data.magiskdb.StringDao
 import com.topjohnwu.magisk.core.ktx.deviceProtectedContext
-import com.topjohnwu.magisk.core.repository.LogRepository
 import com.topjohnwu.magisk.core.repository.NetworkService
 import io.noties.markwon.Markwon
 import io.noties.markwon.utils.NoCopySpannableFactory
@@ -26,8 +23,6 @@ object ServiceLocator {
     val policyDB = PolicyDao()
     val settingsDB = SettingsDao()
     val stringDB = StringDao()
-    val sulogDB by lazy { createSuLogDatabase(deContext).suLogDao() }
-    val logRepo by lazy { LogRepository(sulogDB) }
 
     // Networking
     val okhttp by lazy { createOkHttpClient(AppContext) }
@@ -37,12 +32,6 @@ object ServiceLocator {
         NetworkService(createApiService(retrofit, Const.Url.INVALID_URL))
     }
 }
-
-private fun createSuLogDatabase(context: Context) =
-    Room.databaseBuilder(context, SuLogDatabase::class.java, "sulogs.db")
-        .addMigrations(SuLogDatabase.MIGRATION_1_2)
-        .fallbackToDestructiveMigration(true)
-        .build()
 
 private fun createMarkwon(context: Context) =
     Markwon.builder(context).textSetter { textView, spanned, bufferType, onComplete ->

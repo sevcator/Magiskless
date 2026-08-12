@@ -20,7 +20,6 @@ object Const {
     val DATABIN      = "${BuildConfig.SECURE_DIR}/ms"
     val MODULE_PATH  = "${BuildConfig.SECURE_DIR}/modules"
     const val TMPDIR = "/dev/tmp"
-    const val MAGISK_LOG = "/cache/magisk.log"
 
     // Misc
     val USER_ID = Process.myUid() / 100000
@@ -54,6 +53,7 @@ object Const {
         // intents
         const val OPEN_SECTION = "section"
         const val PREV_CONFIG = "prev_config"
+        const val PREV_PACKAGE = "prev_package"
     }
 
     object Value {

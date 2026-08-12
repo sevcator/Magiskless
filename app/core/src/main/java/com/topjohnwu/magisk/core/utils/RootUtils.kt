@@ -15,7 +15,6 @@ import com.topjohnwu.superuser.ipc.RootService
 import com.topjohnwu.superuser.nio.FileSystemManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 import java.util.concurrent.locks.AbstractQueuedSynchronizer
 
@@ -25,14 +24,6 @@ class RootUtils(stub: Any?) : RootService() {
     private lateinit var am: ActivityManager
 
     constructor() : this(null)
-
-    init {
-        Timber.plant(object : Timber.DebugTree() {
-            override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-                super.log(priority, "Magisk", message, t)
-            }
-        })
-    }
 
     override fun onCreate() {
         am = getSystemService()!!
@@ -98,7 +89,6 @@ class RootUtils(stub: Any?) : RootService() {
         }
 
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            Timber.d("onServiceConnected")
             IRootUtils.Stub.asInterface(service).let {
                 obj = it
                 fs = FileSystemManager.getRemote(it.fileSystem)
@@ -161,7 +151,6 @@ class RootUtils(stub: Any?) : RootService() {
                 block()
             } catch (e: Throwable) {
                 // The process died unexpectedly
-                Timber.e(e)
                 default
             }
         }

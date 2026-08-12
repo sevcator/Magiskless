@@ -37,7 +37,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import org.apache.commons.compress.archivers.zip.ZipFile
 import org.apache.commons.compress.compressors.lz4.FramedLZ4CompressorInputStream
-import timber.log.Timber
 import java.io.File
 import java.io.FilterInputStream
 import java.io.IOException
@@ -181,7 +180,6 @@ abstract class MagiskInstallImpl protected constructor(
             }
         } catch (e: Exception) {
             console.add("! Unable to extract files")
-            Timber.e(e)
             return false
         }
 
@@ -495,7 +493,6 @@ abstract class MagiskInstallImpl protected constructor(
             if (e is NoBootException)
                 console.add("! No boot image found")
             console.add("! Process error")
-            Timber.e(e)
             return false
         }
 
@@ -524,7 +521,6 @@ abstract class MagiskInstallImpl protected constructor(
         } catch (e: IOException) {
             console.add("! Failed to output to $outFile")
             outFile.delete()
-            Timber.e(e)
             return false
         } finally {
             outStream.close()
@@ -563,21 +559,24 @@ abstract class MagiskInstallImpl protected constructor(
     private fun flashBoot() = "direct_install $installDir $srcBoot".sh().isSuccess
 
     private suspend fun postOTA(): Boolean {
-        try {
-            val bootctl = File.createTempFile("bootctl", null, context.cacheDir)
-            context.assets.open("bootctl").writeTo(bootctl)
-            "post_ota $bootctl".sh()
-        } catch (e: IOException) {
-            console.add("! Unable to download bootctl")
-            Timber.e(e)
-            return false
-        }
+        var bootctl: File? = null
+        return try {
+            val file = File.createTempFile("bootctl", null, context.cacheDir)
+            bootctl = file
+            context.assets.open("bootctl").writeTo(file)
+            "post_ota $file".sh()
 
-        console.add("*************************************************************")
-        console.add(" Next reboot will boot to second slot!")
-        console.add(" Go back to System Updates and press Restart to complete OTA")
-        console.add("*************************************************************")
-        return true
+            console.add("*************************************************************")
+            console.add(" Next reboot will boot to second slot!")
+            console.add(" Go back to System Updates and press Restart to complete OTA")
+            console.add("*************************************************************")
+            true
+        } catch (_: IOException) {
+            console.add("! Unable to download bootctl")
+            false
+        } finally {
+            bootctl?.delete()
+        }
     }
 
     private fun Array<String>.eq() = shell.newJob().add(*this).to(console, logs).enqueue()

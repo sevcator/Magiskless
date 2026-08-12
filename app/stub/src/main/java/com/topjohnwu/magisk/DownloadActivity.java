@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.system.Os;
 import android.system.OsConstants;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 
 import com.topjohnwu.magisk.net.Networking;
@@ -86,7 +85,6 @@ public class DownloadActivity extends Activity {
     }
 
     private void error(Throwable e) {
-        Log.e(getClass().getSimpleName(), Log.getStackTraceString(e));
         finish();
     }
 

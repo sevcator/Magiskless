@@ -141,12 +141,6 @@ fun SuperuserDetailScreen(
                 checked = item.notification,
                 onCheckedChange = { viewModel.updateNotify(item) }
             )
-            SettingsSwitch(
-                title = stringResource(CoreR.string.logs),
-                checked = item.logging,
-                onCheckedChange = { viewModel.updateLogging(item) }
-            )
-
             RevokeButton {
                 if (viewModel.requiresAuth) {
                     viewModel.authenticate { viewModel.performDelete(item, onBack) }

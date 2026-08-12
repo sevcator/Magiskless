@@ -4,13 +4,9 @@ import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.Toast
-import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseFragment
@@ -19,7 +15,7 @@ import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.databinding.FragmentActionMd2Binding
 import com.topjohnwu.magisk.core.R as CoreR
 
-class ActionFragment : BaseFragment<FragmentActionMd2Binding>(), MenuProvider {
+class ActionFragment : BaseFragment<FragmentActionMd2Binding>() {
 
     override val layoutRes = R.layout.fragment_action_md2
     override val viewModel by viewModel<ActionViewModel>()
@@ -63,14 +59,6 @@ class ActionFragment : BaseFragment<FragmentActionMd2Binding>(), MenuProvider {
                 }
             )
         }
-    }
-
-    override fun onCreateMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_flash, menu)
-    }
-
-    override fun onMenuItemSelected(item: MenuItem): Boolean {
-        return viewModel.onMenuItemClicked(item)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

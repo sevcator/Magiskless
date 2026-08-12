@@ -52,7 +52,6 @@ class PolicyDao : MagiskDB() {
         }
 
         map["policy"]?.toInt()?.let { policy.policy = it }
-        map["logging"]?.toInt()?.let { policy.logging = it != 0 }
         map["notification"]?.toInt()?.let { policy.notification = it != 0 }
         return policy
     }

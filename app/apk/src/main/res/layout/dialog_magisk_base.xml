@@ -130,7 +130,6 @@
                 android:text="@{data.buttonNeutral.message}"
                 app:icon="@{data.buttonNeutral.icon}"
                 app:iconGravity="textStart"
-                tools:icon="@drawable/ic_bug_md2"
                 tools:text="Button 1" />
 
             <Space
@@ -153,7 +152,6 @@
                 android:onClick="@{() -> data.buttonNegative.clicked()}"
                 android:text="@{data.buttonNegative.message}"
                 app:icon="@{data.buttonNegative.icon}"
-                tools:icon="@drawable/ic_bug_md2"
                 tools:text="Button 1" />
 
             <Button
@@ -170,7 +168,6 @@
                 android:text="@{data.buttonPositive.message}"
                 app:icon="@{data.buttonPositive.icon}"
                 app:iconGravity="textStart"
-                tools:icon="@drawable/ic_bug_md2"
                 tools:text="Button 1" />
 
         </androidx.appcompat.widget.ButtonBarLayout>

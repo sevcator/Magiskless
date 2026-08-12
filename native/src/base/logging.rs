@@ -70,9 +70,30 @@ pub fn set_log_level_state(level: LogLevel, enabled: bool) {
     update_logger(|logger| logger.flags.set(level.as_disable_flag(), enabled));
 }
 
+pub fn disable_logging() {
+    update_logger(|logger| {
+        logger.flags.insert(
+            LogFlag::DISABLE_ERROR
+                | LogFlag::DISABLE_WARN
+                | LogFlag::DISABLE_INFO
+                | LogFlag::DISABLE_DEBUG,
+        );
+    });
+}
+
+fn logging_enabled(level: LogLevel) -> bool {
+    let logger = unsafe { LOGGER };
+    !logger.flags.contains(level.as_disable_flag())
+        || matches!(level, LogLevel::Error) && logger.flags.contains(LogFlag::EXIT_ON_ERROR)
+}
+
+pub fn logging_enabled_from_cxx(level: LogLevelCxx) -> bool {
+    LogLevel::from_i32(level.repr).is_some_and(logging_enabled)
+}
+
 fn log_with_writer<F: FnOnce(LogWriter)>(level: LogLevel, f: F) {
     let logger = unsafe { LOGGER };
-    if logger.flags.contains(level.as_disable_flag()) {
+    if !logging_enabled(level) {
         return;
     }
     f(logger.write);
@@ -103,7 +124,15 @@ pub fn cmdline_logging() {
             stderr().write_all(msg.as_bytes()).ok();
         }
     }
-    update_logger(|logger| logger.write = cmdline_write);
+    update_logger(|logger| {
+        logger.write = cmdline_write;
+        logger.flags.remove(
+            LogFlag::DISABLE_ERROR
+                | LogFlag::DISABLE_WARN
+                | LogFlag::DISABLE_INFO
+                | LogFlag::DISABLE_DEBUG,
+        );
+    });
 }
 
 #[macro_export]

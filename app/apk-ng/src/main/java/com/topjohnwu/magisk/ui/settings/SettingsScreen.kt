@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.ui.settings
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -33,10 +35,13 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.ShortcutManagerCompat
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.isRunningAsStub
+import com.topjohnwu.magisk.core.ktx.toast
+import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils
 import com.topjohnwu.magisk.ui.ThemeState
@@ -44,6 +49,8 @@ import com.topjohnwu.magisk.ui.component.SettingsArrow
 import com.topjohnwu.magisk.ui.component.SettingsDropdown
 import com.topjohnwu.magisk.ui.component.SettingsSwitch
 import com.topjohnwu.magisk.ui.component.SmallTitle
+import com.topjohnwu.magisk.ui.component.rememberLoadingDialog
+import kotlinx.coroutines.launch
 import com.topjohnwu.magisk.core.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -150,6 +157,41 @@ private fun CustomizationSection(viewModel: SettingsViewModel) {
 private fun AppSettingsSection() {
     val context = LocalContext.current
     val resources = LocalResources.current
+    val scope = rememberCoroutineScope()
+    val loadingDialog = rememberLoadingDialog()
+    val isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
+    var showHideDialog by rememberSaveable { mutableStateOf(false) }
+    var showRestoreDialog by rememberSaveable { mutableStateOf(false) }
+
+    if (showHideDialog) {
+        HideAppDialog(
+            onDismiss = { showHideDialog = false },
+            onConfirm = { label ->
+                showHideDialog = false
+                scope.launch {
+                    val success = loadingDialog.withLoading {
+                        AppMigration.patchAndHide(context, label)
+                    }
+                    if (!success) context.toast(CoreR.string.failure, Toast.LENGTH_LONG)
+                }
+            }
+        )
+    }
+
+    if (showRestoreDialog) {
+        RestoreAppDialog(
+            onDismiss = { showRestoreDialog = false },
+            onConfirm = {
+                showRestoreDialog = false
+                scope.launch {
+                    val success = loadingDialog.withLoading {
+                        AppMigration.restoreApp(context)
+                    }
+                    if (!success) context.toast(CoreR.string.failure, Toast.LENGTH_LONG)
+                }
+            }
+        )
+    }
 
     SmallTitle(text = stringResource(CoreR.string.home_app_title))
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -214,6 +256,19 @@ private fun AppSettingsSection() {
                 showDownloadDialog = true
             }
         )
+
+        if (Info.env.isActive) {
+            SettingsArrow(
+                title = stringResource(
+                    if (isHidden) CoreR.string.settings_restore_app_title
+                    else CoreR.string.settings_hide_app_title
+                ),
+                summary = context.packageName,
+                onClick = {
+                    if (isHidden) showRestoreDialog = true else showHideDialog = true
+                }
+            )
+        }
 
     }
 }
@@ -512,4 +567,57 @@ private fun DownloadPathDialog(show: Boolean, onDismiss: () -> Unit) {
             }
         )
     }
+}
+
+@Composable
+private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    val defaultName = stringResource(CoreR.string.settings)
+    var appName by rememberSaveable { mutableStateOf(defaultName) }
+    val isError = appName.isBlank() || appName.length > AppMigration.MAX_LABEL_LENGTH
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(CoreR.string.settings_hide_app_title)) },
+        text = {
+            OutlinedTextField(
+                value = appName,
+                onValueChange = { appName = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(CoreR.string.settings_app_name_hint)) },
+                isError = isError,
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(appName) },
+                enabled = !isError,
+            ) {
+                Text(stringResource(android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(android.R.string.cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun RestoreAppDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(CoreR.string.settings_restore_app_title)) },
+        text = { Text(stringResource(CoreR.string.restore_app_confirmation)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(android.R.string.cancel))
+            }
+        },
+    )
 }

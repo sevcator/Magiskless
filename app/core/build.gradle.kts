@@ -2,15 +2,10 @@ plugins {
     id("com.android.library")
     kotlin("plugin.parcelize")
     id("dev.zacsweers.moshix")
-    id("com.google.devtools.ksp")
     id("com.squareup.wire")
 }
 
 setupCoreLib()
-
-ksp {
-    arg("room.generateKotlin", "true")
-}
 
 wire {
     kotlin {}
@@ -43,7 +38,6 @@ dependencies {
     api(project(":shared"))
     coreLibraryDesugaring(libs.jdk.libs)
 
-    api(libs.timber)
     api(libs.markwon.core)
     implementation(libs.bcpkix)
     implementation(libs.commons.compress)
@@ -58,12 +52,7 @@ dependencies {
     implementation(libs.retrofit.scalars)
 
     implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
     implementation(libs.okhttp.dnsoverhttps)
-
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
 
     implementation(libs.core.splashscreen)
     implementation(libs.core.ktx)

@@ -12,26 +12,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.ui.component.rememberExternalStoragePermissionLauncher
 import com.topjohnwu.magisk.ui.terminal.TerminalScreen
-import com.topjohnwu.magisk.core.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActionScreen(viewModel: ActionViewModel, actionName: String, onBack: () -> Unit) {
-    val actionState by viewModel.actionState.collectAsState()
-    val finished = actionState != ActionViewModel.State.RUNNING
-    val saveLog = rememberExternalStoragePermissionLauncher {
-        viewModel.saveLog()
-    }
-
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         topBar = {
@@ -47,20 +34,6 @@ fun ActionScreen(viewModel: ActionViewModel, actionName: String, onBack: () -> U
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onBackground
                         )
-                    }
-                },
-                actions = {
-                    if (finished) {
-                        IconButton(
-                            modifier = Modifier.padding(end = 16.dp),
-                            onClick = saveLog
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_save),
-                                contentDescription = stringResource(CoreR.string.menuSaveLog),
-                                tint = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
                     }
                 },
                 scrollBehavior = scrollBehavior

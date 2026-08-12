@@ -3,7 +3,6 @@
     <!--Sections-->
     <string name="modules">模块</string>
     <string name="superuser">超级用户</string>
-    <string name="logs">日志</string>
     <string name="settings">设置</string>
     <string name="install">安装</string>
     <string name="section_home">主页</string>
@@ -69,8 +68,6 @@
     <string name="su_snack_deny">已拒绝 %1$s 超级用户权限</string>
     <string name="su_snack_notif_on">已启用 %1$s 的通知</string>
     <string name="su_snack_notif_off">已禁用 %1$s 的通知</string>
-    <string name="su_snack_log_on">已启用对 %1$s 的日志记录</string>
-    <string name="su_snack_log_off">已禁用对 %1$s 的日志记录</string>
     <string name="su_revoke_title">撤销</string>
     <string name="su_revoke_msg">确认撤销授予 %1$s 的权限？</string>
     <string name="toast">消息提示</string>
@@ -81,11 +78,6 @@
     <string name="superuser_policy_none">尚无应用请求超级用户权限</string>
 
     <!--Logs-->
-    <string name="log_data_none">没有超级用户权限使用日志</string>
-    <string name="log_data_magisk_none">没有 Magisk 日志</string>
-    <string name="menuSaveLog">保存日志</string>
-    <string name="menuClearLog">清空日志</string>
-    <string name="logs_cleared">日志已清空</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">目标 UID: %1$d</string>
     <string name="target_pid">挂载命名空间目标 PID: %s</string>
@@ -251,4 +243,10 @@
     <string name="reboot_apply_change">重启后生效</string>
     <string name="restore_app_confirmation">即将把隐藏的 Magisk 应用恢复回原始应用，是否继续？</string>
 
+    <string name="settings_update_debug">调试</string>
+    <string name="download_dialog_title">输入镜像 URL</string>
+    <string name="download_dialog_msg">完整 OTA 镜像或出厂镜像</string>
+    <string name="settings_sulist_title">SuList</string>
+    <string name="settings_sulist_summary">只有 SuList 中的应用可以请求 root 权限。所有其他请求都会被自动拒绝。</string>
+    <string name="webui">网页界面</string>
 </resources>

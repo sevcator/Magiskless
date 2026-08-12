@@ -24,7 +24,6 @@ import com.topjohnwu.magisk.utils.APKInstall
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
@@ -37,10 +36,22 @@ object AppMigration {
     private const val ALPHADOTS = "$ALPHA....."
     private const val ANDROID_MANIFEST = "AndroidManifest.xml"
     private const val TEST_PKG_NAME = "$APP_PACKAGE_NAME.test"
+    private val PACKAGE_NAME = Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")
 
-    // Some arbitrary limit
     const val MAX_LABEL_LENGTH = 32
     const val PLACEHOLDER = "COMPONENT_PLACEHOLDER"
+
+    private fun isValidPackageName(pkg: String) = PACKAGE_NAME.matches(pkg)
+
+    @Suppress("DEPRECATION")
+    private fun isInstalled(context: Context, pkg: String): Boolean {
+        return try {
+            context.packageManager.getApplicationInfo(pkg, 0)
+            true
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
 
     private fun genPackageName(): String {
         val random = SecureRandom()
@@ -112,8 +123,6 @@ object AppMigration {
                 if (i != seg - 1)
                     cls.append('.')
             }
-            // Old Android does not support capitalized package names
-            // Check Android 7.0.0 PackageParser#buildClassName
             cls[0] = cls[0].lowercaseChar()
             yield(cls.toString())
         }
@@ -142,100 +151,142 @@ object AppMigration {
                 }
                 if (!p) return false
 
-                // Write apk changes
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
                 val keys = Keygen()
                 SignApk.sign(keys.cert, keys.key, jar, out)
                 return true
             }
         } catch (e: Exception) {
-            Timber.e(e)
             return false
         }
     }
 
-    private fun patchTest(apk: File, out: File, pkg: String): Boolean {
+    private fun patchTest(
+        apk: File,
+        out: File,
+        sourcePkg: String,
+        targetPkg: String,
+    ): Boolean {
         try {
             JarMap.open(apk, true).use { jar ->
                 val je = jar.getJarEntry(ANDROID_MANIFEST)
                 val xml = AXML(jar.getRawData(je))
                 val p = xml.patchStrings {
                     when (it) {
-                        APP_PACKAGE_NAME -> pkg
-                        TEST_PKG_NAME -> "$pkg.test"
+                        sourcePkg -> targetPkg
+                        "$sourcePkg.test" -> "$targetPkg.test"
                         else -> it
                     }
                 }
                 if (!p) return false
 
-                // Write apk changes
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
                 val keys = Keygen()
                 out.outputStream().use { SignApk.sign(keys.cert, keys.key, jar, it) }
                 return true
             }
         } catch (e: Exception) {
-            Timber.e(e)
             return false
         }
     }
 
-    private fun launchApp(context: Context, pkg: String) {
-        val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return
+    private suspend fun launchApp(context: Context, pkg: String): Boolean {
+        if (!isValidPackageName(pkg) || pkg == context.packageName) return false
+        val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return false
+        Config.migrationSource = context.packageName
+        Config.migrationTarget = pkg
         intent.putExtra(Const.Key.PREV_CONFIG, Config.toBundle())
+        intent.putExtra(Const.Key.PREV_PACKAGE, context.packageName)
         val options = ActivityOptions.makeBasic()
         if (Build.VERSION.SDK_INT >= 34) {
             options.setShareIdentityEnabled(true)
         }
-        context.startActivity(intent, options.toBundle())
-        if (context is Activity) {
-            context.finish()
+        val launched = withContext(Dispatchers.Main.immediate) {
+            try {
+                context.startActivity(intent, options.toBundle())
+                if (context is Activity) context.finish()
+                true
+            } catch (_: RuntimeException) {
+                false
+            }
         }
+        if (!launched) {
+            Config.migrationSource = ""
+            Config.migrationTarget = ""
+        }
+        return launched
     }
 
-    suspend fun patchAndHide(context: Context, label: String, pkg: String? = null): Boolean {
-        val stub = File(context.cacheDir, "stub.apk")
-        try {
-            context.assets.open("stub.apk").writeTo(stub)
-        } catch (e: IOException) {
-            Timber.e(e)
-            return false
-        }
+    suspend fun patchAndHide(context: Context, label: String, pkg: String? = null): Boolean =
+        withContext(Dispatchers.IO) {
+            if (label.isBlank() || label.length > MAX_LABEL_LENGTH) return@withContext false
+            val workDir = File(context.cacheDir, "app-migration")
+            workDir.deleteRecursively()
+            if (!workDir.mkdirs()) return@withContext false
+            var installedTestPackage: String? = null
+            var installedMainPackage: String? = null
+            var committed = false
+            try {
+                val stub = File(workDir, "stub.apk")
+                try {
+                    context.assets.open("stub.apk").writeTo(stub)
+                } catch (_: IOException) {
+                    return@withContext false
+                }
 
-        // Generate a new random signature and package name if needed
-        val pkg = pkg ?: genPackageName()
-        Config.keyStoreRaw = ""
+                val newPackage = pkg ?: generateSequence(::genPackageName)
+                    .take(8)
+                    .firstOrNull {
+                        !isInstalled(context, it) && !isInstalled(context, "$it.test")
+                    }
+                    ?: return@withContext false
+                if (!isValidPackageName(newPackage) || newPackage == context.packageName) {
+                    return@withContext false
+                }
+                if (isInstalled(context, newPackage) || isInstalled(context, "$newPackage.test")) {
+                    return@withContext false
+                }
+                Config.keyStoreRaw = ""
+                val oldTestPackage = "${context.packageName}.test"
 
-        // Check and patch the test APK
-        try {
-            val info = context.packageManager.getApplicationInfo(TEST_PKG_NAME, 0)
-            val testApk = File(info.sourceDir)
-            val testRepack = File(context.cacheDir, "test.apk")
-            if (!patchTest(testApk, testRepack, pkg))
-                return false
-            val cmd = "adb_pm_install $testRepack $pkg.test"
-            if (!Shell.cmd(cmd).exec().isSuccess)
-                return false
-        } catch (e: PackageManager.NameNotFoundException) {
-        }
+                try {
+                    val info = context.packageManager.getApplicationInfo(oldTestPackage, 0)
+                    val testApk = File(info.sourceDir)
+                    val testRepack = File(workDir, "test.apk")
+                    if (!patchTest(
+                            testApk,
+                            testRepack,
+                            context.packageName,
+                            newPackage,
+                        )) return@withContext false
+                    if (!Shell.cmd("adb_pm_install $testRepack $newPackage.test").exec().isSuccess) {
+                        return@withContext false
+                    }
+                    installedTestPackage = "$newPackage.test"
+                } catch (_: PackageManager.NameNotFoundException) {
+                }
 
-        val repack = File(context.cacheDir, "patched.apk")
-        repack.outputStream().use {
-            if (!patch(context, stub, it, pkg, label))
-                return false
-        }
+                val repack = File(workDir, "patched.apk")
+                repack.outputStream().use {
+                    if (!patch(context, stub, it, newPackage, label)) return@withContext false
+                }
 
-        // Install and auto launch app
-        val cmd = "adb_pm_install $repack $pkg"
-        if (Shell.cmd(cmd).exec().isSuccess) {
-            Config.suManager = pkg
-            Shell.cmd("touch $AppApkPath").exec()
-            launchApp(context, pkg)
-            return true
-        } else {
-            return false
+                if (!Shell.cmd("adb_pm_install $repack $newPackage").exec().isSuccess) {
+                    return@withContext false
+                }
+                installedMainPackage = newPackage
+                Shell.cmd("touch $AppApkPath").exec()
+                if (!launchApp(context, newPackage)) return@withContext false
+                committed = true
+                return@withContext true
+            } finally {
+                if (!committed) {
+                    installedTestPackage?.let { Shell.cmd("pm uninstall $it").exec() }
+                    installedMainPackage?.let { Shell.cmd("pm uninstall $it").exec() }
+                }
+                workDir.deleteRecursively()
+            }
         }
-    }
 
     @Suppress("DEPRECATION")
     suspend fun hide(activity: Activity, label: String) {
@@ -245,25 +296,89 @@ object AppMigration {
             setCancelable(false)
             show()
         }
-        val success = withContext(Dispatchers.IO) {
-            patchAndHide(activity, label)
-        }
+        val success = patchAndHide(activity, label)
         if (!success) {
             dialog.dismiss()
             activity.toast(R.string.failure, Toast.LENGTH_LONG)
         }
     }
 
-    suspend fun restoreApp(context: Context): Boolean {
-        val apk = StubApk.current(context)
-        val cmd = "adb_pm_install $apk $APP_PACKAGE_NAME"
-        if (Shell.cmd(cmd).await().isSuccess) {
-            Config.suManager = ""
-            Shell.cmd("touch $AppApkPath").exec()
-            launchApp(context, APP_PACKAGE_NAME)
-            return true
+    suspend fun restoreApp(context: Context): Boolean = withContext(Dispatchers.IO) {
+        if (context.packageName == APP_PACKAGE_NAME || isInstalled(context, APP_PACKAGE_NAME)) {
+            return@withContext false
         }
-        return false
+        val workDir = File(context.cacheDir, "app-migration")
+        workDir.deleteRecursively()
+        if (!workDir.mkdirs()) return@withContext false
+        var installedTest = false
+        var installedMain = false
+        var committed = false
+        try {
+            val sourceTestPackage = "${context.packageName}.test"
+            if (isInstalled(context, sourceTestPackage)) {
+                if (isInstalled(context, TEST_PKG_NAME)) return@withContext false
+                val info = try {
+                    context.packageManager.getApplicationInfo(sourceTestPackage, 0)
+                } catch (_: PackageManager.NameNotFoundException) {
+                    return@withContext false
+                }
+                val testRepack = File(workDir, "test.apk")
+                if (!patchTest(
+                        File(info.sourceDir),
+                        testRepack,
+                        context.packageName,
+                        APP_PACKAGE_NAME,
+                    )) return@withContext false
+                if (!Shell.cmd("adb_pm_install $testRepack $TEST_PKG_NAME").exec().isSuccess) {
+                    return@withContext false
+                }
+                installedTest = true
+            }
+
+            val apk = StubApk.current(context)
+            val cmd = "adb_pm_install $apk $APP_PACKAGE_NAME"
+            if (Shell.cmd(cmd).await().isSuccess) {
+                installedMain = true
+                Shell.cmd("touch $AppApkPath").exec()
+                if (launchApp(context, APP_PACKAGE_NAME)) {
+                    committed = true
+                    return@withContext true
+                }
+            }
+            return@withContext false
+        } finally {
+            if (!committed) {
+                if (installedTest) Shell.cmd("pm uninstall $TEST_PKG_NAME").exec()
+                if (installedMain) Shell.cmd("pm uninstall $APP_PACKAGE_NAME").exec()
+            }
+            workDir.deleteRecursively()
+        }
+    }
+
+    fun pendingMigrationSource(context: Context, requestedSource: String?): String? {
+        val source = Config.migrationSource
+        val target = Config.migrationTarget
+        if (target != context.packageName || source == target || !isValidPackageName(source)) {
+            return null
+        }
+        return source.takeIf { requestedSource == null || requestedSource == it }
+    }
+
+    fun completeMigration(context: Context, source: String): Boolean {
+        if (!isValidPackageName(source) || source == context.packageName) return false
+        val sourceTest = "$source.test"
+        if (isInstalled(context, sourceTest)) {
+            Shell.cmd("pm uninstall $sourceTest").exec()
+        }
+        if (isInstalled(context, source)) {
+            Shell.cmd("pm uninstall $source").exec()
+        }
+        val complete = !isInstalled(context, sourceTest) && !isInstalled(context, source)
+        if (complete) {
+            Config.migrationSource = ""
+            Config.migrationTarget = ""
+        }
+        return complete
     }
 
     @Suppress("DEPRECATION")

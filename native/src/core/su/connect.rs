@@ -2,9 +2,9 @@ use super::SuInfo;
 use super::db::RootSettings;
 use crate::consts::{INTERNAL_DIR, MAGISK_FILE_CON};
 use crate::daemon::to_user_id;
-use crate::ffi::{SuPolicy, SuRequest, get_magisk_tmp};
+use crate::ffi::{SuPolicy, get_magisk_tmp};
 use crate::socket::IpcRead;
-use ExtraVal::{Bool, Int, IntList, Str};
+use ExtraVal::{Int, Str};
 use base::{
     BytesExt, FileAttr, LibcReturn, LoggedResult, ResultExt, Utf8CStrBuf, cstr, fork_dont_care,
 };
@@ -24,9 +24,7 @@ struct Extra<'a> {
 
 enum ExtraVal<'a> {
     Int(i32),
-    Bool(bool),
     Str(&'a str),
-    IntList(&'a [u32]),
 }
 
 impl Extra<'_> {
@@ -35,47 +33,20 @@ impl Extra<'_> {
             Int(i) => {
                 cmd.args(["--ei", self.key, &i.to_string()]);
             }
-            Bool(b) => {
-                cmd.args(["--ez", self.key, &b.to_string()]);
-            }
             Str(s) => {
                 cmd.args(["--es", self.key, s]);
-            }
-            IntList(list) => {
-                cmd.args(["--es", self.key]);
-                let mut tmp = String::new();
-                list.iter().for_each(|i| {
-                    write!(&mut tmp, "{i},").ok();
-                });
-                tmp.pop();
-                cmd.arg(&tmp);
             }
         }
     }
 
     fn add_bind(&self, cmd: &mut Command) {
-        let mut tmp: String;
-        match self.value {
-            Int(i) => {
-                tmp = format!("{}:i:{}", self.key, i);
-            }
-            Bool(b) => {
-                tmp = format!("{}:b:{}", self.key, b);
-            }
+        let tmp = match self.value {
+            Int(i) => format!("{}:i:{}", self.key, i),
             Str(s) => {
                 let s = s.replace("\\", "\\\\").replace(":", "\\:");
-                tmp = format!("{}:s:{}", self.key, s);
+                format!("{}:s:{}", self.key, s)
             }
-            IntList(list) => {
-                tmp = format!("{}:s:", self.key);
-                if !list.is_empty() {
-                    list.iter().for_each(|i| {
-                        write!(&mut tmp, "{i},").ok();
-                    });
-                    tmp.pop();
-                }
-            }
-        }
+        };
         cmd.args(["--extra", &tmp]);
     }
 
@@ -92,7 +63,6 @@ impl Extra<'_> {
 
 pub(super) struct SuAppContext<'a> {
     pub(super) cred: UCred,
-    pub(super) request: &'a SuRequest,
     pub(super) info: &'a SuInfo,
     pub(super) settings: &'a mut RootSettings,
     pub(super) sdk_int: i32,
@@ -246,60 +216,13 @@ impl SuAppContext<'_> {
         self.exec_cmd("notify", &extras, true);
     }
 
-    fn app_log(&self) {
-        let command = if self.request.command.is_empty() {
-            &self.request.shell
-        } else {
-            &self.request.command
-        };
-        let extras = [
-            Extra {
-                key: "from.uid",
-                value: Int(self.cred.uid.as_()),
-            },
-            Extra {
-                key: "to.uid",
-                value: Int(self.request.target_uid),
-            },
-            Extra {
-                key: "pid",
-                value: Int(self.cred.pid.unwrap_or(-1).as_()),
-            },
-            Extra {
-                key: "policy",
-                value: Int(self.settings.policy.repr),
-            },
-            Extra {
-                key: "target",
-                value: Int(self.request.target_pid),
-            },
-            Extra {
-                key: "context",
-                value: Str(&self.request.context),
-            },
-            Extra {
-                key: "gids",
-                value: IntList(&self.request.gids),
-            },
-            Extra {
-                key: "command",
-                value: Str(command),
-            },
-            Extra {
-                key: "notify",
-                value: Bool(self.settings.notify),
-            },
-        ];
-        self.exec_cmd("log", &extras, true);
-    }
-
     pub(super) fn connect_app(&mut self) {
         // If policy is undetermined, show dialog for user consent
         if self.settings.policy == SuPolicy::Query {
             self.app_request();
         }
 
-        if !self.settings.log && !self.settings.notify {
+        if !self.settings.notify {
             return;
         }
 
@@ -307,12 +230,7 @@ impl SuAppContext<'_> {
             return;
         }
 
-        // Notify su usage to application
-        if self.settings.log {
-            self.app_log();
-        } else if self.settings.notify {
-            self.app_notify();
-        }
+        self.app_notify();
 
         exit(0);
     }

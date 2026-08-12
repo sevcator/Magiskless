@@ -1,7 +1,6 @@
 package com.topjohnwu.magisk.terminal
 
 import android.util.Base64
-import timber.log.Timber
 import java.util.Stack
 
 /**
@@ -28,8 +27,6 @@ class TerminalEmulator(
 ) {
 
     companion object {
-        private const val LOG_ESCAPE_SEQUENCES = false
-
         /** Used for invalid data - http://en.wikipedia.org/wiki/Replacement_character#Replacement_character */
         const val UNICODE_REPLACEMENT_CHAR = 0xFFFD
 
@@ -88,8 +85,6 @@ class TerminalEmulator(
             TERMINAL_CURSOR_STYLE_UNDERLINE,
             TERMINAL_CURSOR_STYLE_BAR
         )
-
-        private const val LOG_TAG = "TerminalEmulator"
 
         fun mapDecSetBitToInternalBit(decsetBit: Int): Int = when (decsetBit) {
             1 -> DECSET_BIT_APPLICATION_CURSOR_KEYS
@@ -565,8 +560,6 @@ class TerminalEmulator(
             '\\'.code -> {
                 val dcs = mOSCOrDeviceControlArgs.toString()
                 if (!dcs.startsWith("\$q") && !dcs.startsWith("+q")) {
-                    if (LOG_ESCAPE_SEQUENCES)
-                        Timber.tag(LOG_TAG).e("Unrecognized device control string: $dcs")
                 }
                 finishSequence()
             }
@@ -663,7 +656,6 @@ class TerminalEmulator(
                     val externalBit = mArgs[i]
                     val internalBit = mapDecSetBitToInternalBit(externalBit)
                     if (internalBit == -1) {
-                        Timber.tag(LOG_TAG).w("Ignoring request to save/recall decset bit=$externalBit")
                     } else {
                         if (b == 's'.code) {
                             mSavedDecSetFlags = mSavedDecSetFlags or internalBit
@@ -738,7 +730,7 @@ class TerminalEmulator(
     private fun doCsiBiggerThan(b: Int) {
         when (b) {
             'c'.code -> { /* Secondary device attributes - ignored for read-only */ }
-            'm'.code -> Timber.tag(LOG_TAG).e("(ignored) CSI > MODIFY RESOURCE: ${getArg0(-1)} to ${getArg1(-1)}")
+            'm'.code -> Unit
             else -> parseArg(b)
         }
     }
@@ -1089,13 +1081,12 @@ class TerminalEmulator(
                     val firstArg = mArgs[i + 1]
                     if (firstArg == 2) {
                         if (i + 4 > mArgIndex) {
-                            Timber.tag(LOG_TAG).w("Too few CSI${code};2 RGB arguments")
                         } else {
                             val red = getArg(i + 2, 0, false)
                             val green = getArg(i + 3, 0, false)
                             val blue = getArg(i + 4, 0, false)
                             if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
-                                finishSequenceAndLogError("Invalid RGB: $red,$green,$blue")
+                                finishSequence()
                             } else {
                                 val argbColor = 0xff000000.toInt() or (red shl 16) or (green shl 8) or blue
                                 when (code) {
@@ -1116,10 +1107,9 @@ class TerminalEmulator(
                                 58 -> mUnderlineColor = color
                             }
                         } else {
-                            if (LOG_ESCAPE_SEQUENCES) Timber.tag(LOG_TAG).w("Invalid color index: $color")
                         }
                     } else {
-                        finishSequenceAndLogError("Invalid ISO-8613-3 SGR first argument: $firstArg")
+                        finishSequence()
                     }
                 }
                 code == 39 -> mForeColor = TextStyle.COLOR_INDEX_FOREGROUND
@@ -1129,8 +1119,6 @@ class TerminalEmulator(
                 code in 90..97 -> mForeColor = code - 90 + 8
                 code in 100..107 -> mBackColor = code - 100 + 8
                 else -> {
-                    if (LOG_ESCAPE_SEQUENCES)
-                        Timber.tag(LOG_TAG).w("SGR unknown code %d", code)
                 }
             }
             i++
@@ -1236,7 +1224,6 @@ class TerminalEmulator(
                     val clipboardText = String(Base64.decode(textParameter.substring(startIndex), 0), Charsets.UTF_8)
                     onCopyToClipboard?.invoke(clipboardText)
                 } catch (_: Exception) {
-                    Timber.tag(LOG_TAG).e("OSC Manipulate selection, invalid string '$textParameter'")
                 }
             }
             104 -> {
@@ -1333,7 +1320,7 @@ class TerminalEmulator(
                     mArgsSubParamsBitSet = mArgsSubParamsBitSet or (1 shl mArgIndex)
                 }
             } else {
-                logError("Too many parameters when in state: $mEscapeState")
+                finishSequence()
             }
             continueSequence(mEscapeState)
         } else {
@@ -1363,47 +1350,15 @@ class TerminalEmulator(
     }
 
     private fun unimplementedSequence(b: Int) {
-        logError("Unimplemented sequence char '${b.toChar()}' (U+${String.format("%04x", b)})")
         finishSequence()
     }
 
     private fun unknownSequence(b: Int) {
-        logError("Unknown sequence char '${b.toChar()}' (numeric value=$b)")
         finishSequence()
     }
 
     private fun unknownParameter(parameter: Int) {
-        logError("Unknown parameter: $parameter")
         finishSequence()
-    }
-
-    private fun logError(errorType: String) {
-        if (LOG_ESCAPE_SEQUENCES) {
-            val buf = StringBuilder()
-            buf.append(errorType)
-            buf.append(", escapeState=")
-            buf.append(mEscapeState)
-            var firstArg = true
-            if (mArgIndex >= mArgs.size) mArgIndex = mArgs.size - 1
-            for (i in 0..mArgIndex) {
-                val value = mArgs[i]
-                if (value >= 0) {
-                    if (firstArg) {
-                        firstArg = false
-                        buf.append(", args={")
-                    } else {
-                        buf.append(',')
-                    }
-                    buf.append(value)
-                }
-            }
-            if (!firstArg) buf.append('}')
-            finishSequenceAndLogError(buf.toString())
-        }
-    }
-
-    private fun finishSequenceAndLogError(error: String) {
-        if (LOG_ESCAPE_SEQUENCES) Timber.tag(LOG_TAG).w(error)
         finishSequence()
     }
 

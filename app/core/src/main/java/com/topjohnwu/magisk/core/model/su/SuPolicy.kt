@@ -6,7 +6,6 @@ class SuPolicy(
     val uid: Int,
     var policy: Int = QUERY,
     var remain: Long = -1L,
-    var logging: Boolean = true,
     var notification: Boolean = true,
 ) {
     companion object {
@@ -26,7 +25,7 @@ class SuPolicy(
             "uid" to uid,
             "policy" to policy,
             "until" to until,
-            "logging" to logging,
+            "logging" to false,
             "notification" to notification
         )
     }

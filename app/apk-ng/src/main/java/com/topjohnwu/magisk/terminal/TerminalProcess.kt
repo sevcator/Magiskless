@@ -4,7 +4,6 @@ import android.os.Handler
 import android.os.Looper
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.superuser.Shell
-import timber.log.Timber
 
 private val busyboxPath: String by lazy {
     Shell.cmd("readlink /proc/self/exe").exec().out.firstOrNull()
@@ -56,7 +55,6 @@ fun runSuCommand(emulator: TerminalEmulator, command: String): Boolean {
 
         process.waitFor() == 0
     } catch (e: Exception) {
-        Timber.e(e, "runSuCommand failed")
         emulator.appendLineOnMain("! Error: ${e.message}")
         false
     }

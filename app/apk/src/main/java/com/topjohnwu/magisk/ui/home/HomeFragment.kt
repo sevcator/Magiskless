@@ -10,19 +10,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.MenuProvider
-import androidx.lifecycle.lifecycleScope
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.BaseFragment
 import com.topjohnwu.magisk.arch.viewModel
-import com.topjohnwu.magisk.core.BuildConfig
-import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.databinding.FragmentHomeMd2Binding
 import com.topjohnwu.magisk.core.R as CoreR
 import androidx.navigation.findNavController
 import com.topjohnwu.magisk.arch.NavigationActivity
-import kotlinx.coroutines.launch
 
 class HomeFragment : BaseFragment<FragmentHomeMd2Binding>(), MenuProvider {
 
@@ -32,17 +27,6 @@ class HomeFragment : BaseFragment<FragmentHomeMd2Binding>(), MenuProvider {
     override fun onStart() {
         super.onStart()
         activity?.setTitle(CoreR.string.section_home)
-        autoHideIfFirstLaunch()
-    }
-
-    private fun autoHideIfFirstLaunch() {
-        val ctx = requireContext()
-        if (ctx.packageName == BuildConfig.APP_PACKAGE_NAME && !Config.autoHided && Info.isRooted) {
-            Config.autoHided = true
-            lifecycleScope.launch {
-                AppMigration.hide(requireActivity(), "System Manager")
-            }
-        }
     }
 
     private fun checkTitle(text: TextView, icon: ImageView) {
@@ -68,10 +52,6 @@ class HomeFragment : BaseFragment<FragmentHomeMd2Binding>(), MenuProvider {
         with(binding.homeMagiskWrapper) {
             checkTitle(homeMagiskTitle, homeMagiskIcon)
         }
-        with(binding.homeManagerWrapper) {
-            checkTitle(homeManagerTitle, homeManagerIcon)
-        }
-
         return binding.root
     }
 

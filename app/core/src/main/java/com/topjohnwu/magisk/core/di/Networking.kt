@@ -13,7 +13,6 @@ import okhttp3.Dns
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.dnsoverhttps.DnsOverHttps
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -55,11 +54,7 @@ fun createOkHttpClient(context: Context): OkHttpClient {
     val appCache = Cache(File(context.cacheDir, "okhttp"), 10 * 1024 * 1024)
     val builder = OkHttpClient.Builder().cache(appCache)
 
-    if (BuildConfig.DEBUG) {
-        builder.addInterceptor(HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
-        })
-    } else {
+    if (!BuildConfig.DEBUG) {
         builder.connectionSpecs(listOf(ConnectionSpec.MODERN_TLS))
     }
 

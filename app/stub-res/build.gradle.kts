@@ -8,6 +8,10 @@ android {
     namespace = "com.topjohnwu.magisk"
     enableKotlin = false
 
+    defaultConfig {
+        resourceConfigurations += listOf("en", "ru", "zh-rCN", "zh-rTW")
+    }
+
     buildTypes {
         release {
             isShrinkResources = false

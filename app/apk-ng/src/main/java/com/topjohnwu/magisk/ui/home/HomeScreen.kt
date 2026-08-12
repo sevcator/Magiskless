@@ -25,8 +25,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -67,19 +64,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
 import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.download.DownloadEngine
-import com.topjohnwu.magisk.core.download.Subject
 import com.topjohnwu.magisk.core.ktx.reboot
 import com.topjohnwu.magisk.core.ktx.toast
-import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.tasks.MagiskInstaller
 import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.magisk.ui.component.LoadingDialogHandle
-import com.topjohnwu.magisk.ui.component.MarkdownTextAsync
 import com.topjohnwu.magisk.ui.component.rememberLoadingDialog
 import com.topjohnwu.magisk.ui.flash.FlashUtils
 import com.topjohnwu.magisk.ui.install.InstallBottomSheet
@@ -94,14 +86,10 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
     val context = LocalContext.current
     val activity = context as MainActivity
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val scope = rememberCoroutineScope()
     val loadingDialog = rememberLoadingDialog()
 
     val showUninstallDialog = rememberSaveable { mutableStateOf(false) }
-    val showManagerDialog = rememberSaveable { mutableStateOf(false) }
     val showEnvFixDialog = rememberSaveable { mutableStateOf(false) }
-    var showHideDialog by rememberSaveable { mutableStateOf(false) }
-    var showRestoreDialog by rememberSaveable { mutableStateOf(false) }
     val showInstallSheet = rememberSaveable { mutableStateOf(false) }
     var envFixCode by remember { mutableIntStateOf(0) }
 
@@ -111,24 +99,11 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
             viewModel.onUninstallConsumed()
         }
     }
-    LaunchedEffect(uiState.showManagerInstall) {
-        if (uiState.showManagerInstall) {
-            showManagerDialog.value = true
-            viewModel.onManagerInstallConsumed()
-        }
-    }
     LaunchedEffect(uiState.envFixCode) {
         if (uiState.envFixCode != 0) {
             envFixCode = uiState.envFixCode
             showEnvFixDialog.value = true
             viewModel.onEnvFixConsumed()
-        }
-    }
-    LaunchedEffect(uiState.showHideRestore) {
-        if (uiState.showHideRestore) {
-            val hidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
-            if (hidden) showRestoreDialog = true else showHideDialog = true
-            viewModel.onHideRestoreConsumed()
         }
     }
 
@@ -140,13 +115,6 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
         )
     }
 
-    if (showManagerDialog.value) {
-        ManagerInstallComposableDialog(
-            showDialog = showManagerDialog,
-            activity = activity,
-        )
-    }
-
     if (showEnvFixDialog.value) {
         EnvFixComposableDialog(
             showDialog = showEnvFixDialog,
@@ -154,34 +122,6 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
             activity = activity,
             loadingDialog = loadingDialog,
             onNavigateInstall = { showInstallSheet.value = true },
-        )
-    }
-
-    if (showHideDialog) {
-        HideAppDialog(
-            onDismiss = { showHideDialog = false },
-            onConfirm = { name ->
-                showHideDialog = false
-                scope.launch {
-                    loadingDialog.withLoading {
-                        AppMigration.patchAndHide(context, name)
-                    }
-                }
-            }
-        )
-    }
-
-    if (showRestoreDialog) {
-        RestoreAppDialog(
-            onDismiss = { showRestoreDialog = false },
-            onConfirm = {
-                showRestoreDialog = false
-                scope.launch {
-                    loadingDialog.withLoading {
-                        AppMigration.restoreApp(context)
-                    }
-                }
-            }
         )
     }
 
@@ -218,15 +158,6 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
             ) { showInstallSheet.value = true }
 
             StatusCard()
-
-            AppCard(
-                modifier = Modifier.fillMaxWidth(),
-                state = uiState.appState,
-                version = viewModel.managerInstalledVersion,
-                isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME,
-                onManagerPressed = viewModel::onManagerPressed,
-                onHideRestorePressed = viewModel::onHideRestorePressed,
-            )
 
             UninstallButton(
                 onClick = { viewModel.onDeletePressed() },
@@ -461,89 +392,6 @@ private fun UninstallButton(
     }
 }
 
-@Composable
-private fun AppCard(
-    modifier: Modifier = Modifier,
-    state: HomeViewModel.State,
-    version: String,
-    isHidden: Boolean,
-    onManagerPressed: () -> Unit,
-    onHideRestorePressed: () -> Unit,
-) {
-    val actionLabel = when (state) {
-        HomeViewModel.State.OUTDATED -> stringResource(CoreR.string.update)
-        HomeViewModel.State.UP_TO_DATE -> stringResource(CoreR.string.reinstall)
-        else -> null
-    }
-
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(24.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_manager),
-                        contentDescription = null,
-                        modifier = Modifier.size(36.dp)
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(CoreR.string.home_app_title),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
-
-                if (Info.env.isActive) {
-                    val hideRestoreIcon = if (isHidden) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = onHideRestorePressed) {
-                        Icon(
-                            imageVector = hideRestoreIcon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
-
-                if (actionLabel != null) {
-                    InstallButton(
-                        label = actionLabel,
-                        onClick = onManagerPressed,
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            AppDetailRow(label = stringResource(CoreR.string.home_installed_version), value = version)
-            AppDetailRow(label = stringResource(CoreR.string.home_package), value = LocalContext.current.packageName)
-        }
-    }
-}
-
-@Composable
-private fun AppDetailRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
 private data class StatusInfo(val label: String, val status: String)
 
 @Composable
@@ -760,41 +608,6 @@ private fun UninstallComposableDialog(
 }
 
 @Composable
-private fun ManagerInstallComposableDialog(
-    showDialog: MutableState<Boolean>,
-    activity: MainActivity,
-) {
-    if (showDialog.value) {
-        AlertDialog(
-            onDismissRequest = { showDialog.value = false },
-            title = { Text(stringResource(CoreR.string.install)) },
-            text = {
-                MarkdownTextAsync {
-                    val text = Info.update.note
-                    java.io.File(activity.cacheDir, "${Info.update.versionCode}.md").writeText(text)
-                    text
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDialog.value = false
-                        DownloadEngine.startWithActivity(activity, Subject.App())
-                    }
-                ) {
-                    Text(stringResource(CoreR.string.install))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog.value = false }) {
-                    Text(stringResource(android.R.string.cancel))
-                }
-            }
-        )
-    }
-}
-
-@Composable
 private fun EnvFixComposableDialog(
     showDialog: MutableState<Boolean>,
     code: Int,
@@ -854,65 +667,4 @@ private fun EnvFixComposableDialog(
             }
         )
     }
-}
-
-@Composable
-private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    val defaultName = stringResource(CoreR.string.settings)
-    var appName by rememberSaveable { mutableStateOf(defaultName) }
-    val isError = appName.length > AppMigration.MAX_LABEL_LENGTH || appName.isBlank()
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(CoreR.string.settings_hide_app_title)) },
-        text = {
-            Column(modifier = Modifier.padding(top = 8.dp)) {
-                OutlinedTextField(
-                    value = appName,
-                    onValueChange = { appName = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(CoreR.string.settings_app_name_hint)) },
-                    isError = isError
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { if (!isError) onConfirm(appName) },
-                enabled = !isError
-            ) {
-                Text(stringResource(android.R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(android.R.string.cancel))
-            }
-        }
-    )
-}
-
-@Composable
-private fun RestoreAppDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(CoreR.string.settings_restore_app_title)) },
-        text = {
-            Text(
-                text = stringResource(CoreR.string.restore_app_confirmation),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(stringResource(android.R.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(android.R.string.cancel))
-            }
-        }
-    )
 }

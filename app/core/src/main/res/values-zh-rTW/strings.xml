@@ -3,7 +3,6 @@
     <!--Sections-->
     <string name="modules">模組</string>
     <string name="superuser">超級使用者</string>
-    <string name="logs">紀錄</string>
     <string name="settings">設定</string>
     <string name="install">安裝</string>
     <string name="section_home">首頁</string>
@@ -68,8 +67,6 @@
     <string name="su_snack_deny">已拒絕 %1$s 使用超級使用者的權限</string>
     <string name="su_snack_notif_on">已啟用 %1$s 通知</string>
     <string name="su_snack_notif_off">已停用 %1$s 通知</string>
-    <string name="su_snack_log_on">已啟用 %1$s 寫入紀錄</string>
-    <string name="su_snack_log_off">已停用 %1$s 寫入紀錄</string>
     <string name="su_revoke_title">撤銷權限？</string>
     <string name="su_revoke_msg">確定撤銷 %1$s 的權限？</string>
     <string name="toast">快顯通知</string>
@@ -80,11 +77,6 @@
     <string name="superuser_policy_none">目前沒有任何應用程式要求超級使用者的權限。</string>
 
     <!--Logs-->
-    <string name="log_data_none">您的紀錄是空的，請嘗試使用具備需要超級使用者權限的應用程式。</string>
-    <string name="log_data_magisk_none">Magisk 的紀錄是空的，很奇怪……</string>
-    <string name="menuSaveLog">儲存紀錄</string>
-    <string name="menuClearLog">清除紀錄</string>
-    <string name="logs_cleared">已成功清除紀錄</string>
     <string name="pid">PID: %1$d</string>
     <string name="target_uid">目標 UID: %1$d</string>
 
@@ -234,4 +226,18 @@
     <string name="reboot_apply_change">重新啟動裝置以套用設定變更</string>
     <string name="restore_app_confirmation">這將會還原隱藏的應用程式至原始。請問您確定要執行？</string>
 
+    <string name="restrict">限制</string>
+    <string name="reboot_safe_mode">安全模式</string>
+    <string name="module_action">操作</string>
+    <string name="settings_update_debug">偵錯</string>
+    <string name="settings_su_restrict_title">限制 Root 權限</string>
+    <string name="settings_su_restrict_summary">預設限制新的超級使用者應用程式。警告：這會導致大多數應用程式無法正常運作。除非您了解後果，否則請勿啟用。</string>
+    <string name="download_dialog_title">輸入映像檔 URL</string>
+    <string name="download_dialog_msg">完整 OTA 映像檔或原廠映像檔</string>
+    <string name="close">關閉</string>
+    <string name="running">執行中</string>
+    <string name="done_action">%1$s 的操作已完成</string>
+    <string name="settings_sulist_title">SuList</string>
+    <string name="settings_sulist_summary">只有 SuList 中的應用程式可以要求 Root 權限。其他要求將自動拒絕。</string>
+    <string name="webui">網頁介面</string>
 </resources>

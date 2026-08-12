@@ -25,6 +25,8 @@ object Config : PreferenceConfig, DBConfig {
         const val BOOTLOOP = "bootloop"
         const val SU_MANAGER = "requester"
         const val KEYSTORE = "keystore"
+        const val MIGRATION_SOURCE = "migration_source"
+        const val MIGRATION_TARGET = "migration_target"
 
         // prefs
         const val SU_REQUEST_TIMEOUT = "su_request_timeout"
@@ -84,7 +86,6 @@ object Config : PreferenceConfig, DBConfig {
     var bootloop by dbSettings(Key.BOOTLOOP, 0)
 
     var safetyNotice by preference(Key.SAFETY, false)
-    var autoHided by preference("auto_hided", false)
     var darkTheme by preference(Key.DARK_THEME, -1)
     var themeOrdinal by preference(Key.THEME_ORDINAL, 0)
 
@@ -101,6 +102,8 @@ object Config : PreferenceConfig, DBConfig {
     var zygisk by dbSettings(Key.ZYGISK, Info.isEmulator)
     var suManager by dbStrings(Key.SU_MANAGER, "", true)
     var keyStoreRaw by dbStrings(Key.KEYSTORE, "", true)
+    var migrationSource by dbStrings(Key.MIGRATION_SOURCE, "", true)
+    var migrationTarget by dbStrings(Key.MIGRATION_TARGET, "", true)
 
     var suDefaultTimeout by preferenceStrInt(Key.SU_REQUEST_TIMEOUT, 10)
     var suAutoResponse by preferenceStrInt(Key.SU_AUTO_RESPONSE, Value.SU_PROMPT)

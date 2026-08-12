@@ -72,7 +72,6 @@ impl SuInfo {
     fn allow(uid: i32) -> SuInfo {
         let access = RootSettings {
             policy: SuPolicy::Allow,
-            log: false,
             notify: false,
         };
         SuInfo {
@@ -85,7 +84,6 @@ impl SuInfo {
     fn deny(uid: i32) -> SuInfo {
         let access = RootSettings {
             policy: SuPolicy::Deny,
-            log: false,
             notify: false,
         };
         SuInfo {
@@ -138,7 +136,6 @@ impl MagiskD {
             // Talk to su manager
             let mut app = SuAppContext {
                 cred,
-                request: &req,
                 info: &info,
                 settings: &mut access.settings,
                 sdk_int: self.sdk_int(),
@@ -235,7 +232,7 @@ impl MagiskD {
 
             // We need to talk to the manager, get the app info
             let (mgr_uid, mgr_pkg) =
-                if access.policy == SuPolicy::Query || access.log || access.notify {
+                if access.policy == SuPolicy::Query || access.notify {
                     self.get_manager(to_user_id(eval_uid), true)
                 } else {
                     (-1, String::new())

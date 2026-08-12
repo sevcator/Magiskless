@@ -8,7 +8,6 @@ import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.nio.ExtendedFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.IOException
 import java.util.Locale
 
@@ -112,9 +111,7 @@ data class LocalModule(
             outdated = json.versionCode > versionCode
             return true
         } catch (e: IOException) {
-            Timber.w(e)
         } catch (e: JsonDataException) {
-            Timber.w(e)
         }
 
         return false

@@ -15,7 +15,6 @@ impl Default for SuPolicy {
 #[derive(Default)]
 pub struct RootSettings {
     pub policy: SuPolicy,
-    pub log: bool,
     pub notify: bool,
 }
 
@@ -25,7 +24,6 @@ impl SqlTable for RootSettings {
             let val = values.get_int(i as i32);
             match column.as_str() {
                 "policy" => self.policy.repr = val,
-                "logging" => self.log = val != 0,
                 "notification" => self.notify = val != 0,
                 _ => {}
             }
@@ -44,7 +42,7 @@ impl SqlTable for UidList {
 impl MagiskD {
     pub fn get_root_settings(&self, uid: i32, settings: &mut RootSettings) -> SqliteResult<()> {
         self.db_exec_with_rows(
-            "SELECT policy, logging, notification FROM policies \
+            "SELECT policy, notification FROM policies \
              WHERE uid=? AND (until=0 OR until>strftime('%s', 'now'))",
             &[Integer(uid as i64)],
             settings,

@@ -12,7 +12,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
-import android.util.Log;
 
 import com.topjohnwu.magisk.utils.APKInstall;
 import com.topjohnwu.magisk.utils.DynamicClassLoader;
@@ -74,7 +73,6 @@ public class DynLoad {
                             APKInstall.transfer(in, out);
                         }
                     } catch (IOException e) {
-                        Log.e(DynLoad.class.getSimpleName(), "", e);
                         apk.delete();
                     } finally {
                         external.delete();
@@ -104,7 +102,6 @@ public class DynLoad {
                 return new DynamicClassLoader(apk);
             } catch (PackageManager.NameNotFoundException ignored) {
             } catch (IOException e) {
-                Log.e(DynLoad.class.getSimpleName(), "", e);
                 apk.delete();
             }
         }
@@ -171,7 +168,6 @@ public class DynLoad {
             // Call Application.attachBaseContext
             attachContext(app, context);
         } catch (Exception e) {
-            Log.e(DynLoad.class.getSimpleName(), "", e);
             apk.delete();
         } else {
             // Dynamic loading failed, use normal stub classloader
@@ -194,11 +190,7 @@ public class DynLoad {
             Field mcl = loadedApk.getClass().getDeclaredField("mClassLoader");
             mcl.setAccessible(true);
             mcl.set(loadedApk, new DelegateClassLoader());
-        } catch (Exception e) {
-            // Actually impossible as this method is only called on API < 29,
-            // and API 23 - 28 do not restrict access to these fields.
-            Log.e(DynLoad.class.getSimpleName(), "", e);
-        }
+        } catch (Exception ignored) {}
     }
 
     private static Map<String, String> generateMapping(PackageInfo stub, PackageInfo app) {

@@ -40,7 +40,6 @@ class PolicyItem(
 
     var policyValue by mutableIntStateOf(policy.policy)
     var notification by mutableStateOf(policy.notification)
-    var logging by mutableStateOf(policy.logging)
 
     val isEnabled get() = policyValue >= SuPolicy.ALLOW
     val isRestricted get() = policyValue == SuPolicy.RESTRICT
@@ -141,19 +140,6 @@ class SuperuserViewModel(
                 .filter { it.policy.uid == item.policy.uid }
                 .forEach { it.notification = item.notification }
             val res = if (item.notification) R.string.su_snack_notif_on else R.string.su_snack_notif_off
-            showSnackbar(AppContext.getString(res, item.appName))
-        }
-    }
-
-    fun updateLogging(item: PolicyItem) {
-        item.logging = !item.logging
-        item.policy.logging = item.logging
-        viewModelScope.launch {
-            db.update(item.policy)
-            _uiState.value.policies
-                .filter { it.policy.uid == item.policy.uid }
-                .forEach { it.logging = item.logging }
-            val res = if (item.logging) R.string.su_snack_log_on else R.string.su_snack_log_off
             showSnackbar(AppContext.getString(res, item.appName))
         }
     }

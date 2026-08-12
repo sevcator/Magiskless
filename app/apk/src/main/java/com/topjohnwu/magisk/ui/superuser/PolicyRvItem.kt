@@ -71,24 +71,12 @@ class PolicyRvItem(
             viewModel.updateNotify(this)
         }
 
-    @get:Bindable
-    var shouldLog
-        get() = item.logging
-        private set(value) = setImpl(value, shouldLog) {
-            item.logging = it
-            viewModel.updateLogging(this)
-        }
-
     fun toggleExpand() {
         isExpanded = !isExpanded
     }
 
     fun toggleNotify() {
         shouldNotify = !shouldNotify
-    }
-
-    fun toggleLog() {
-        shouldLog = !shouldLog
     }
 
     fun revoke() {

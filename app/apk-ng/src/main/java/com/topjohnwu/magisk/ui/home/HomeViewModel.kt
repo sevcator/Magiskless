@@ -26,10 +26,7 @@ class HomeViewModel : AsyncLoadViewModel() {
 
     data class UiState(
         val isNoticeVisible: Boolean = Config.safetyNotice,
-        val appState: State = State.UP_TO_DATE,
         val showUninstall: Boolean = false,
-        val showManagerInstall: Boolean = false,
-        val showHideRestore: Boolean = false,
         val envFixCode: Int = 0,
     )
 
@@ -51,10 +48,6 @@ class HomeViewModel : AsyncLoadViewModel() {
             else
                 ""
         }
-
-    val managerInstalledVersion: String
-        get() = "${BuildConfig.APP_VERSION_NAME} (${BuildConfig.APP_VERSION_CODE})" +
-            if (BuildConfig.DEBUG) " (D)" else ""
 
     companion object {
         private var checkedEnv = false
@@ -80,22 +73,6 @@ class HomeViewModel : AsyncLoadViewModel() {
 
     fun onUninstallConsumed() {
         _uiState.update { it.copy(showUninstall = false) }
-    }
-
-    fun onManagerPressed() {
-        _uiState.update { it.copy(showManagerInstall = true) }
-    }
-
-    fun onManagerInstallConsumed() {
-        _uiState.update { it.copy(showManagerInstall = false) }
-    }
-
-    fun onHideRestorePressed() {
-        _uiState.update { it.copy(showHideRestore = true) }
-    }
-
-    fun onHideRestoreConsumed() {
-        _uiState.update { it.copy(showHideRestore = false) }
     }
 
     fun onEnvFixConsumed() {
