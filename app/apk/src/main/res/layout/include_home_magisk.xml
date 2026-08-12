@@ -36,7 +36,8 @@
                 android:padding="@dimen/l_25"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_magisk_outline" />
+                app:srcCompat="@drawable/reisen"
+                app:tint="?colorPrimary" />
 
             <TextView
                 android:id="@+id/home_magisk_title"

@@ -2,10 +2,10 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <solid android:color="#00AF9C"/>
+            <solid android:color="#F4A6C1"/>
         </shape>
     </item>
 
-    <item android:drawable="@drawable/ic_magisk" />
+    <item android:drawable="@drawable/ic_reisen_white" />
 
 </layer-list>

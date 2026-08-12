@@ -26,6 +26,7 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.base.SplashController
 import com.topjohnwu.magisk.core.base.SplashScreenHost
+import com.topjohnwu.magisk.core.base.StartupTheme
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.model.module.LocalModule
@@ -65,7 +66,7 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
     private var isRootFragment = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(Theme.selected.themeRes)
+        StartupTheme.apply(this)
         splashController.preOnCreate()
         super.onCreate(savedInstanceState)
         splashController.onCreate(savedInstanceState)
@@ -78,6 +79,7 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
 
     @SuppressLint("InlinedApi")
     override fun onCreateUi(savedInstanceState: Bundle?) {
+        Theme.apply(this)
         setContentView()
         showUnsupportedMessage()
         askForHomeShortcut()

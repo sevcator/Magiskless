@@ -2,7 +2,7 @@
 
 #include <flags.h>
 
-#define JAVA_PACKAGE_NAME "com.google.android.contactkeys"
+#define JAVA_PACKAGE_NAME "io.sevcator.reisenless"
 // Configurable via secureDir in config.prop (default: /data/adb)
 #define SECURE_DIR      BUILD_SECURE_DIR
 #define MODULEROOT      SECURE_DIR "/modules"

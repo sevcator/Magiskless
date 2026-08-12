@@ -34,7 +34,7 @@ open class SuRequestActivity : UIActivity<ActivityRequestBinding>(), UntrackedAc
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             window.setHideOverlayWindows(true)
         }
-        setTheme(Theme.selected.themeRes)
+        Theme.apply(this)
         super.onCreate(savedInstanceState)
 
         if (intent.action == Intent.ACTION_VIEW) {

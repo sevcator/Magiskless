@@ -9,7 +9,9 @@ android {
     enableKotlin = false
 
     defaultConfig {
-        resourceConfigurations += listOf("en", "ru", "zh-rCN", "zh-rTW")
+        resourceConfigurations += listOf(
+            "en", "b+en+Latn+US+lower", "ru", "zh-rCN", "zh-rTW"
+        )
     }
 
     buildTypes {

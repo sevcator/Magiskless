@@ -37,9 +37,11 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_RESTRICT = "su_restrict"
         const val LOCALE = "locale"
         const val DARK_THEME = "dark_theme_extended"
+        const val ACCENT_PRIMARY = "accent_primary"
+        const val ACCENT_SECONDARY = "accent_secondary"
+        const val STARTUP_COLOR = "startup_color"
         const val DOWNLOAD_DIR = "download_dir"
         const val SAFETY = "safety_notice"
-        const val THEME_ORDINAL = "theme_ordinal"
         const val ASKED_HOME = "asked_home"
         const val DOH = "doh"
 
@@ -73,6 +75,9 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_AUTO_DENY = 1
         const val SU_AUTO_ALLOW = 2
 
+        const val THEME_LIGHT = 1
+        const val THEME_DARK = 2
+
         // su timeout
         val TIMEOUT_LIST = longArrayOf(0, -1, 10, 20, 30, 60)
     }
@@ -86,8 +91,23 @@ object Config : PreferenceConfig, DBConfig {
     var bootloop by dbSettings(Key.BOOTLOOP, 0)
 
     var safetyNotice by preference(Key.SAFETY, false)
-    var darkTheme by preference(Key.DARK_THEME, -1)
-    var themeOrdinal by preference(Key.THEME_ORDINAL, 0)
+    private var storedDarkTheme by preference(Key.DARK_THEME, Value.THEME_LIGHT)
+    var darkTheme
+        get() = if (storedDarkTheme == Value.THEME_DARK) {
+            Value.THEME_DARK
+        } else {
+            Value.THEME_LIGHT
+        }
+        set(value) {
+            storedDarkTheme = if (value == Value.THEME_DARK) {
+                Value.THEME_DARK
+            } else {
+                Value.THEME_LIGHT
+            }
+        }
+    var accentPrimary by preference(Key.ACCENT_PRIMARY, 0)
+    var accentSecondary by preference(Key.ACCENT_SECONDARY, 0)
+    var startupColor by preference(Key.STARTUP_COLOR, 0)
 
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)

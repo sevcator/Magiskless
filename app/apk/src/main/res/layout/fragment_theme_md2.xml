@@ -4,8 +4,6 @@
 
     <data>
 
-        <import type="com.topjohnwu.magisk.ui.theme.Theme" />
-
         <variable
             name="viewModel"
             type="com.topjohnwu.magisk.ui.theme.ThemeViewModel" />
@@ -32,10 +30,28 @@
             android:useDefaultMargins="true">
 
             <include
-                android:id="@+id/theme_card_dark"
-                item="@{viewModel.themeHeadline}"
-                layout="@layout/item_tappable_headline"
-                listener="@{viewModel}" />
+                android:id="@+id/theme_mode"
+                handler="@{viewModel}"
+                item="@{viewModel.themeMode}"
+                layout="@layout/item_settings" />
+
+            <include
+                android:id="@+id/theme_primary"
+                handler="@{viewModel}"
+                item="@{viewModel.primaryAccent}"
+                layout="@layout/item_settings" />
+
+            <include
+                android:id="@+id/theme_secondary"
+                handler="@{viewModel}"
+                item="@{viewModel.secondaryAccent}"
+                layout="@layout/item_settings" />
+
+            <include
+                android:id="@+id/theme_startup"
+                handler="@{viewModel}"
+                item="@{viewModel.startupColor}"
+                layout="@layout/item_settings" />
 
         </LinearLayout>
 

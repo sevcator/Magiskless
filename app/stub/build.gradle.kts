@@ -21,7 +21,9 @@ android {
         applicationId = "com.topjohnwu.magisk"
         versionCode = 1
         versionName = "1.0"
-        resourceConfigurations += listOf("en", "ru", "zh-rCN", "zh-rTW")
+        resourceConfigurations += listOf(
+            "en", "b+en+Latn+US+lower", "ru", "zh-rCN", "zh-rTW"
+        )
         buildConfigField("String", "APK_URL", "\"$url\"")
         buildConfigField("int", "STUB_VERSION", Config.stubVersion)
     }

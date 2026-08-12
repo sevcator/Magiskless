@@ -17,17 +17,17 @@
     <string name="not_available">無</string>
     <string name="hide">隱藏</string>
     <string name="home_package">套件</string>
-    <string name="home_app_title">應用程式</string>
+    <string name="home_app_title">Reisenless</string>
 
-    <string name="home_notice_content">請從官方的 Github 網頁下載 Magisk。從未知來源下載的檔案可能懷有惡意！</string>
+    <string name="home_notice_content">請從官方的 Github 網頁下載 Reisenless。從未知來源下載的檔案可能懷有惡意！</string>
     <string name="home_support_title">支持開發</string>
     <string name="home_follow_title">追蹤我們</string>
     <string name="home_item_source">原始碼</string>
-    <string name="home_support_content">Magisk 無論現在和未來永遠是免費且開源。但您可以透過發送小額的抖內來彰顯您對我們的支持。</string>
+    <string name="home_support_content">Reisenless 無論現在和未來永遠是免費且開源。但您可以透過發送小額的抖內來彰顯您對我們的支持。</string>
     <string name="home_installed_version">已安裝</string>
     <string name="home_latest_version">最新</string>
     <string name="invalid_update_channel">無效的更新頻道</string>
-    <string name="uninstall_magisk_title">解除安裝 Magisk</string>
+    <string name="uninstall_magisk_title">解除安裝 Reisenless</string>
     <string name="uninstall_magisk_msg">所有模組將會被停用並移除！\nRoot 將會被移除且未被加密的資料將可能被加密！</string>
 
     <!--Install-->
@@ -50,7 +50,7 @@
 
     <!--Superuser-->
     <string name="su_request_title">超級使用者要求</string>
-    <string name="touch_filtered_warning">由於某個應用程式遮蔽了超級使用者要求的視窗，因此 Magisk 無法驗證您的回應</string>
+    <string name="touch_filtered_warning">由於某個應用程式遮蔽了超級使用者要求的視窗，因此 Reisenless 無法驗證您的回應</string>
     <string name="deny">拒絕</string>
     <string name="prompt">提示</string>
     <string name="grant">授予</string>
@@ -82,7 +82,7 @@
 
     <!--SafetyNet-->
 
-    <!-- MagiskHide -->
+    <!-- ReisenlessHide -->
     <string name="show_system_app">顯示系統應用程式</string>
     <string name="show_os_app">顯示作業系统</string>
     <string name="hide_filter_hint">過濾名稱</string>
@@ -108,16 +108,26 @@
     <string name="confirm_install_title">安裝確認</string>
 
     <!--Settings -->
-    <string name="settings_dark_mode_title">主題模式</string>
-    <string name="settings_dark_mode_message">選擇最符合您風格的模式！</string>
-    <string name="settings_dark_mode_light">淺色模式</string>
-    <string name="settings_dark_mode_system">跟隨系統</string>
-    <string name="settings_dark_mode_dark">深色模式</string>
+    <string name="settings_theme_mode">主題</string>
+    <string name="theme_light">淺色</string>
+    <string name="theme_dark">深色</string>
+    <string name="settings_accent_primary">強調色</string>
+    <string name="settings_accent_secondary">強調色 2</string>
+    <string name="settings_startup_color">啟動顏色</string>
+    <string name="color_white">白色</string>
+    <string name="color_blue">藍色</string>
+    <string name="color_green">綠色</string>
+    <string name="color_amber">琥珀色</string>
+    <string name="color_red">紅色</string>
+    <string name="color_pink">粉紅色</string>
+    <string name="color_purple">紫色</string>
+    <string name="color_teal">青色</string>
+    <string name="color_gray">灰色</string>
     <string name="settings_download_path_title">下載路徑</string>
     <string name="settings_download_path_message">檔案將被儲存在：%1$s</string>
-    <string name="settings_hide_app_title">隱藏 Magisk</string>
+    <string name="settings_hide_app_title">隱藏 Reisenless</string>
     <string name="settings_hide_app_summary">安裝一個隨機套件名稱和客製化應用程式名稱的代理應用程式</string>
-    <string name="settings_restore_app_title">還原 Magisk</string>
+    <string name="settings_restore_app_title">還原 Reisenless</string>
     <string name="settings_restore_app_summary">取消隱藏並還原為原始套件</string>
     <string name="language">語言</string>
     <string name="system_default">（系統預設值）</string>
@@ -128,9 +138,9 @@
     <string name="settings_update_beta">測試版</string>
     <string name="settings_update_custom">自訂頻道</string>
     <string name="settings_update_custom_msg">輸入一個自訂的網址</string>
-    <string name="settings_zygisk_summary">在 Zygote 中執行 Magisk</string>
+    <string name="settings_zygisk_summary">在 Zygote 中執行 Reisenless</string>
     <string name="settings_denylist_title">強制黑名單</string>
-    <string name="settings_denylist_summary">Magisk 黑名單上的處理程序將復原變更</string>
+    <string name="settings_denylist_summary">Reisenless 黑名單上的處理程序將復原變更</string>
     <string name="settings_denylist_config_title">設定黑名單</string>
     <string name="settings_denylist_config_summary">選擇要包含在黑名單的處理程序</string>
     <string name="settings_hosts_title">主機（hosts）模組化</string>
@@ -158,7 +168,7 @@
     <string name="settings_su_tapjack_title">啟用點選攔截保護</string>
     <string name="settings_su_tapjack_summary">發現有其他應用程式重疊在超級使用者視窗上面時，不回應允許操作</string>
     <string name="settings_customization">客製化</string>
-    <string name="setting_add_shortcut_summary">在主螢幕中新增一個精緻的捷徑。防止隱藏 Magisk 以後，其名稱與圖示將難以辨識</string>
+    <string name="setting_add_shortcut_summary">在主螢幕中新增一個精緻的捷徑。防止隱藏 Reisenless 以後，其名稱與圖示將難以辨識</string>
     <string name="settings_doh_title">安全化的網域解析(DoH)</string>
     <string name="settings_doh_description">解決某些地區的 DNS 中毒問題</string>
 
@@ -179,13 +189,13 @@
     <string name="isolate_summary">所有 Root 工作階段皆擁有獨立的命名空間</string>
 
     <!--Notifications-->
-    <string name="update_channel">Magisk 更新</string>
+    <string name="update_channel">Reisenless 更新</string>
     <string name="progress_channel">進度通知</string>
     <string name="updated_channel">更新完成</string>
     <string name="download_complete">下載完成</string>
     <string name="download_file_error">下載錯誤</string>
-    <string name="magisk_update_title">Magisk 有可用的更新！</string>
-    <string name="updated_title">Magisk 已完成更新</string>
+    <string name="magisk_update_title">Reisenless 有可用的更新！</string>
+    <string name="updated_title">Reisenless 已完成更新</string>
     <string name="updated_text">點選即可開啟應用程式</string>
 
     <!--Toasts, Dialogs-->
@@ -198,7 +208,7 @@
     <string name="flashing">正在刷入……</string>
     <string name="done">完成！</string>
     <string name="failure">失敗！</string>
-    <string name="hide_app_title">正在隱藏 Magisk……</string>
+    <string name="hide_app_title">正在隱藏 Reisenless……</string>
     <string name="open_link_failed_toast">沒有可以開啟此連結的應用程式</string>
     <string name="complete_uninstall">完全解除安裝</string>
     <string name="restore_img">還原原始映像檔</string>
@@ -207,14 +217,14 @@
     <string name="restore_fail">不存在原始備份的映像檔！</string>
     <string name="setup_fail">安裝失敗</string>
     <string name="env_fix_title">需要修復執行環境</string>
-    <string name="env_fix_msg">缺少讓 Magisk 正常執行所需的檔案。請您同意讓 Magisk 額外下載安裝包進行修復安裝，修復完成後將自動重新啟動。請問您是否繼續？</string>
-    <string name="env_full_fix_msg">需要重新安裝才能使 Magisk 正常工作。請在應用程式內重新安裝，recovery 模式無法正確獲取設備訊息。</string>
+    <string name="env_fix_msg">缺少讓 Reisenless 正常執行所需的檔案。請您同意讓 Reisenless 額外下載安裝包進行修復安裝，修復完成後將自動重新啟動。請問您是否繼續？</string>
+    <string name="env_full_fix_msg">需要重新安裝才能使 Reisenless 正常工作。請在應用程式內重新安裝，recovery 模式無法正確獲取設備訊息。</string>
     <string name="setup_msg">正在修復執行環境……</string>
-    <string name="unsupport_magisk_title">不支援的 Magisk 版本</string>
-    <string name="unsupport_magisk_msg">此應用程式的版本不支援 Magisk %1$s 版或更低的版本。\n\nMagisk 將顯示為未安裝的狀態。不過您仍然可以升級功能，請盡快升級。</string>
+    <string name="unsupport_magisk_title">不支援的 Reisenless 版本</string>
+    <string name="unsupport_magisk_msg">此應用程式的版本不支援 Reisenless %1$s 版或更低的版本。\n\nReisenless 將顯示為未安裝的狀態。不過您仍然可以升級功能，請盡快升級。</string>
     <string name="unsupport_general_title">異常狀態</string>
     <string name="unsupport_system_app_msg">本應用程式不支援以系統應用程式的方式執行。請恢復為使用者應用程式。</string>
-    <string name="unsupport_other_su_msg">偵測到一個不是來自 Magisk 的「su」二進位檔案。請移除其他 Root 方案。</string>
+    <string name="unsupport_other_su_msg">偵測到一個不是來自 Reisenless 的「su」二進位檔案。請移除其他 Root 方案。</string>
     <string name="unsupport_external_storage_msg">應用程式已被安裝到外部儲存空間。請移動應用程式至內部儲存空間。</string>
     <string name="unsupport_nonroot_stub_msg">應用程式無法在 Root 權限遺失的情況下以隱藏模式執行。請還原為原始套件。</string>
     <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>

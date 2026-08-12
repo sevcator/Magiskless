@@ -1,4 +1,4 @@
-# Magiskless engineering commentaries
+# Reisenless engineering commentaries
 
 This file records non-obvious project decisions. It is stored at the repository root and is not included in any Android resource, asset, native payload, or release package.
 
@@ -22,4 +22,18 @@ Startup removes the retired `sulogs.db`, legacy migration APKs, cached update-no
 
 ## Locales
 
-Release resources contain English as the base locale plus Russian, Simplified Chinese, and Traditional Chinese. Missing strings in those retained locales were completed so builds do not silently fall back to English. Android version and theme overlays are not locale packs and remain present.
+Release resources contain English, lowercase English (`en-Latn-US-lower`), Russian, Simplified Chinese, and Traditional Chinese. The lowercase variant duplicates English text with every displayed character converted to lowercase; it is separate from the normal English locale and also covers the hidden-app stub. Missing strings in the other retained locales were completed so builds do not silently fall back to English. Android version and theme overlays are not locale packs and remain present.
+
+## Installed version display
+
+An inactive legacy Home state previously converted `R.string.not_available` itself to text, displaying its decimal Android resource ID. It now resolves the resource value before display. Native installed-version reporting remains `versionString (versionCode)` and keeps version code `30700` for this build line.
+
+## Theme selection
+
+The app no longer follows the system theme, uses Android dynamic colors, or exposes named theme presets. The persisted mode is normalized to Light or Dark, including old installations whose previous value meant system/default. Primary and secondary accents are stored independently and applied as separate overlays, so changing one never resets the other. Both accents default to pink.
+
+## Reisenless identity and startup
+
+The primary app ID is `io.sevcator.reisenless`. Hidden installs still use generated package IDs, and the stub retains its fixed loader namespace because it is rewritten during hiding. User-facing Magisk branding is Reisenless, while low-level Magisk protocol, binary, database, and source identifiers remain unchanged for compatibility.
+
+The startup color is stored independently from the light/dark and accent selections. Pink is the default. Pink, purple, blue, green, amber, red, and teal use the white Reisen silhouette; white uses the black silhouette to preserve contrast. The original root-level image is copied into the Android drawable resources and removed so there is a single packaged source of truth.

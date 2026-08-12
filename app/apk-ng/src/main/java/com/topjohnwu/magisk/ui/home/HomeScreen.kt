@@ -337,8 +337,9 @@ private fun CoreCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Icon(
-                    painter = painterResource(CoreR.drawable.ic_magisk_outline),
+                    painter = painterResource(CoreR.drawable.reisen),
                     contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp)
                 )
                 Spacer(Modifier.width(16.dp))

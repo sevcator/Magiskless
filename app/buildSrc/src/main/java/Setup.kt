@@ -280,7 +280,7 @@ fun Project.setupMainApk() {
         namespace = "com.topjohnwu.magisk"
 
         defaultConfig {
-            applicationId = "com.google.android.contactkeys"
+            applicationId = "io.sevcator.reisenless"
             vectorDrawables.useSupportLibrary = true
             versionName = "1.403.946752603"
             versionCode = Config.versionCode

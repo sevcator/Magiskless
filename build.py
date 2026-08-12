@@ -585,7 +585,7 @@ def build_app():
     _validate_generated_flags(
         "Build native binaries with the same mode and configuration first."
     )
-    header("* Building the Magisk app")
+    header("* Building the Reisenless app")
     apk = build_apk(":apk")
 
     build_type = "release" if args.release else "debug"
@@ -1000,7 +1000,7 @@ def parse_args():
         or empty for defaults ({', '.join(default_targets)})",
     )
 
-    app_parser = subparsers.add_parser("app", help="build the Magisk app")
+    app_parser = subparsers.add_parser("app", help="build the Reisenless app")
 
     stub_parser = subparsers.add_parser("stub", help="build the stub app")
 

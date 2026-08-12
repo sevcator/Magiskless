@@ -124,20 +124,72 @@ private fun CustomizationSection(viewModel: SettingsViewModel) {
             )
         }
 
-        // Color Mode
         val resources = LocalResources.current
-        val colorModeEntries = remember {
-            resources.getStringArray(CoreR.array.color_mode).toList()
+        val themeEntries = remember {
+            resources.getStringArray(CoreR.array.theme_mode).toList()
         }
-        var colorMode by remember { mutableIntStateOf(Config.colorMode) }
+        var themeMode by remember {
+            mutableIntStateOf(if (Config.darkTheme == Config.Value.THEME_DARK) 1 else 0)
+        }
         SettingsDropdown(
-            title = stringResource(CoreR.string.settings_color_mode),
-            items = colorModeEntries,
-            selectedIndex = colorMode,
+            title = stringResource(CoreR.string.settings_theme_mode),
+            items = themeEntries,
+            selectedIndex = themeMode,
             onSelectedIndexChange = { index ->
-                colorMode = index
-                Config.colorMode = index
-                ThemeState.colorMode = index
+                themeMode = index
+                Config.darkTheme = if (index == 1) {
+                    Config.Value.THEME_DARK
+                } else {
+                    Config.Value.THEME_LIGHT
+                }
+                ThemeState.darkTheme = Config.darkTheme
+            }
+        )
+
+        val accentEntries = remember {
+            resources.getStringArray(CoreR.array.accent_colors).toList()
+        }
+        var primaryAccent by remember {
+            mutableIntStateOf(Config.accentPrimary.coerceIn(accentEntries.indices))
+        }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.settings_accent_primary),
+            items = accentEntries,
+            selectedIndex = primaryAccent,
+            onSelectedIndexChange = { index ->
+                primaryAccent = index
+                Config.accentPrimary = index
+                ThemeState.primaryAccent = index
+            }
+        )
+
+        var secondaryAccent by remember {
+            mutableIntStateOf(Config.accentSecondary.coerceIn(accentEntries.indices))
+        }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.settings_accent_secondary),
+            items = accentEntries,
+            selectedIndex = secondaryAccent,
+            onSelectedIndexChange = { index ->
+                secondaryAccent = index
+                Config.accentSecondary = index
+                ThemeState.secondaryAccent = index
+            }
+        )
+
+        val startupEntries = remember {
+            resources.getStringArray(CoreR.array.startup_colors).toList()
+        }
+        var startupColor by remember {
+            mutableIntStateOf(Config.startupColor.coerceIn(startupEntries.indices))
+        }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.settings_startup_color),
+            items = startupEntries,
+            selectedIndex = startupColor,
+            onSelectedIndexChange = { index ->
+                startupColor = index
+                Config.startupColor = index
             }
         )
 

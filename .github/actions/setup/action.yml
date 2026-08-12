@@ -1,4 +1,4 @@
-name: Magisk Setup
+name: Reisenless Setup
 inputs:
   is-asset-build:
     required: false

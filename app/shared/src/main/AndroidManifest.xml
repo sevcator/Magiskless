@@ -26,7 +26,7 @@
     <application
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="false"
-        android:label="Android System Key Verifier"
+        android:label="Reisenless"
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Translucent.NoTitleBar" />

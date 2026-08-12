@@ -11,7 +11,7 @@ pub const APPLET_NAMES: &[&str] = &["su", "resetprop"];
 pub use flags::*;
 pub const MAGISK_FULL_VER: &str = concatcp!(MAGISK_VERSION, "(", MAGISK_VER_CODE, ")");
 
-pub const APP_PACKAGE_NAME: &str = "com.google.android.contactkeys";
+pub const APP_PACKAGE_NAME: &str = "io.sevcator.reisenless";
 
 // Two-stage init redirect path (must match REDIR_PATH in init.hpp)
 pub const REDIR_PATH: &str = "/data/._init";

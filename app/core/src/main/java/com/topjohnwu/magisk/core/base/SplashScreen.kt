@@ -12,7 +12,6 @@ import com.topjohnwu.magisk.core.BuildConfig.APP_PACKAGE_NAME
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
-import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.AppMigration
@@ -42,8 +41,7 @@ class SplashController<T>(private val activity: T)
 
     fun preOnCreate() {
         if (isRunningAsStub && !splashShown) {
-            // Manually apply splash theme for stub
-            activity.theme.applyStyle(R.style.StubSplashTheme, true)
+            StartupTheme.apply(activity, stub = true)
         }
     }
 

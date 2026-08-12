@@ -17,17 +17,17 @@
     <string name="not_available">Не установлен</string>
     <string name="hide">Скрыть</string>
     <string name="home_package">Имя пакета</string>
-    <string name="home_app_title">Приложение</string>
+    <string name="home_app_title">Reisenless</string>
 
-    <string name="home_notice_content">Скачивайте Magisk только из официального репозитория на GitHub. Файлы из других источников могут содержать вредоносный код!</string>
+    <string name="home_notice_content">Скачивайте Reisenless только из официального репозитория на GitHub. Файлы из других источников могут содержать вредоносный код!</string>
     <string name="home_support_title">Поддержите нас</string>
     <string name="home_follow_title">Подпишитесь</string>
     <string name="home_item_source">Исходный код</string>
-    <string name="home_support_content">Magisk был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
+    <string name="home_support_content">Reisenless был и всегда будет бесплатным и открытым проектом. Однако Вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="home_installed_version">Текущая версия</string>
     <string name="home_latest_version">Последняя версия</string>
     <string name="invalid_update_channel">Некорректный канал обновлений</string>
-    <string name="uninstall_magisk_title">Удаление Magisk</string>
+    <string name="uninstall_magisk_title">Удаление Reisenless</string>
     <string name="uninstall_magisk_msg">Все модули будут отключены либо удалены!\nRoot-доступ будет недоступен!\nБудет активировано шифрование /data (если отключалось при установке)!</string>
 
     <!--Install-->
@@ -41,7 +41,7 @@
     <string name="manager_download_install">Нажмите для установки</string>
     <string name="direct_install">Автоматическая установка (рекомендуется)</string>
     <string name="install_inactive_slot">Установка во второй слот (после OTA-обновления)</string>
-    <string name="install_inactive_slot_msg">Ваше устройство будет принудительно перезагружено в неактивный (противоположный) слот!\nИспользуйте эту опцию только при интеграции Magisk после OTA-обновления!\nПродолжить?</string>
+    <string name="install_inactive_slot_msg">Ваше устройство будет принудительно перезагружено в неактивный (противоположный) слот!\nИспользуйте эту опцию только при интеграции Reisenless после OTA-обновления!\nПродолжить?</string>
     <string name="setup_title">Расширенная установка</string>
     <string name="select_patch_file">Пропатчить boot-образ</string>
     <string name="patch_file_msg">Выберите файл образа (*.img) или архив ODIN (*.tar)</string>
@@ -50,7 +50,7 @@
 
     <!--Superuser-->
     <string name="su_request_title">Запрос прав суперпользователя</string>
-    <string name="touch_filtered_warning">Одно из приложений отображается поверх окна Magisk, выдача Root-прав недоступна</string>
+    <string name="touch_filtered_warning">Одно из приложений отображается поверх окна Reisenless, выдача Root-прав недоступна</string>
     <string name="deny">Запретить</string>
     <string name="prompt">Запросить</string>
     <string name="grant">Разрешить</string>
@@ -85,7 +85,7 @@
 
     <!--SafetyNet-->
 
-    <!--MagiskHide-->
+    <!--ReisenlessHide-->
     <string name="show_system_app">Системные приложения</string>
     <string name="show_os_app">Встроенные приложения</string>
     <string name="hide_filter_hint">Введите имя</string>
@@ -111,17 +111,27 @@
     <string name="confirm_install_title">Подтверждение установки</string>
 
     <!--Settings-->
-    <string name="settings_dark_mode_title">Оттенок</string>
-    <string name="settings_dark_mode_message">Настройте оформление под себя!</string>
-    <string name="settings_dark_mode_light">Всегда светлый</string>
-    <string name="settings_dark_mode_system">Как в системе</string>
-    <string name="settings_dark_mode_dark">Всегда тёмный</string>
+    <string name="settings_theme_mode">Тема</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="settings_accent_primary">Акцентный цвет</string>
+    <string name="settings_accent_secondary">Акцентный цвет 2</string>
+    <string name="settings_startup_color">Цвет запуска</string>
+    <string name="color_white">Белый</string>
+    <string name="color_blue">Синий</string>
+    <string name="color_green">Зелёный</string>
+    <string name="color_amber">Янтарный</string>
+    <string name="color_red">Красный</string>
+    <string name="color_pink">Розовый</string>
+    <string name="color_purple">Фиолетовый</string>
+    <string name="color_teal">Бирюзовый</string>
+    <string name="color_gray">Серый</string>
     <string name="settings_download_path_title">Папка для загрузок</string>
     <string name="settings_download_path_message">Файлы будут загружаться в %1$s</string>
-    <string name="settings_hide_app_title">Скрытие приложения Magisk</string>
-    <string name="settings_hide_app_summary">Пересобрать приложение Magisk с другим названием и случайным именем пакета</string>
-    <string name="settings_restore_app_title">Восстановление приложения Magisk</string>
-    <string name="settings_restore_app_summary">Восстановить приложение Magisk к исходному состоянию</string>
+    <string name="settings_hide_app_title">Скрытие приложения Reisenless</string>
+    <string name="settings_hide_app_summary">Пересобрать приложение Reisenless с другим названием и случайным именем пакета</string>
+    <string name="settings_restore_app_title">Восстановление приложения Reisenless</string>
+    <string name="settings_restore_app_summary">Восстановить приложение Reisenless к исходному состоянию</string>
     <string name="language">Язык</string>
     <string name="system_default">По умолчанию</string>
     <string name="settings_check_update_title">Проверка обновлений</string>
@@ -131,9 +141,9 @@
     <string name="settings_update_beta">Beta канал</string>
     <string name="settings_update_custom">Сторонний канал</string>
     <string name="settings_update_custom_msg">Укажите ссылку</string>
-    <string name="settings_zygisk_summary">Запускать компоненты Magisk в zygote процессе</string>
+    <string name="settings_zygisk_summary">Запускать компоненты Reisenless в zygote процессе</string>
     <string name="settings_denylist_title">Активировать DenyList</string>
-    <string name="settings_denylist_summary">Все изменения, внесённые Magisk-ом, будут скрыты от процессов, отмеченных в DenyList</string>
+    <string name="settings_denylist_summary">Все изменения, внесённые Reisenless-ом, будут скрыты от процессов, отмеченных в DenyList</string>
     <string name="settings_denylist_config_title">Настройка DenyList</string>
     <string name="settings_denylist_config_summary">Отметьте процессы для скрытия в DenyList</string>
     <string name="settings_hosts_title">Внесистемный hosts файл</string>
@@ -187,13 +197,13 @@
     <string name="isolate_summary">Сессии суперпользователя используют изолированные пространства имён</string>
 
     <!--Notifications-->
-    <string name="update_channel">Обновление Magisk</string>
+    <string name="update_channel">Обновление Reisenless</string>
     <string name="progress_channel">Уведомления о прогрессе</string>
     <string name="updated_channel">Обновление завершено</string>
     <string name="download_complete">Загрузка завершена</string>
     <string name="download_file_error">Ошибка загрузки файла</string>
-    <string name="magisk_update_title">Доступно обновление Magisk!</string>
-    <string name="updated_title">Magisk обновлён</string>
+    <string name="magisk_update_title">Доступно обновление Reisenless!</string>
+    <string name="updated_title">Reisenless обновлён</string>
     <string name="updated_text">Нажмите, чтобы открыть</string>
 
     <!--Toasts, Dialogs-->
@@ -206,7 +216,7 @@
     <string name="flashing">Установка…</string>
     <string name="done">Завершено!</string>
     <string name="failure">Ошибка!</string>
-    <string name="hide_app_title">Скрытие приложения Magisk…</string>
+    <string name="hide_app_title">Скрытие приложения Reisenless…</string>
     <string name="open_link_failed_toast">Приложения для открытия ссылки не найдены</string>
     <string name="complete_uninstall">Полное удаление</string>
     <string name="restore_img">Восстановить разделы</string>
@@ -215,22 +225,22 @@
     <string name="restore_fail">Резервная копия отсутствует!</string>
     <string name="setup_fail">Ошибка установки</string>
     <string name="env_fix_title">Требуется расширенная установка</string>
-    <string name="env_fix_msg">Требуется расширенная установка Magisk для корректной работы. Продолжить и выполнить перезагрузку?</string>
-    <string name="env_full_fix_msg">Необходимо переустановить Magisk для корректной работы на вашем устройстве. Пожалуйста, переустановите Magisk в самом приложении (не из recovery).</string>
+    <string name="env_fix_msg">Требуется расширенная установка Reisenless для корректной работы. Продолжить и выполнить перезагрузку?</string>
+    <string name="env_full_fix_msg">Необходимо переустановить Reisenless для корректной работы на вашем устройстве. Пожалуйста, переустановите Reisenless в самом приложении (не из recovery).</string>
     <string name="setup_msg">Настройка рабочей среды…</string>
-    <string name="unsupport_magisk_title">Неподдерживаемая версия Magisk</string>
-    <string name="unsupport_magisk_msg">Эта версия приложения Magisk не поддерживает версию Magisk ниже %1$s.\n\nПриложение будет работать так, словно Magisk не установлен, пожалуйста, обновите Magisk как можно скорее.</string>
+    <string name="unsupport_magisk_title">Неподдерживаемая версия Reisenless</string>
+    <string name="unsupport_magisk_msg">Эта версия приложения Reisenless не поддерживает версию Reisenless ниже %1$s.\n\nПриложение будет работать так, словно Reisenless не установлен, пожалуйста, обновите Reisenless как можно скорее.</string>
     <string name="unsupport_general_title">Неподдерживаемые условия</string>
     <string name="unsupport_system_app_msg">Запуск приложения в качестве системного невозможен. Пожалуйста, переустановите его как пользовательское.</string>
-    <string name="unsupport_other_su_msg">Обнаружен неподдерживаемый бинарный файл \"su\". Пожалуйста, удалите сторонний провайдер Root-прав и/или переустановите Magisk.</string>
+    <string name="unsupport_other_su_msg">Обнаружен неподдерживаемый бинарный файл \"su\". Пожалуйста, удалите сторонний провайдер Root-прав и/или переустановите Reisenless.</string>
     <string name="unsupport_external_storage_msg">Приложение установлено во внешнее хранилище. Пожалуйста, переустановите его во внутреннее хранилище.</string>
-    <string name="unsupport_nonroot_stub_msg">Пересобранное для скрытия приложение Magisk не может дальше работать, поскольку Root-права недоступны. Пожалуйста, восстановите приложение к исходному состоянию.</string>
+    <string name="unsupport_nonroot_stub_msg">Пересобранное для скрытия приложение Reisenless не может дальше работать, поскольку Root-права недоступны. Пожалуйста, восстановите приложение к исходному состоянию.</string>
     <string name="unsupport_nonroot_stub_title">@string/settings_restore_app_title</string>
     <string name="external_rw_permission_denied">Предоставьте разрешение на доступ к хранилищу</string>
     <string name="post_notifications_denied">Предоставьте разрешение на отправку уведомлений</string>
     <string name="install_unknown_denied">Предоставьте разрешение на "Установку из неизвестных источников"</string>
     <string name="add_shortcut_title">Добавление ярлыка</string>
-    <string name="add_shortcut_msg">После скрытия приложения Magisk его название и иконка могут быть неудобны для восприятия. Хотите создать ярлык на рабочем столе?</string>
+    <string name="add_shortcut_msg">После скрытия приложения Reisenless его название и иконка могут быть неудобны для восприятия. Хотите создать ярлык на рабочем столе?</string>
     <string name="app_not_found">Приложение для обработки этого действия не найдено</string>
     <string name="reboot_apply_change">Перезагрузите устройство для применения изменений</string>
     <string name="restore_app_confirmation">Это действие восстановит пересобранное для скрытия приложение к исходному состоянию. Вы действительно хотите продолжить?</string>

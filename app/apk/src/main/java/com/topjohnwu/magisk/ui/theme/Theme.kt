@@ -1,50 +1,40 @@
 package com.topjohnwu.magisk.ui.theme
 
+import android.app.Activity
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.core.Config
 
-enum class Theme(
-    val themeName: String,
-    val themeRes: Int
-) {
+object Theme {
+    const val COLOR_COUNT = 8
 
-    Piplup(
-        themeName = "Piplup",
-        themeRes = R.style.ThemeFoundationMD2_Piplup
-    ),
-    PiplupAmoled(
-        themeName = "AMOLED",
-        themeRes = R.style.ThemeFoundationMD2_Amoled
-    ),
-    Rayquaza(
-        themeName = "Rayquaza",
-        themeRes = R.style.ThemeFoundationMD2_Rayquaza
-    ),
-    Zapdos(
-        themeName = "Zapdos",
-        themeRes = R.style.ThemeFoundationMD2_Zapdos
-    ),
-    Charmeleon(
-        themeName = "Charmeleon",
-        themeRes = R.style.ThemeFoundationMD2_Charmeleon
-    ),
-    Mew(
-        themeName = "Mew",
-        themeRes = R.style.ThemeFoundationMD2_Mew
-    ),
-    Salamence(
-        themeName = "Salamence",
-        themeRes = R.style.ThemeFoundationMD2_Salamence
-    ),
-    Fraxure(
-        themeName = "Fraxure (Legacy)",
-        themeRes = R.style.ThemeFoundationMD2_Fraxure
-    );
+    private val primaryStyles = intArrayOf(
+        R.style.ThemeOverlay_Magisk_Primary_Pink,
+        R.style.ThemeOverlay_Magisk_Primary_Purple,
+        R.style.ThemeOverlay_Magisk_Primary_Blue,
+        R.style.ThemeOverlay_Magisk_Primary_Green,
+        R.style.ThemeOverlay_Magisk_Primary_Amber,
+        R.style.ThemeOverlay_Magisk_Primary_Red,
+        R.style.ThemeOverlay_Magisk_Primary_Teal,
+        R.style.ThemeOverlay_Magisk_Primary_Gray,
+    )
 
-    val isSelected get() = Config.themeOrdinal == ordinal
+    private val secondaryStyles = intArrayOf(
+        R.style.ThemeOverlay_Magisk_Secondary_Pink,
+        R.style.ThemeOverlay_Magisk_Secondary_Purple,
+        R.style.ThemeOverlay_Magisk_Secondary_Blue,
+        R.style.ThemeOverlay_Magisk_Secondary_Green,
+        R.style.ThemeOverlay_Magisk_Secondary_Amber,
+        R.style.ThemeOverlay_Magisk_Secondary_Red,
+        R.style.ThemeOverlay_Magisk_Secondary_Teal,
+        R.style.ThemeOverlay_Magisk_Secondary_Gray,
+    )
 
-    companion object {
-        val selected get() = values().getOrNull(Config.themeOrdinal) ?: Piplup
+    fun apply(activity: Activity) {
+        activity.setTheme(R.style.ThemeFoundationMD2)
+        activity.theme.applyStyle(primaryStyles[Config.accentPrimary.coerceIn(0, COLOR_COUNT - 1)], true)
+        activity.theme.applyStyle(
+            secondaryStyles[Config.accentSecondary.coerceIn(0, COLOR_COUNT - 1)],
+            true,
+        )
     }
-
 }

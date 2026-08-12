@@ -14,6 +14,7 @@ import com.topjohnwu.magisk.arch.AsyncLoadViewModel
 import com.topjohnwu.magisk.arch.ContextExecutor
 import com.topjohnwu.magisk.arch.UIActivity
 import com.topjohnwu.magisk.arch.ViewEvent
+import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
@@ -51,7 +52,7 @@ class HomeViewModel : AsyncLoadViewModel() {
             if (isActive)
                 ("$versionString ($versionCode)" + if (isDebug) " (D)" else "")
             else
-                CoreR.string.not_available.toString()
+                AppContext.getString(CoreR.string.not_available)
         }
 
     val extraBindings = bindExtra {

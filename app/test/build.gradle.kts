@@ -6,10 +6,12 @@ android {
     namespace = "com.topjohnwu.magisk.test"
 
     defaultConfig {
-        applicationId = "com.topjohnwu.magisk.test"
+        applicationId = "io.sevcator.reisenless.test"
         versionCode = 1
         versionName = "1.0"
-        resourceConfigurations += listOf("en", "ru", "zh-rCN", "zh-rTW")
+        resourceConfigurations += listOf(
+            "en", "b+en+Latn+US+lower", "ru", "zh-rCN", "zh-rTW"
+        )
         proguardFile("proguard-rules.pro")
     }
 
