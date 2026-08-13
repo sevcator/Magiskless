@@ -159,17 +159,6 @@ void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_lis
     PFS_DONE()
 }
 
-constexpr char uninstall_script[] = R"EOF(
-PKG=%s
-pm uninstall $PKG
-)EOF";
-
-void uninstall_pkg(Utf8CStr pkg) {
-    char cmds[sizeof(uninstall_script) + 256];
-    ssprintf(cmds, sizeof(cmds), uninstall_script, pkg.c_str());
-    exec_command_async("/system/bin/sh", "-c", cmds);
-}
-
 constexpr char clear_script[] = R"EOF(
 PKG=%s
 USER=%d

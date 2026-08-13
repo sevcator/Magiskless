@@ -162,8 +162,6 @@ pub mod ffi {
         fn exec_script_async(script: Utf8CStrRef);
         fn exec_common_scripts(stage: Utf8CStrRef);
         fn exec_module_scripts(state: Utf8CStrRef, modules: &Vec<ModuleInfo>);
-        fn uninstall_pkg(apk: Utf8CStrRef);
-
         // Denylist
         fn denylist_cli(args: &mut Vec<String>) -> i32;
         fn denylist_handler(client: i32);

@@ -3,12 +3,10 @@ package com.topjohnwu.magisk.core.su
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.data.magiskdb.PolicyDao
 import com.topjohnwu.magisk.core.ktx.getPackageInfo
 import com.topjohnwu.magisk.core.model.su.SuPolicy
-import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.DataOutputStream
@@ -31,12 +29,6 @@ class SuRequestHandler(
     suspend fun start(intent: Intent): Boolean {
         if (!init(intent))
             return false
-
-        // Never allow com.topjohnwu.magisk (could be malware)
-        if (pkgInfo.packageName == BuildConfig.APP_PACKAGE_NAME) {
-            Shell.cmd("(pm uninstall ${BuildConfig.APP_PACKAGE_NAME} >/dev/null 2>&1)&").exec()
-            return false
-        }
 
         when (Config.suAutoResponse) {
             Config.Value.SU_AUTO_DENY -> {
