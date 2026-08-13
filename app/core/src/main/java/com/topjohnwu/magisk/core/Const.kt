@@ -19,6 +19,7 @@ object Const {
     val SECURE_DIR   = BuildConfig.SECURE_DIR
     val DATABIN      = "${BuildConfig.SECURE_DIR}/ms"
     val MODULE_PATH  = "${BuildConfig.SECURE_DIR}/modules"
+    const val MAIN_BIN = "ms"
     const val TMPDIR = "/dev/tmp"
 
     // Misc

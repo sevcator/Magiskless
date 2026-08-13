@@ -4,8 +4,8 @@ import android.widget.Toast
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
+import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.ktx.toast
@@ -45,7 +45,7 @@ class SettingsViewModel : BaseViewModel() {
     fun toggleSuList(enabled: Boolean) {
         _suListEnabled.value = enabled
         val cmd = if (enabled) "enable" else "disable"
-        Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --sulist $cmd").submit { result ->
+        Shell.cmd("${Const.MAIN_BIN} --sulist $cmd").submit { result ->
             if (result.isSuccess) {
                 Config.sulist = enabled
             } else {

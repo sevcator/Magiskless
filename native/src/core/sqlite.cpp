@@ -154,7 +154,8 @@ int DbValues::get_int(int index) const {
 }
 
 const char *DbValues::get_text(int index) const {
-    return sqlite3_column_text((sqlite3_stmt*) this, index);
+    const char *text = sqlite3_column_text((sqlite3_stmt*) this, index);
+    return text ? text : "";
 }
 
 int DbStatement::bind_int64(int index, int64_t val) {

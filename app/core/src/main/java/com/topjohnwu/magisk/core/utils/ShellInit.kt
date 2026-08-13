@@ -2,7 +2,6 @@ package com.topjohnwu.magisk.core.utils
 
 import android.content.Context
 import com.topjohnwu.magisk.StubApk
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.isRunningAsStub
@@ -42,7 +41,7 @@ class ShellInit : Shell.Initializer() {
             }
 
             if (shell.isRoot) {
-                add("export MAGISKTMP=\$(${BuildConfig.MAIN_BIN_NAME} --path)")
+                add("export MAGISKTMP=\$(${Const.MAIN_BIN} --path)")
                 // Test if we can properly execute stuff in /data
                 Info.noDataExec = !shell.newJob()
                     .add("$localBB sh -c '$localBB true'").exec().isSuccess
@@ -77,7 +76,7 @@ class ShellInit : Shell.Initializer() {
         if (shell.isRoot) {
             val myUid = android.os.Process.myUid()
             shell.newJob().add(
-                "\$MAGISKTMP/${BuildConfig.MAIN_BIN_NAME} --sqlite " +
+                "\$MAGISKTMP/${Const.MAIN_BIN} --sqlite " +
                 "'INSERT OR IGNORE INTO policies (uid, policy, until, logging, notification) " +
                 "VALUES ($myUid, 2, 0, 0, 0)'"
             ).exec()

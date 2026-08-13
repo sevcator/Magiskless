@@ -2,6 +2,7 @@ package com.topjohnwu.magisk.core
 
 import android.app.KeyguardManager
 import android.os.Build
+import android.system.Os
 import androidx.lifecycle.MutableLiveData
 import com.topjohnwu.magisk.StubApk
 import com.topjohnwu.magisk.core.ktx.getProperty
@@ -10,6 +11,7 @@ import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils.fastCmd
 import com.topjohnwu.superuser.ShellUtils.fastCmdResult
 import kotlinx.coroutines.Runnable
+import java.io.File
 
 val isRunningAsStub get() = Info.stub != null
 
@@ -46,6 +48,12 @@ object Info {
 
     val isConnected = MutableLiveData(false)
 
+    fun isReisenlessSu(file: File): Boolean = runCatching {
+        val main = Os.stat("/debug_ramdisk/${Const.MAIN_BIN}")
+        val candidate = Os.stat(file.path)
+        main.st_dev == candidate.st_dev && main.st_ino == candidate.st_ino
+    }.getOrDefault(false)
+
     val showSuperUser: Boolean get() {
         return env.isActive && (Const.USER_ID == 0
                 || Config.suMultiuserMode == Config.Value.MULTIUSER_MODE_USER)
@@ -70,7 +78,7 @@ object Info {
 
     fun init(shell: Shell) {
         if (shell.isRoot) {
-            val main = BuildConfig.MAIN_BIN_NAME
+            val main = Const.MAIN_BIN
             val v = fastCmd(shell, "$main -v").split(":")
             env = Env(
                 v[0], v.size >= 3 && v[2] == "D",

@@ -21,7 +21,6 @@ import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.arch.NavigationActivity
 import com.topjohnwu.magisk.arch.startAnimations
 import com.topjohnwu.magisk.arch.viewModel
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
@@ -228,8 +227,8 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
 
         if (!Info.isEmulator && Info.env.isActive && System.getenv("PATH")
                 ?.split(':')
-                ?.filterNot { File(it, BuildConfig.MAIN_BIN_NAME).exists() }
-                ?.any { File("$it/su").exists() } == true) {
+                ?.map { File(it, "su") }
+                ?.any { it.exists() && !Info.isReisenlessSu(it) } == true) {
             MagiskDialog(this).apply {
                 setTitle(CoreR.string.unsupport_general_title)
                 setMessage(CoreR.string.unsupport_other_su_msg)

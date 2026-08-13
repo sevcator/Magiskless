@@ -102,7 +102,7 @@ object AppContext : ContextWrapper(null),
         val suCmd = run {
             val tmp = try {
                 Runtime.getRuntime()
-                    .exec(arrayOf(BuildConfig.MAIN_BIN_NAME, "--path"))
+                    .exec(arrayOf(Const.MAIN_BIN, "--path"))
                     .inputStream.bufferedReader().readLine()?.trim()
             } catch (_: Exception) { null }
             if (!tmp.isNullOrEmpty()) {
