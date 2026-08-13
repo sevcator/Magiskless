@@ -41,7 +41,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
         // Customization
         val list = mutableListOf(
             Customization,
-            Theme, if (LocaleSetting.useLocaleManager) LanguageSystem else Language
+            Theme, Language
         )
         if (isRunningAsStub && ShortcutManagerCompat.isRequestPinShortcutSupported(context))
             list.add(AddShortcut)
@@ -49,7 +49,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
         // Manager
         list.addAll(listOf(
             AppSettings,
-            DoHToggle, DownloadPath
+            DoHToggle
         ))
         if (Config.shellHidden || (Info.env.isActive && Const.USER_ID == 0)) {
             list.add(ShellHide)
@@ -72,7 +72,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
 
     override fun onItemPressed(view: View, item: BaseSettingsItem, doAction: () -> Unit) {
         when (item) {
-            DownloadPath -> withExternalRW(doAction)
             else -> doAction()
         }
     }
@@ -80,7 +79,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
     override fun onItemAction(view: View, item: BaseSettingsItem) {
         when (item) {
             Theme -> SettingsFragmentDirections.actionSettingsFragmentToThemeFragment().navigate()
-            LanguageSystem -> view.activity.startActivity(LocaleSetting.localeSettingsIntent)
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
             SuList -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()

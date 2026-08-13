@@ -126,8 +126,6 @@
     <string name="color_purple">фиолетовый</string>
     <string name="color_teal">бирюзовый</string>
     <string name="color_gray">серый</string>
-    <string name="settings_download_path_title">папка для загрузок</string>
-    <string name="settings_download_path_message">файлы будут загружаться в %1$s</string>
     <string name="settings_hide_app_title">скрытие приложения reisenless</string>
     <string name="settings_hide_app_summary">пересобрать приложение reisenless с другим названием и случайным именем пакета</string>
     <string name="settings_restore_app_title">восстановление приложения reisenless</string>

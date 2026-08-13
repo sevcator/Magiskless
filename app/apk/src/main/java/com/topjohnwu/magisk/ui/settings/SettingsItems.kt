@@ -1,9 +1,7 @@
 package com.topjohnwu.magisk.ui.settings
 
-import android.content.Context
 import android.content.res.Resources
 import android.text.InputType
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
 import androidx.databinding.Bindable
@@ -15,8 +13,6 @@ import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.utils.LocaleSetting
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils
-import com.topjohnwu.magisk.databinding.DialogSettingsDownloadPathBinding
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.core.utils.TextHolder
 import com.topjohnwu.magisk.core.utils.asText
@@ -44,16 +40,6 @@ object Language : BaseSettingsItem.Selector() {
 
     override fun entries(res: Resources) = names
     override fun descriptions(res: Resources) = names
-}
-
-object LanguageSystem : BaseSettingsItem.Blank() {
-    override val title = CoreR.string.language.asText()
-    override val description: TextHolder
-        get() {
-            val locale = LocaleSetting.instance.appLocale
-            return locale?.getDisplayName(locale)?.lowercase(locale)?.asText()
-                ?: CoreR.string.system_default.asText()
-        }
 }
 
 object Theme : BaseSettingsItem.Blank() {
@@ -84,27 +70,6 @@ object ShellHide : BaseSettingsItem.Blank() {
 object AddShortcut : BaseSettingsItem.Blank() {
     override val title = CoreR.string.add_shortcut_title.asText()
     override val description = CoreR.string.setting_add_shortcut_summary.asText()
-}
-
-object DownloadPath : BaseSettingsItem.Input() {
-    override var value
-        get() = Config.downloadDir
-        set(value) {
-            Config.downloadDir = value
-            notifyPropertyChanged(BR.description)
-        }
-
-    override val title = CoreR.string.settings_download_path_title.asText()
-    override val description get() = MediaStoreUtils.fullPath(value).asText()
-
-    override var inputResult: String = value
-        set(value) = set(value, field, { field = it }, BR.inputResult, BR.path)
-
-    @get:Bindable
-    val path get() = MediaStoreUtils.fullPath(inputResult)
-
-    override fun getView(context: Context) = DialogSettingsDownloadPathBinding
-        .inflate(LayoutInflater.from(context)).also { it.data = this }.root
 }
 
 object DoHToggle : BaseSettingsItem.Toggle() {

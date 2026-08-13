@@ -106,8 +106,6 @@
     <string name="module_empty">モジュールをインストールしていません</string>
 
     <!--Settings-->
-    <string name="settings_download_path_title">ファイルの保存場所</string>
-    <string name="settings_download_path_message">ファイルは %1$s に保存されます</string>
     <string name="settings_hide_app_title">reisenless アプリを隠す</string>
     <string name="settings_hide_app_summary">ランダムなパッケージ id と任意のアプリ名のプロキシアプリをインストールします</string>
     <string name="settings_restore_app_title">reisenless アプリを復元する</string>

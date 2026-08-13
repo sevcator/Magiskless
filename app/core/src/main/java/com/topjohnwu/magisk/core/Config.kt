@@ -48,7 +48,6 @@ object Config : PreferenceConfig, DBConfig {
         const val DARK_THEME = "dark_theme_extended"
         const val ACCENT_PRIMARY = "accent_primary"
         const val ACCENT_SECONDARY = "accent_secondary"
-        const val DOWNLOAD_DIR = "download_dir"
         const val SAFETY = "safety_notice"
         const val ASKED_HOME = "asked_home"
         const val DOH = "doh"
@@ -139,7 +138,6 @@ object Config : PreferenceConfig, DBConfig {
 
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
-    var downloadDir by preference(Key.DOWNLOAD_DIR, "")
     var locale
         get() = localePrefs
         set(value) {

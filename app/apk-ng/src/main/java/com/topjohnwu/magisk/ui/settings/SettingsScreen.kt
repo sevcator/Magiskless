@@ -50,7 +50,6 @@ import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.LocaleSetting
-import com.topjohnwu.magisk.core.utils.MediaStoreUtils
 import com.topjohnwu.magisk.ui.ThemeState
 import com.topjohnwu.magisk.ui.component.SettingsArrow
 import com.topjohnwu.magisk.ui.component.SettingsDropdown
@@ -104,32 +103,20 @@ private fun CustomizationSection(viewModel: SettingsViewModel) {
 
     SmallTitle(text = stringResource(CoreR.string.settings_customization))
     Card(modifier = Modifier.fillMaxWidth()) {
-        if (LocaleSetting.useLocaleManager) {
-            val locale = LocaleSetting.instance.appLocale
-            val summary = locale?.getDisplayName(locale) ?: stringResource(CoreR.string.system_default)
-            SettingsArrow(
-                title = stringResource(CoreR.string.language),
-                summary = summary,
-                onClick = {
-                    context.startActivity(LocaleSetting.localeSettingsIntent)
-                }
-            )
-        } else {
-            val names = remember { LocaleSetting.available.names }
-            val tags = remember { LocaleSetting.available.tags }
-            var selectedIndex by remember {
-                mutableIntStateOf(tags.indexOf(Config.locale).coerceAtLeast(0))
-            }
-            SettingsDropdown(
-                title = stringResource(CoreR.string.language),
-                items = names.toList(),
-                selectedIndex = selectedIndex,
-                onSelectedIndexChange = { index ->
-                    selectedIndex = index
-                    Config.locale = tags[index]
-                }
-            )
+        val names = remember { LocaleSetting.available.names }
+        val tags = remember { LocaleSetting.available.tags }
+        var selectedIndex by remember {
+            mutableIntStateOf(tags.indexOf(Config.locale).coerceAtLeast(0))
         }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.language),
+            items = names.toList(),
+            selectedIndex = selectedIndex,
+            onSelectedIndexChange = { index ->
+                selectedIndex = index
+                Config.locale = tags[index]
+            }
+        )
 
         val resources = LocalResources.current
         val themeEntries = remember {
@@ -349,20 +336,6 @@ private fun AppSettingsSection() {
             }
         )
 
-        // Download Path
-        var showDownloadDialog by remember { mutableStateOf(false) }
-        DownloadPathDialog(
-            show = showDownloadDialog,
-            onDismiss = { showDownloadDialog = false }
-        )
-        SettingsArrow(
-            title = stringResource(CoreR.string.settings_download_path_title),
-            summary = MediaStoreUtils.fullPath(Config.downloadDir),
-            onClick = {
-                showDownloadDialog = true
-            }
-        )
-
         if (Info.env.isActive) {
             SettingsArrow(
                 title = stringResource(
@@ -518,42 +491,6 @@ private fun UpdateChannelUrlDialog(show: Boolean, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun DownloadPathDialog(show: Boolean, onDismiss: () -> Unit) {
-    val showState = rememberSaveable { mutableStateOf(show) }
-    showState.value = show
-    var path by rememberSaveable { mutableStateOf(Config.downloadDir) }
-
-    if (showState.value) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(stringResource(CoreR.string.settings_download_path_title)) },
-            text = {
-                Column {
-                    Text(
-                        text = stringResource(CoreR.string.settings_download_path_message, MediaStoreUtils.fullPath(path)),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    OutlinedTextField(
-                        value = path,
-                        onValueChange = { path = it },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        Config.downloadDir = path
-                        onDismiss()
-                    }
-                ) {
-                    Text(stringResource(android.R.string.ok))
-                }
-            }
-        )
-    }
-}
-
 @Composable
 private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     val defaultName = stringResource(CoreR.string.settings)

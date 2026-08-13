@@ -133,8 +133,6 @@
     <string name="color_purple">purple</string>
     <string name="color_teal">teal</string>
     <string name="color_gray">gray</string>
-    <string name="settings_download_path_title">download path</string>
-    <string name="settings_download_path_message">files will be saved to %1$s</string>
     <string name="settings_hide_app_title">hide the reisenless app</string>
     <string name="settings_hide_app_summary">install a proxy app with a random package id and custom app label</string>
     <string name="settings_restore_app_title">restore the reisenless app</string>

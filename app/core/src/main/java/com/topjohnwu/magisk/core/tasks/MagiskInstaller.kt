@@ -62,16 +62,18 @@ abstract class MagiskInstallImpl protected constructor(
     private val rootFS get() = RootUtils.fs
     private val localFS get() = FileSystemManager.getLocal()
 
-    private val alphaNum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    private val asciiLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     private val random = SecureRandom()
 
     private fun randStr(min: Int, max: Int): String {
         val len = if (min == max) min else min + random.nextInt(max - min + 1)
-        return buildString(len) { repeat(len) { append(alphaNum[random.nextInt(alphaNum.length)]) } }
+        return buildString(len) {
+            repeat(len) { append(asciiLetters[random.nextInt(asciiLetters.length)]) }
+        }
     }
 
-    private val destFolder: String by lazy { randStr(4, 20) }
-    private val destName: String by lazy { randStr(10, 20) }
+    private val destFolder: String by lazy { randStr(4, 9) }
+    private val destName: String by lazy { randStr(4, 9) }
     private val destExt: String by lazy { randStr(3, 3) }
 
     private fun findImage(slot: String): Boolean {
@@ -453,7 +455,10 @@ abstract class MagiskInstallImpl protected constructor(
 
                 srcBoot = if (tarMagic.contentEquals("ustar".toByteArray())) {
                     // tar file
-                    outFile = MediaStoreUtils.getFile("$destName.$destExt", destFolder)
+                    outFile = MediaStoreUtils.getFileAtStorageRoot(
+                        "$destName.$destExt",
+                        destFolder,
+                    )
                     val os = outFile.uri.outputStream().buffered(1024 * 1024)
                     outStream = TarArchiveOutputStream(os).also {
                         it.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR)
@@ -470,7 +475,10 @@ abstract class MagiskInstallImpl protected constructor(
                     }
                 } else {
                     // raw image
-                    outFile = MediaStoreUtils.getFile("$destName.$destExt", destFolder)
+                    outFile = MediaStoreUtils.getFileAtStorageRoot(
+                        "$destName.$destExt",
+                        destFolder,
+                    )
                     outStream = outFile.uri.outputStream()
 
                     try {
