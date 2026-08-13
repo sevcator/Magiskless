@@ -44,7 +44,7 @@ class SplashController<T>(private val activity: T)
 
     fun preOnCreate() {
         if (isRunningAsStub && !splashShown) {
-            activity.setTheme(R.style.StubSplashTheme)
+            activity.theme.applyStyle(R.style.StubSplashTheme, true)
         } else if (!isRunningAsStub) {
             activity.installSplashScreen().setKeepOnScreenCondition { !splashShown }
         }
