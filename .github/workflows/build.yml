@@ -103,7 +103,7 @@ jobs:
           set -e
           printf '%s\n' "$certificates"
           test "$verify_status" -eq 0
-          actual="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' <<< "$certificates" | head -n 1 | tr '[:lower:]' '[:upper:]')"
+          actual="$(sed -nE 's/^(Signer #[0-9]+|V[0-9]+ Signer): certificate SHA-256 digest: ([[:xdigit:]]{64})$/\2/p' <<< "$certificates" | sort -u | tr '[:lower:]' '[:upper:]')"
           expected=64958D8CE215FBC85086ABC294F46AF0F27FC2FF99D113C43CE60693659CE719
           test -n "$actual"
           test "$actual" = "$expected"
