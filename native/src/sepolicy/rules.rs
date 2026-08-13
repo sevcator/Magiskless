@@ -54,6 +54,10 @@ impl SePolicy {
             type_(file, ["file_type"]);
             typeattribute([file], ["mlstrustedobject"]);
 
+            type_("udonge_lib_file", ["file_type"]);
+            allow(["keystore"], ["udonge_lib_file"], ["file"],
+                ["open", "read", "getattr", "map", "execute"]);
+
             // Create unconstrained file type
             allow(["domain"], [file],
                 ["file", "dir", "fifo_file", "chr_file", "lnk_file", "sock_file"], all);

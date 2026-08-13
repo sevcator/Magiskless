@@ -157,6 +157,12 @@ start_tee() {
         chmod 700 "$tee_state" "$run"
     fi
 
+    if ! chcon u:object_r:udonge_lib_file:s0 "$run/libTEESimulator.so" 2>/dev/null; then
+        : > "$state/tee-unavailable"
+        chmod 600 "$state/tee-unavailable"
+        return 0
+    fi
+
     if [ ! -f "$tee_state/keybox.xml" ]; then
         cp "$runtime/defaults/keybox.xml" "$tee_state/keybox.xml"
         chmod 600 "$tee_state/keybox.xml"
