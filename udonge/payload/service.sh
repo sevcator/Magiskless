@@ -21,6 +21,16 @@ process_is_current() {
     [ -n "$current_start" ] && [ "$current_start" = "$expected_start" ]
 }
 
+tee_child_is_current() {
+    local supervisor child name
+    supervisor="$1"
+    for child in $(cat "/proc/$supervisor/task/$supervisor/children" 2>/dev/null); do
+        name="$(cat "/proc/$child/comm" 2>/dev/null)"
+        [ "$name" = TEESimulator ] && return 0
+    done
+    return 1
+}
+
 if ! mkdir "$lock" 2>/dev/null; then
     owner="$(cat "$lock/pid" 2>/dev/null)"
     owner_start="$(cat "$lock/start" 2>/dev/null)"
@@ -187,7 +197,7 @@ start_tee() {
     (
         sleep 60
         if process_is_current "$pid" "$pid_start" "$boot_id"; then
-            if pidof TEESimulator >/dev/null 2>&1; then
+            if tee_child_is_current "$pid"; then
                 rm -f "$state/tee-unavailable"
             else
                 kill "$pid" 2>/dev/null
