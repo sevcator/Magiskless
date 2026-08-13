@@ -24,6 +24,7 @@ app/**/build/
 local.properties
 signing.properties
 keystore.properties
+/.private/
 
 # ── Rust / Cargo ───────────────────────────────────────────────────────────────
 target/
