@@ -444,7 +444,8 @@ bool is_uid_on_sulist(int uid) {
 }
 
 void update_deny_flags(int uid, rust::Str process, uint32_t &flags) {
-    if (denylist_enforced && !is_deny_target(uid, { process.begin(), process.end() })) {
+    if (denylist_enforced && to_app_id(uid) >= 10000
+            && !is_deny_target(uid, { process.begin(), process.end() })) {
         flags |= +ZygiskStateFlags::ProcessOnDenyList;
     }
     if (denylist_enforced) {
