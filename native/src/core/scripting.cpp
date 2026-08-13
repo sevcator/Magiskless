@@ -159,20 +159,6 @@ void exec_module_scripts(Utf8CStr stage, const rust::Vec<ModuleInfo> &module_lis
     PFS_DONE()
 }
 
-constexpr char install_script[] = R"EOF(
-APK=%s
-pm install -g -r $APK
-appops set %s REQUEST_INSTALL_PACKAGES allow
-rm -f $APK
-)EOF";
-
-void install_apk(Utf8CStr apk) {
-    setfilecon(apk.c_str(), MAGISK_FILE_CON);
-    char cmds[sizeof(install_script) + 4096];
-    ssprintf(cmds, sizeof(cmds), install_script, apk.c_str(), JAVA_PACKAGE_NAME);
-    exec_command_async("/system/bin/sh", "-c", cmds);
-}
-
 constexpr char uninstall_script[] = R"EOF(
 PKG=%s
 pm uninstall $PKG

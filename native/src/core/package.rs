@@ -1,6 +1,6 @@
 use crate::consts::{APP_PACKAGE_NAME, MAGISK_VER_CODE, SECURE_DIR};
 use crate::daemon::{AID_APP_END, AID_APP_START, AID_USER_OFFSET, MagiskD, to_app_id};
-use crate::ffi::{DbEntryKey, get_magisk_tmp, install_apk, uninstall_pkg};
+use crate::ffi::{DbEntryKey, get_magisk_tmp, uninstall_pkg};
 use base::WalkResult::{Abort, Continue, Skip};
 use base::{
     BufReadExt, Directory, FsPathBuilder, LoggedResult, ReadExt, ResultExt, Utf8CStrBuf,
@@ -338,29 +338,7 @@ impl ManagerInfo {
         Status::Installed
     }
 
-    fn install_stub(&mut self) {
-        if let Some(ref mut stub_fd) = self.stub_apk_fd {
-            // Copy the stub APK
-            let tmp_apk = cstr!("/data/stub.apk");
-            let result = || -> LoggedResult<()> {
-                {
-                    let mut tmp_apk_file = tmp_apk.create(
-                        OFlag::O_WRONLY | OFlag::O_CREAT | OFlag::O_TRUNC | OFlag::O_CLOEXEC,
-                        0o600,
-                    )?;
-                    io::copy(stub_fd, &mut tmp_apk_file)?;
-                }
-                // Seek the fd back to start
-                stub_fd.seek(SeekFrom::Start(0))?;
-                Ok(())
-            }();
-            if result.is_ok() {
-                install_apk(tmp_apk);
-            }
-        }
-    }
-
-    fn get_manager(&mut self, daemon: &MagiskD, user: i32, mut install: bool) -> (i32, &str) {
+    fn get_manager(&mut self, daemon: &MagiskD, user: i32) -> (i32, &str) {
         let db_pkg = daemon.get_db_string(DbEntryKey::SuManager);
 
         // If database changed, always re-check files
@@ -373,9 +351,6 @@ impl ManagerInfo {
         {
             // no APK
             if &file.path == PACKAGES_XML {
-                if install && !daemon.is_emulator {
-                    self.install_stub();
-                }
                 return (-1, "");
             }
             // dyn APK is still the same
@@ -424,7 +399,6 @@ impl ManagerInfo {
                     daemon.rm_db_string(DbEntryKey::SuManager).ok();
                 }
                 Status::CertMismatch => {
-                    install = true;
                     daemon.rm_db_string(DbEntryKey::SuManager).ok();
                 }
             }
@@ -442,7 +416,7 @@ impl ManagerInfo {
                     (uid, APP_PACKAGE_NAME)
                 };
             }
-            Status::CertMismatch => install = true,
+            Status::CertMismatch => {}
             Status::NotInstalled => {}
         }
 
@@ -450,9 +424,6 @@ impl ManagerInfo {
         self.tracked_files
             .insert(user, TrackedFile::new(PACKAGES_XML.into()));
 
-        if install && !daemon.is_emulator {
-            self.install_stub();
-        }
         (-1, "")
     }
 }
@@ -487,19 +458,19 @@ impl MagiskD {
 
     pub fn get_manager_uid(&self, user: i32) -> i32 {
         let mut info = self.manager_info.lock();
-        let (uid, _) = info.get_manager(self, user, false);
+        let (uid, _) = info.get_manager(self, user);
         uid
     }
 
-    pub fn get_manager(&self, user: i32, install: bool) -> (i32, String) {
+    pub fn get_manager(&self, user: i32) -> (i32, String) {
         let mut info = self.manager_info.lock();
-        let (uid, pkg) = info.get_manager(self, user, install);
+        let (uid, pkg) = info.get_manager(self, user);
         (uid, pkg.to_string())
     }
 
     pub fn ensure_manager(&self) {
         let mut info = self.manager_info.lock();
-        let _ = info.get_manager(self, 0, true);
+        let _ = info.get_manager(self, 0);
     }
 
     // app_id = app_no + AID_APP_START
