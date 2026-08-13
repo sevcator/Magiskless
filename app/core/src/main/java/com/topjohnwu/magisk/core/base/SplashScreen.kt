@@ -39,9 +39,6 @@ class SplashController<T>(private val activity: T)
 
     private var shouldCreateUiOnResume = false
 
-    val showingSplash: Boolean
-        get() = !splashShown
-
     fun preOnCreate() {
         if (isRunningAsStub && !splashShown) {
             activity.theme.applyStyle(R.style.StubSplashTheme, true)

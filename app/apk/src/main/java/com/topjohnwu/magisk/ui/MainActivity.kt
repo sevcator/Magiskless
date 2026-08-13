@@ -66,10 +66,11 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Shortcuts.consumeShellShortcut(this, intent)
-        splashController.preOnCreate()
-        if (isRunningAsStub && !splashController.showingSplash) {
+        if (isRunningAsStub) {
             Theme.apply(this)
-        } else if (!isRunningAsStub) {
+        }
+        splashController.preOnCreate()
+        if (!isRunningAsStub) {
             Theme.applyOverlays(this)
         }
         super.onCreate(savedInstanceState)
