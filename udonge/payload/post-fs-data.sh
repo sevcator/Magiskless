@@ -10,7 +10,7 @@ chmod 700 "$root" "$state"
 rm -f "$state/vbmeta_hash" "$state/pif_urls.conf"
 
 for name in targets.conf props.conf pif.conf keybox_urls.conf; do
-    if [ ! -f "$state/$name" ]; then
+    if [ ! -f "$state/$name" ] || { [ "$name" = keybox_urls.conf ] && [ ! -s "$state/$name" ]; }; then
         cp "$runtime/defaults/$name" "$state/$name"
         chmod 600 "$state/$name"
     fi

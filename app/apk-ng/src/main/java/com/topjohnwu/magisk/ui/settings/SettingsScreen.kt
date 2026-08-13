@@ -1,6 +1,5 @@
 package com.topjohnwu.magisk.ui.settings
 
-import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.background
@@ -56,6 +55,7 @@ import com.topjohnwu.magisk.ui.ThemeState
 import com.topjohnwu.magisk.ui.component.SettingsArrow
 import com.topjohnwu.magisk.ui.component.SettingsDropdown
 import com.topjohnwu.magisk.ui.component.SettingsSwitch
+import com.topjohnwu.magisk.ui.component.SettingsSwitchAction
 import com.topjohnwu.magisk.ui.component.SmallTitle
 import com.topjohnwu.magisk.ui.component.rememberLoadingDialog
 import kotlinx.coroutines.launch
@@ -91,10 +91,6 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 MagiskSection(viewModel)
                 Spacer(Modifier.height(12.dp))
                 UdongeSection()
-            }
-            if (Info.showSuperUser) {
-                Spacer(Modifier.height(12.dp))
-                SuperuserSection(viewModel)
             }
         }
     }
@@ -414,17 +410,12 @@ private fun MagiskSection(viewModel: SettingsViewModel) {
             )
 
             val suListEnabled by viewModel.suListEnabled.collectAsState()
-            SettingsSwitch(
+            SettingsSwitchAction(
                 title = stringResource(CoreR.string.settings_sulist_title),
                 summary = stringResource(CoreR.string.settings_sulist_summary),
                 checked = suListEnabled,
+                onClick = { viewModel.navigateToSuList() },
                 onCheckedChange = { viewModel.toggleSuList(it) }
-            )
-
-            SettingsArrow(
-                title = stringResource(CoreR.string.settings_sulist_config_title),
-                summary = stringResource(CoreR.string.settings_sulist_config_summary),
-                onClick = { viewModel.navigateToSuList() }
             )
         }
     }
@@ -469,19 +460,17 @@ private fun UdongeSection() {
 
     SmallTitle(text = stringResource(CoreR.string.udonge))
     Card(modifier = Modifier.fillMaxWidth()) {
-        SettingsSwitch(
-            title = stringResource(CoreR.string.udonge_integrity_title),
-            summary = stringResource(CoreR.string.udonge_integrity_summary),
-            checked = enabled,
-            onCheckedChange = { next ->
-                enabled = next
-                scope.launch(Dispatchers.IO) { Udonge.setEnabled(next) }
-            },
-        )
-        SettingsArrow(
+        SettingsSwitchAction(
             title = stringResource(CoreR.string.udonge_keybox_list_title),
             summary = stringResource(CoreR.string.udonge_keybox_list_summary),
+            checked = enabled,
             onClick = { showKeyboxes = true },
+            onCheckedChange = { next ->
+                enabled = next
+                scope.launch(Dispatchers.IO) {
+                    if (!Udonge.setEnabled(next)) enabled = !next
+                }
+            },
         )
         SettingsArrow(
             title = stringResource(CoreR.string.udonge_update_title),
@@ -491,169 +480,6 @@ private fun UdongeSection() {
             ),
             onClick = { scope.launch(Dispatchers.IO) { Udonge.refreshKeyboxes() } },
         )
-    }
-}
-
-// --- Superuser ---
-
-@Composable
-private fun SuperuserSection(viewModel: SettingsViewModel) {
-    val context = LocalContext.current
-    val resources = LocalResources.current
-
-    SmallTitle(text = stringResource(CoreR.string.superuser))
-    Card(modifier = Modifier.fillMaxWidth()) {
-        // Tapjack (SDK < S)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            var tapjack by remember { mutableStateOf(Config.suTapjack) }
-            SettingsSwitch(
-                title = stringResource(CoreR.string.settings_su_tapjack_title),
-                summary = stringResource(CoreR.string.settings_su_tapjack_summary),
-                checked = tapjack,
-                onCheckedChange = {
-                    tapjack = it
-                    Config.suTapjack = it
-                }
-            )
-        }
-
-        // Authentication
-        var suAuth by remember { mutableStateOf(Config.suAuth) }
-        SettingsSwitch(
-            title = stringResource(CoreR.string.settings_su_auth_title),
-            summary = stringResource(
-                if (Info.isDeviceSecure) CoreR.string.settings_su_auth_summary
-                else CoreR.string.settings_su_auth_insecure
-            ),
-            checked = suAuth,
-            enabled = Info.isDeviceSecure,
-            onCheckedChange = { newValue ->
-                viewModel.withAuth {
-                    suAuth = newValue
-                    Config.suAuth = newValue
-                }
-            }
-        )
-
-        // Access Mode
-        val accessEntries = remember {
-            resources.getStringArray(CoreR.array.su_access).toList()
-        }
-        var accessMode by remember { mutableIntStateOf(Config.rootMode) }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.superuser_access),
-            items = accessEntries,
-            selectedIndex = accessMode,
-            onSelectedIndexChange = {
-                accessMode = it
-                Config.rootMode = it
-            }
-        )
-
-        // Multiuser Mode
-        val multiuserEntries = remember {
-            resources.getStringArray(CoreR.array.multiuser_mode).toList()
-        }
-        val multiuserDescriptions = remember {
-            resources.getStringArray(CoreR.array.multiuser_summary).toList()
-        }
-        var multiuserMode by remember { mutableIntStateOf(Config.suMultiuserMode) }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.multiuser_mode),
-            summary = multiuserDescriptions.getOrElse(multiuserMode) { "" },
-            items = multiuserEntries,
-            selectedIndex = multiuserMode,
-            enabled = Const.USER_ID == 0,
-            onSelectedIndexChange = {
-                multiuserMode = it
-                Config.suMultiuserMode = it
-            }
-        )
-
-        // Mount Namespace Mode
-        val namespaceEntries = remember {
-            resources.getStringArray(CoreR.array.namespace).toList()
-        }
-        val namespaceDescriptions = remember {
-            resources.getStringArray(CoreR.array.namespace_summary).toList()
-        }
-        var mntNamespaceMode by remember { mutableIntStateOf(Config.suMntNamespaceMode) }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.mount_namespace_mode),
-            summary = namespaceDescriptions.getOrElse(mntNamespaceMode) { "" },
-            items = namespaceEntries,
-            selectedIndex = mntNamespaceMode,
-            onSelectedIndexChange = {
-                mntNamespaceMode = it
-                Config.suMntNamespaceMode = it
-            }
-        )
-
-        // Automatic Response
-        val autoResponseEntries = remember {
-            resources.getStringArray(CoreR.array.auto_response).toList()
-        }
-        var autoResponse by remember { mutableIntStateOf(Config.suAutoResponse) }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.auto_response),
-            items = autoResponseEntries,
-            selectedIndex = autoResponse,
-            onSelectedIndexChange = { newIndex ->
-                val doIt = {
-                    autoResponse = newIndex
-                    Config.suAutoResponse = newIndex
-                }
-                if (Config.suAuth) viewModel.withAuth(doIt) else doIt()
-            }
-        )
-
-        // Request Timeout
-        val timeoutEntries = remember {
-            resources.getStringArray(CoreR.array.request_timeout).toList()
-        }
-        val timeoutValues = remember { listOf(10, 15, 20, 30, 45, 60) }
-        var timeoutIndex by remember {
-            mutableIntStateOf(timeoutValues.indexOf(Config.suDefaultTimeout).coerceAtLeast(0))
-        }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.request_timeout),
-            items = timeoutEntries,
-            selectedIndex = timeoutIndex,
-            onSelectedIndexChange = {
-                timeoutIndex = it
-                Config.suDefaultTimeout = timeoutValues[it]
-            }
-        )
-
-        // SU Notification
-        val notifEntries = remember {
-            resources.getStringArray(CoreR.array.su_notification).toList()
-        }
-        var suNotification by remember { mutableIntStateOf(Config.suNotification) }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.superuser_notification),
-            items = notifEntries,
-            selectedIndex = suNotification,
-            onSelectedIndexChange = {
-                suNotification = it
-                Config.suNotification = it
-            }
-        )
-
-        // Reauthenticate (SDK < O)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            var reAuth by remember { mutableStateOf(Config.suReAuth) }
-            SettingsSwitch(
-                title = stringResource(CoreR.string.settings_su_reauth_title),
-                summary = stringResource(CoreR.string.settings_su_reauth_summary),
-                checked = reAuth,
-                onCheckedChange = {
-                    reAuth = it
-                    Config.suReAuth = it
-                }
-            )
-        }
-
     }
 }
 

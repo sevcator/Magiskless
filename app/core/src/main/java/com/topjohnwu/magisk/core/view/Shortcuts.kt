@@ -25,7 +25,7 @@ object Shortcuts {
     private const val SHELL_SHORTCUT_ID = "reisenless-shell"
     private const val SHELL_TOKEN = "reisenless.shell.token"
     private const val LAUNCHER_ALIAS = "com.topjohnwu.magisk.ui.LauncherAlias"
-    private const val MAIN_ACTIVITY = "com.topjohnwu.magisk.ui.MainActivity"
+    private const val SHELL_ACTIVITY = "com.topjohnwu.magisk.ui.ShellActivity"
 
     fun setupDynamic(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -57,12 +57,12 @@ object Shortcuts {
         if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) return false
         val token = Config.shellHideToken.ifBlank { UUID.randomUUID().toString() }
         val intent = Intent(Intent.ACTION_MAIN).apply {
-            component = ComponentName(context.packageName, MAIN_ACTIVITY)
+            component = ComponentName(context.packageName, SHELL_ACTIVITY)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra(SHELL_TOKEN, token)
         }
         val info = ShortcutInfoCompat.Builder(context, SHELL_SHORTCUT_ID)
-            .setShortLabel(context.getString(R.string.magisk))
+            .setShortLabel(context.getString(R.string.shell_title))
             .setIntent(intent)
             .setIcon(context.getIconCompat(R.drawable.ic_launcher))
             .build()

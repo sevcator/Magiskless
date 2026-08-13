@@ -51,8 +51,6 @@ import com.topjohnwu.magisk.ui.navigation.LocalNavigator
 import com.topjohnwu.magisk.ui.navigation.Navigator
 import com.topjohnwu.magisk.ui.navigation.Route
 import com.topjohnwu.magisk.ui.navigation.rememberNavigator
-import com.topjohnwu.magisk.ui.superuser.SuperuserDetailScreen
-import com.topjohnwu.magisk.ui.superuser.SuperuserViewModel
 import com.topjohnwu.magisk.view.Shortcuts
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -132,17 +130,6 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                                         }
                                     }
                                     FlashScreen(vm, action = key.action, onBack = { navigator.pop() })
-                                }
-                                entry<Route.SuperuserDetail> { key ->
-                                    val vm: SuperuserViewModel = viewModel(
-                                        viewModelStoreOwner = this@MainActivity, factory = VMFactory
-                                    )
-                                    LaunchedEffect(Unit) {
-                                        vm.authenticate = { onSuccess ->
-                                            extension.withAuthentication { if (it) onSuccess() }
-                                        }
-                                    }
-                                    SuperuserDetailScreen(uid = key.uid, viewModel = vm, onBack = { navigator.pop() })
                                 }
                                 entry<Route.Action> { key ->
                                     val vm: ActionViewModel = viewModel(factory = VMFactory)

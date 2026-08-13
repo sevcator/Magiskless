@@ -2,7 +2,10 @@ package com.topjohnwu.magisk.ui.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -52,6 +55,32 @@ fun SettingsSwitch(
         trailingContent = { Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled) },
         modifier = Modifier.clickable(enabled = enabled, onClick = { onCheckedChange(!checked) })
     )
+}
+
+@Composable
+fun SettingsSwitchAction(
+    title: String,
+    summary: String? = null,
+    checked: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        ListItem(
+            headlineContent = { Text(title) },
+            supportingContent = summary?.takeIf { it.isNotEmpty() }?.let { { Text(it) } },
+            modifier = Modifier
+                .weight(1f)
+                .clickable(enabled = enabled, onClick = onClick),
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            modifier = Modifier.padding(end = 16.dp),
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

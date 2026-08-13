@@ -261,6 +261,10 @@
     <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
     <string name="settings_restore_shell_app_title">restore the app</string>
     <string name="settings_restore_shell_app_summary">reisensense :(</string>
+    <string name="shell_title">shell</string>
+    <string name="shell_hint">command</string>
+    <string name="shell_run">run</string>
+    <string name="shell_ready">shell ready. type reisenless to open the manager.</string>
     <string name="webui">webui</string>
 
 </resources>

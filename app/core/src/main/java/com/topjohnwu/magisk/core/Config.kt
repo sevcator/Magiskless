@@ -10,6 +10,12 @@ import kotlinx.coroutines.GlobalScope
 
 object Config : PreferenceConfig, DBConfig {
 
+    const val DEFAULT_UDONGE_KEYBOX_URLS =
+        "https://raw.githubusercontent.com/sevcator/Reisenless/master/udonge/payload/defaults/keybox.xml\n" +
+        "https://gist.githubusercontent.com/GreyElaina/2401596f3b8a01f8602768ad5221e2fd/raw/kb_b.xml\n" +
+        "https://raw.githubusercontent.com/aosp-mirror/platform_system_core/android-13.0.0_r27/" +
+        "trusty/keymaster/set_attestation_key/keymaster_soft_attestation_keys.xml"
+
     override val stringDB get() = ServiceLocator.stringDB
     override val settingsDB get() = ServiceLocator.settingsDB
     override val context get() = ServiceLocator.deContext
@@ -120,7 +126,13 @@ object Config : PreferenceConfig, DBConfig {
         get() = migrateAccent(storedAccentSecondary, false)
         set(value) { storedAccentSecondary = value }
     var udongeEnabled by preference(Key.UDONGE_ENABLED, true)
-    var udongeKeyboxUrls by preference(Key.UDONGE_KEYBOX_URLS, "")
+    private var storedUdongeKeyboxUrls by preference(
+        Key.UDONGE_KEYBOX_URLS,
+        DEFAULT_UDONGE_KEYBOX_URLS,
+    )
+    var udongeKeyboxUrls
+        get() = storedUdongeKeyboxUrls.ifBlank { DEFAULT_UDONGE_KEYBOX_URLS }
+        set(value) { storedUdongeKeyboxUrls = value }
     var shellHideToken by preference(Key.SHELL_HIDE_TOKEN, "")
     var shellShortcutVerified by preference(Key.SHELL_SHORTCUT_VERIFIED, false)
     var shellHidden by preference(Key.SHELL_HIDDEN, false)

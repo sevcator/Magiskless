@@ -2,7 +2,6 @@ package com.topjohnwu.magisk.ui.superuser
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,8 +38,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.topjohnwu.magisk.ui.navigation.LocalNavigator
-import com.topjohnwu.magisk.ui.navigation.Route
 import com.topjohnwu.magisk.core.R as CoreR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +45,6 @@ import com.topjohnwu.magisk.core.R as CoreR
 fun SuperuserScreen(viewModel: SuperuserViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val navigator = LocalNavigator.current
 
     Scaffold(
         topBar = {
@@ -100,7 +96,6 @@ fun SuperuserScreen(viewModel: SuperuserViewModel) {
                 PolicyCard(
                     item = item,
                     onToggle = { viewModel.togglePolicy(item) },
-                    onDetail = { navigator.push(Route.SuperuserDetail(item.policy.uid)) },
                 )
             }
             item { Spacer(Modifier.height(4.dp)) }
@@ -112,7 +107,6 @@ fun SuperuserScreen(viewModel: SuperuserViewModel) {
 private fun PolicyCard(
     item: PolicyItem,
     onToggle: () -> Unit,
-    onDetail: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -128,7 +122,6 @@ private fun PolicyCard(
             Row(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable(onClick = onDetail)
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

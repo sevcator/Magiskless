@@ -17,6 +17,7 @@ sealed class BaseSettingsItem : ObservableRvItem() {
     interface Handler {
         fun onItemPressed(view: View, item: BaseSettingsItem, andThen: () -> Unit)
         fun onItemAction(view: View, item: BaseSettingsItem)
+        fun onItemToggleAction(view: View, item: BaseSettingsItem) = onItemAction(view, item)
     }
 
     override val layoutRes get() = R.layout.item_settings
@@ -40,7 +41,7 @@ sealed class BaseSettingsItem : ObservableRvItem() {
     open val showSwitch get() = false
     @get:Bindable
     open val isChecked get() = false
-    fun onToggle(view: View, handler: Handler, checked: Boolean) =
+    open fun onToggle(view: View, handler: Handler, checked: Boolean) =
         set(checked, isChecked, { onPressed(view, handler) })
 
     abstract class Value<T> : BaseSettingsItem() {
@@ -68,6 +69,24 @@ sealed class BaseSettingsItem : ObservableRvItem() {
                 handler.onItemAction(view, this)
             }
         }
+    }
+
+    abstract class SplitToggle : Toggle() {
+
+        override fun onPressed(view: View, handler: Handler) {
+            handler.onItemPressed(view, this) {
+                handler.onItemAction(view, this)
+            }
+        }
+
+        override fun onToggle(view: View, handler: Handler, checked: Boolean) =
+            set(checked, isChecked, {
+                handler.onItemPressed(view, this) {
+                    value = checked
+                    notifyPropertyChanged(BR.checked)
+                    handler.onItemToggleAction(view, this)
+                }
+            })
     }
 
     abstract class Input : Value<String>() {

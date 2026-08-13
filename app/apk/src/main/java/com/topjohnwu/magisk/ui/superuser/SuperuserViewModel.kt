@@ -21,7 +21,6 @@ import com.topjohnwu.magisk.databinding.RvItem
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.databinding.diffList
 import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.dialog.SuperuserRevokeDialog
 import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
 import com.topjohnwu.magisk.core.utils.asText
@@ -106,40 +105,6 @@ class SuperuserViewModel(
 
     // ---
 
-    fun deletePressed(item: PolicyRvItem) {
-        fun updateState() = viewModelScope.launch {
-            db.delete(item.item.uid)
-            val list = ArrayList(itemsPolicies)
-            list.removeAll { it.item.uid == item.item.uid }
-            itemsPolicies.update(list)
-            if (list.isEmpty() && itemsHelpers.isEmpty()) {
-                itemsHelpers.add(itemNoData)
-            }
-        }
-
-        if (Config.suAuth) {
-            AuthEvent { updateState() }.publish()
-        } else {
-            SuperuserRevokeDialog(item.title) { updateState() }.show()
-        }
-    }
-
-    fun updateNotify(item: PolicyRvItem) {
-        viewModelScope.launch {
-            db.update(item.item)
-            val res = when {
-                item.item.notification -> R.string.su_snack_notif_on
-                else -> R.string.su_snack_notif_off
-            }
-            itemsPolicies.forEach {
-                if (it.item.uid == item.item.uid) {
-                    it.notifyPropertyChanged(BR.shouldNotify)
-                }
-            }
-            SnackbarEvent(res.asText(item.appName)).publish()
-        }
-    }
-
     fun updatePolicy(item: PolicyRvItem, policy: Int) {
         val items = itemsPolicies.filter { it.item.uid == item.item.uid }
         fun updateState() {
@@ -149,7 +114,6 @@ class SuperuserViewModel(
                 db.update(item.item)
                 items.forEach {
                     it.notifyPropertyChanged(BR.enabled)
-                    it.notifyPropertyChanged(BR.sliderValue)
                 }
                 SnackbarEvent(res.asText(item.appName)).publish()
             }

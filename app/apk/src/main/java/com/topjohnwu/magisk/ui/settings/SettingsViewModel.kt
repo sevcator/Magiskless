@@ -3,7 +3,6 @@ package com.topjohnwu.magisk.ui.settings
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
@@ -25,7 +24,6 @@ import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.events.AddHomeIconEvent
-import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
@@ -64,26 +62,9 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                 SystemlessHosts
             ))
             if (Const.Version.atLeast_24_0()) {
-                list.addAll(listOf(Zygisk, SuList, SuListConfig))
+                list.addAll(listOf(Zygisk, SuList))
             }
-            list.addAll(listOf(UdongeSettings, UdongeIntegrity, UdongeKeyboxes, UdongeUpdate))
-        }
-
-        // Superuser
-        if (Info.showSuperUser) {
-            list.addAll(listOf(
-                Superuser,
-                Tapjack, Authentication, AccessMode, MultiuserMode, MountNamespaceMode,
-                AutomaticResponse, RequestTimeout, SUNotification
-            ))
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                // Re-authenticate is not feasible on 8.0+
-                list.add(Reauthenticate)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                // Can hide overlay windows on 12.0+
-                list.remove(Tapjack)
-            }
+            list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeUpdate))
         }
 
         return list
@@ -92,8 +73,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
     override fun onItemPressed(view: View, item: BaseSettingsItem, doAction: () -> Unit) {
         when (item) {
             DownloadPath -> withExternalRW(doAction)
-            Authentication -> AuthEvent(doAction).publish()
-            AutomaticResponse -> if (Config.suAuth) AuthEvent(doAction).publish() else doAction()
             else -> doAction()
         }
     }
@@ -104,7 +83,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             LanguageSystem -> view.activity.startActivity(LocaleSetting.localeSettingsIntent)
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
-            SuListConfig -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
+            SuList -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
             ShellHide -> {
                 if (Config.shellHidden) {
                     Shortcuts.restoreLauncher(view.context)
@@ -119,21 +98,27 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                 }
             }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
+            UdongeUpdate -> SettingsFragmentDirections
+                .actionSettingsFragmentToInstallFragment().navigate()
+            else -> Unit
+        }
+    }
+
+    override fun onItemToggleAction(view: View, item: BaseSettingsItem) {
+        when (item) {
             SuList -> SnackbarEvent(R.string.reboot_apply_change).publish()
-            UdongeIntegrity -> {
-                val requested = UdongeIntegrity.value
+            UdongeKeyboxes -> {
+                val requested = UdongeKeyboxes.value
                 if (requested) Config.zygisk = true
                 Shell.EXECUTOR.execute {
                     if (!Udonge.setEnabled(requested) && Config.udongeEnabled == requested) {
                         Config.udongeEnabled = !requested
-                        view.post { UdongeIntegrity.notifyPropertyChanged(BR.checked) }
+                        view.post { UdongeKeyboxes.notifyPropertyChanged(BR.checked) }
                     }
                 }
                 SnackbarEvent(R.string.reboot_apply_change).publish()
             }
-            UdongeUpdate -> SettingsFragmentDirections
-                .actionSettingsFragmentToInstallFragment().navigate()
-            else -> Unit
+            else -> onItemAction(view, item)
         }
     }
 

@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable
 import android.os.Process
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.arch.AsyncLoadViewModel
@@ -39,10 +38,7 @@ class PolicyItem(
     val title get() = appName
 
     var policyValue by mutableIntStateOf(policy.policy)
-    var notification by mutableStateOf(policy.notification)
-
     val isEnabled get() = policyValue >= SuPolicy.ALLOW
-    val isRestricted get() = policyValue == SuPolicy.RESTRICT
 }
 
 class SuperuserViewModel(
@@ -116,31 +112,6 @@ class SuperuserViewModel(
         }
     }
 
-    val requiresAuth get() = Config.suAuth
-
-    fun performDelete(item: PolicyItem, onDeleted: () -> Unit = {}) {
-        viewModelScope.launch {
-            db.delete(item.policy.uid)
-            _uiState.update { state ->
-                state.copy(policies = state.policies.filter { it.policy.uid != item.policy.uid })
-            }
-            onDeleted()
-        }
-    }
-
-    fun updateNotify(item: PolicyItem) {
-        item.notification = !item.notification
-        item.policy.notification = item.notification
-        viewModelScope.launch {
-            db.update(item.policy)
-            _uiState.value.policies
-                .filter { it.policy.uid == item.policy.uid }
-                .forEach { it.notification = item.notification }
-            val res = if (item.notification) R.string.su_snack_notif_on else R.string.su_snack_notif_off
-            showSnackbar(AppContext.getString(res, item.appName))
-        }
-    }
-
     fun updatePolicy(item: PolicyItem, newPolicy: Int) {
         fun updateState() {
             viewModelScope.launch {
@@ -167,8 +138,4 @@ class SuperuserViewModel(
         updatePolicy(item, newPolicy)
     }
 
-    fun toggleRestrict(item: PolicyItem) {
-        val newPolicy = if (item.isRestricted) SuPolicy.ALLOW else SuPolicy.RESTRICT
-        updatePolicy(item, newPolicy)
-    }
 }
