@@ -47,7 +47,7 @@ else
 fi
 
 # Extract files from APK
-unzip -oj magisk.apk 'assets/util_functions.sh' 'assets/stub.apk'
+unzip -oj magisk.apk 'assets/util_functions.sh' 'assets/stub.apk' 'assets/udonge.bin'
 . ./util_functions.sh
 
 api_level_arch_detect
@@ -80,6 +80,7 @@ cat config
 ./mboot compress=xz ms ms.xz
 ./mboot compress=xz stub.apk stub.xz
 ./mboot compress=xz init-ld init-ld.xz
+./mboot compress=xz udonge.bin udonge.xz
 
 ./mboot cpio ramdisk.cpio \
 "add 0750 init minit" \
@@ -88,6 +89,7 @@ cat config
 "add 0644 overlay.d/sbin/ms.xz ms.xz" \
 "add 0644 overlay.d/sbin/stub.xz stub.xz" \
 "add 0644 overlay.d/sbin/init-ld.xz init-ld.xz" \
+"add 0600 overlay.d/sbin/udonge.xz udonge.xz" \
 "patch" \
 "backup ramdisk.cpio.orig" \
 "mkdir 000 .backup" \

@@ -1060,7 +1060,7 @@ def set_build_abis(abis: set[str]):
     # Check any unknown ABIs
     for k in abis - support_abis.keys():
         error(f"Unknown ABI: {k}")
-    build_abis = {k: support_abis[k] for k in abis if k in support_abis}
+    build_abis = {k: support_abis[k] for k in support_abis if k in abis}
 
 
 def load_config():

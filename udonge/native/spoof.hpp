@@ -18,6 +18,6 @@ void spoof_display(JNIEnv *env, const Config &cfg);
 // EntryPoint.init() to install the KeyStore attestation intercept.
 // This blocks hardware attestation chains from reaching DroidGuard,
 // forcing a software/basic evaluation path for Play Integrity.
-void load_dex(JNIEnv *env, const std::string &dex_path, const std::string &pif_json);
+void load_dex(JNIEnv *env, const std::string &dex_data);
 
 } // namespace cloak

@@ -259,5 +259,13 @@
     <string name="settings_sulist_title">sulist</string>
     <string name="settings_sulist_summary">sulist に登録されたアプリのみ root 権限を要求できます。その他の要求はすべて自動的に拒否されます。</string>
     <string name="webui">webui</string>
+    <string name="udonge">udonge</string>
+    <string name="udonge_integrity_title">strong integrity を通過</string>
+    <string name="udonge_integrity_summary">udonge がデバイスを正規の状態にします！</string>
+    <string name="udonge_keybox_list_title">keybox リスト</string>
+    <string name="udonge_keybox_list_summary">keybox のリンクを追加または削除</string>
+    <string name="udonge_update_title">udonge を更新</string>
+    <string name="udonge_update_summary">バージョン (%1$s)</string>
+    <string name="udonge_keybox_hint">1 行につき 1 つの https リンク</string>
 
 </resources>

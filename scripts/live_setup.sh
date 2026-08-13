@@ -55,7 +55,7 @@ fi
 pm install -r -g $(pwd)/magisk.apk
 
 # Extract files from APK
-unzip -oj magisk.apk 'assets/util_functions.sh' 'assets/stub.apk'
+unzip -oj magisk.apk 'assets/util_functions.sh' 'assets/stub.apk' 'assets/udonge.bin'
 . ./util_functions.sh
 
 api_level_arch_detect
@@ -148,6 +148,11 @@ done
 cp -af ./mboot $MAGISKBIN/mboot
 cp -af ./minit $MAGISKBIN/minit
 cp -af ./busybox $MAGISKBIN/busybox
+[ -f ./udonge.bin ] && {
+  chmod 600 ./udonge.bin
+  cp -af ./udonge.bin $MAGISKTMP/udonge.bin
+  cp -af ./udonge.bin $MAGISKBIN/udonge.bin
+}
 
 ln -s ./$MAIN_BIN_NAME $MAGISKTMP/su
 ln -s ./$MAIN_BIN_NAME $MAGISKTMP/resetprop

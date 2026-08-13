@@ -43,14 +43,10 @@ Config parse_config(const std::string &targets_text, const std::string &props_te
     Config cfg;
 
     for_each_line(targets_text, [&](const std::string &line) {
-        size_t eq = line.find('=');
-        if (eq != std::string::npos && trim(line.substr(0, eq)) == "mode") {
-            std::string v = trim(line.substr(eq + 1));
-            cfg.mode = (v == "blacklist") ? Config::BLACKLIST : Config::WHITELIST;
-        } else if (line.rfind("stealth:", 0) == 0) {
+        if (line.rfind("stealth:", 0) == 0) {
             cfg.stealth_packages.insert(line.substr(8));
         } else {
-            cfg.packages.insert(line);   // a bare package name
+            cfg.packages.insert(line);
         }
     });
 

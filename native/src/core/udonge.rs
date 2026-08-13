@@ -8,30 +8,92 @@ pub const UDONGE_MODULE_NAME: &str = "@udonge";
 pub const UDONGE_ROOT: &str = concatcp!(SECURE_DIR, "/udonge");
 pub const UDONGE_RUNTIME: &str = concatcp!(UDONGE_ROOT, "/runtime");
 const UDONGE_NEXT: &str = concatcp!(UDONGE_ROOT, "/runtime.new");
+const UDONGE_OLD: &str = concatcp!(UDONGE_ROOT, "/runtime.old");
 const UDONGE_DISABLED: &str = concatcp!(UDONGE_ROOT, "/state/disabled");
+const UDONGE_UNLOADED: &str = concatcp!(UDONGE_ROOT, "/state/unloaded");
 
 pub fn is_enabled() -> bool {
-    cstr!(UDONGE_RUNTIME).exists() && !cstr!(UDONGE_DISABLED).exists()
+    runtime_complete(UDONGE_RUNTIME)
+        && !cstr!(UDONGE_DISABLED).exists()
+        && !cstr!(UDONGE_UNLOADED).exists()
+}
+
+fn runtime_file_exists(root: &str, name: &str) -> bool {
+    cstr::buf::default()
+        .join_path(root)
+        .join_path(name)
+        .exists()
+}
+
+fn runtime_complete(root: &str) -> bool {
+    const COMMON: &[&str] = &[
+        "version",
+        "classes.dex",
+        "post-fs-data.sh",
+        "service.sh",
+        "defaults/keybox.xml",
+        "defaults/keybox_urls.conf",
+        "defaults/pif.conf",
+        "defaults/props.conf",
+        "defaults/targets.conf",
+    ];
+    if COMMON.iter().any(|name| !runtime_file_exists(root, name)) {
+        return false;
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    const ABI_FILES: &[&str] = &[
+        "zygisk/arm64-v8a.so",
+        "tee/arm64-v8a/inject",
+        "tee/arm64-v8a/libTEESimulator.so",
+        "tee/arm64-v8a/libcertgen.so",
+        "tee/arm64-v8a/supervisor",
+        "tee/classes.dex",
+        "tee/daemon",
+    ];
+    #[cfg(target_arch = "arm")]
+    const ABI_FILES: &[&str] = &[
+        "zygisk/armeabi-v7a.so",
+        "tee/armeabi-v7a/inject",
+        "tee/armeabi-v7a/libTEESimulator.so",
+        "tee/armeabi-v7a/supervisor",
+        "tee/classes.dex",
+        "tee/daemon",
+    ];
+    #[cfg(target_arch = "x86_64")]
+    const ABI_FILES: &[&str] = &["zygisk/x86_64.so"];
+    #[cfg(target_arch = "x86")]
+    const ABI_FILES: &[&str] = &["zygisk/x86.so"];
+    #[cfg(target_arch = "riscv64")]
+    const ABI_FILES: &[&str] = &[];
+
+    ABI_FILES.iter().all(|name| runtime_file_exists(root, name))
+}
+
+fn runtime_version_matches(root: &str) -> bool {
+    let version_path = cstr::buf::default().join_path(root).join_path("version");
+    std::fs::read_to_string(&version_path)
+        .map(|version| version.trim() == MAGISK_VERSION)
+        .unwrap_or(false)
 }
 
 pub fn setup_runtime() {
     let buffer = cstr::buf::default();
     let archive = buffer.join_path(get_magisk_tmp()).join_path("udonge.bin");
-    if !archive.exists() {
-        return;
-    }
 
     cstr!(UDONGE_ROOT).mkdirs(0o700).log_ok();
     cstr!(UDONGE_ROOT).follow_link().chmod(0o700).log_ok();
 
-    let version_path = cstr::buf::default()
-        .join_path(UDONGE_RUNTIME)
-        .join_path("version");
-    let installed = std::fs::read_to_string(&version_path)
-        .map(|version| version.trim() == MAGISK_VERSION)
-        .unwrap_or(false);
+    if !cstr!(UDONGE_RUNTIME).exists() && cstr!(UDONGE_OLD).exists() {
+        cstr!(UDONGE_OLD)
+            .rename_to(cstr!(UDONGE_RUNTIME))
+            .log_ok();
+    }
 
-    if !installed {
+    let installed = runtime_complete(UDONGE_RUNTIME)
+        && runtime_version_matches(UDONGE_RUNTIME);
+
+    if !installed && archive.exists() {
         cstr!(UDONGE_NEXT).remove_all().ok();
         cstr!(UDONGE_NEXT).mkdirs(0o700).log_ok();
 
@@ -50,27 +112,45 @@ pub fn setup_runtime() {
             .status()
             .map(|status| status.success())
             .unwrap_or(false);
-        let next_version = cstr::buf::default()
-            .join_path(UDONGE_NEXT)
-            .join_path("version");
         let verified = extracted
-            && std::fs::read_to_string(&next_version)
-                .map(|version| version.trim() == MAGISK_VERSION)
-                .unwrap_or(false);
+            && runtime_complete(UDONGE_NEXT)
+            && runtime_version_matches(UDONGE_NEXT);
         if verified {
-            cstr!(UDONGE_RUNTIME).remove_all().ok();
-            cstr!(UDONGE_NEXT).rename_to(cstr!(UDONGE_RUNTIME)).log_ok();
+            cstr!(UDONGE_OLD).remove_all().ok();
+            let backed_up = !cstr!(UDONGE_RUNTIME).exists()
+                || cstr!(UDONGE_RUNTIME)
+                    .rename_to(cstr!(UDONGE_OLD))
+                    .log()
+                    .is_ok();
+            if backed_up
+                && cstr!(UDONGE_NEXT)
+                    .rename_to(cstr!(UDONGE_RUNTIME))
+                    .log()
+                    .is_ok()
+            {
+                cstr!(UDONGE_OLD).remove_all().ok();
+                cstr!(UDONGE_UNLOADED).remove().ok();
+            } else {
+                if !cstr!(UDONGE_RUNTIME).exists() {
+                    cstr!(UDONGE_OLD)
+                        .rename_to(cstr!(UDONGE_RUNTIME))
+                        .log_ok();
+                }
+                cstr!(UDONGE_NEXT).remove_all().ok();
+            }
         } else {
             cstr!(UDONGE_NEXT).remove_all().ok();
         }
     }
 
-    if cstr!(UDONGE_RUNTIME).exists() {
+    if is_enabled() {
         let post_fs_data = cstr::buf::default()
             .join_path(UDONGE_RUNTIME)
             .join_path("post-fs-data.sh");
-        post_fs_data.follow_link().chmod(0o700).log_ok();
-        exec_script(&post_fs_data);
+        if post_fs_data.exists() {
+            post_fs_data.follow_link().chmod(0o700).log_ok();
+            exec_script(&post_fs_data);
+        }
     }
 }
 

@@ -17,7 +17,7 @@ import java.security.spec.AlgorithmParameterSpec;
 public final class EntryPoint {
     private static final String ATTESTATION_OID = "1.3.6.1.4.1.11129.2.1.17";
 
-    public static void init(String json) {
+    public static void init() {
         try {
             spoofBuildFields();
             spoofProvider();
