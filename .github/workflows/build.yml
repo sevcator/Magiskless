@@ -33,6 +33,30 @@ jobs:
       - name: Set up toolchain
         uses: ./.github/actions/setup
 
+      - name: Prepare release signing
+        if: github.event_name != 'pull_request'
+        shell: bash
+        env:
+          REISENLESS_KEYSTORE_BASE64: ${{ secrets.REISENLESS_KEYSTORE_BASE64 }}
+          REISENLESS_KEYSTORE_PASSWORD: ${{ secrets.REISENLESS_KEYSTORE_PASSWORD }}
+          REISENLESS_KEY_ALIAS: ${{ secrets.REISENLESS_KEY_ALIAS }}
+          REISENLESS_KEY_PASSWORD: ${{ secrets.REISENLESS_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${REISENLESS_KEYSTORE_BASE64:?missing release keystore}"
+          : "${REISENLESS_KEYSTORE_PASSWORD:?missing keystore password}"
+          : "${REISENLESS_KEY_ALIAS:?missing key alias}"
+          : "${REISENLESS_KEY_PASSWORD:?missing key password}"
+          keystore="$RUNNER_TEMP/reisenless-release.p12"
+          printf '%s' "$REISENLESS_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          chmod 600 "$keystore"
+          {
+            printf '\nkeyStore=%s\n' "$keystore"
+            printf 'keyStorePass=%s\n' "$REISENLESS_KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$REISENLESS_KEY_ALIAS"
+            printf 'keyPass=%s\n' "$REISENLESS_KEY_PASSWORD"
+          } >> config.prop
+
       - name: Build native core
         run: ./build.py -vvr native
 
@@ -65,7 +89,21 @@ jobs:
           grep -Fq "application-label:'reisenless'" <<< "$badging"
           sha256sum "$apk"
 
+      - name: Verify release signature
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=out/app-release.apk
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          actual="$("$apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1 | tr '[:lower:]' '[:upper:]')"
+          expected=64958D8CE215FBC85086ABC294F46AF0F27FC2FF99D113C43CE60693659CE719
+          test "$actual" = "$expected"
+          echo "release certificate sha256: $actual"
+
       - name: Upload APK
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v6
         with:
           name: reisenless-${{ github.sha }}
