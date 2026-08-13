@@ -110,8 +110,12 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                     Shortcuts.restoreLauncher(view.context)
                     ShellHide.notifyPropertyChanged(BR.title)
                     ShellHide.notifyPropertyChanged(BR.description)
-                } else if (!Shortcuts.requestShellShortcut(view.context)) {
-                    SnackbarEvent(R.string.add_shortcut_msg).publish()
+                } else {
+                    if (!Shortcuts.requestShellShortcut(view.context)) {
+                        SnackbarEvent(R.string.add_shortcut_msg).publish()
+                    }
+                    ShellHide.notifyPropertyChanged(BR.title)
+                    ShellHide.notifyPropertyChanged(BR.description)
                 }
             }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()

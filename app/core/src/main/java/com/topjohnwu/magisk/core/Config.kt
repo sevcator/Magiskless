@@ -36,6 +36,7 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_REAUTH = "su_reauth"
         const val SU_TAPJACK = "su_tapjack"
         const val SHELL_HIDE_TOKEN = "shell_hide_token"
+        const val SHELL_SHORTCUT_VERIFIED = "shell_shortcut_verified"
         const val SHELL_HIDDEN = "shell_hidden"
         const val LOCALE = "locale"
         const val DARK_THEME = "dark_theme_extended"
@@ -50,7 +51,7 @@ object Config : PreferenceConfig, DBConfig {
 
         val NO_MIGRATION = setOf(
             ASKED_HOME, SU_REQUEST_TIMEOUT, SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK,
-            SHELL_HIDE_TOKEN, SHELL_HIDDEN,
+            SHELL_HIDE_TOKEN, SHELL_SHORTCUT_VERIFIED, SHELL_HIDDEN,
         )
     }
 
@@ -121,6 +122,7 @@ object Config : PreferenceConfig, DBConfig {
     var udongeEnabled by preference(Key.UDONGE_ENABLED, true)
     var udongeKeyboxUrls by preference(Key.UDONGE_KEYBOX_URLS, "")
     var shellHideToken by preference(Key.SHELL_HIDE_TOKEN, "")
+    var shellShortcutVerified by preference(Key.SHELL_SHORTCUT_VERIFIED, false)
     var shellHidden by preference(Key.SHELL_HIDDEN, false)
 
     private var localePrefs by preference(Key.LOCALE, "")

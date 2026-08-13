@@ -45,8 +45,17 @@ object Shortcuts {
     }
 
     fun requestShellShortcut(context: Context): Boolean {
+        val hasPinnedShortcut = ShortcutManagerCompat.getShortcuts(
+            context,
+            ShortcutManagerCompat.FLAG_MATCH_PINNED,
+        ).any { it.id == SHELL_SHORTCUT_ID }
+        if (Config.shellShortcutVerified && hasPinnedShortcut) {
+            setLauncherHidden(context, true)
+            return true
+        }
+        if (!hasPinnedShortcut) Config.shellShortcutVerified = false
         if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) return false
-        val token = UUID.randomUUID().toString()
+        val token = Config.shellHideToken.ifBlank { UUID.randomUUID().toString() }
         val intent = Intent(Intent.ACTION_MAIN).apply {
             component = ComponentName(context.packageName, MAIN_ACTIVITY)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -66,7 +75,7 @@ object Shortcuts {
         val expected = Config.shellHideToken
         val supplied = intent?.getStringExtra(SHELL_TOKEN)
         if (expected.isBlank() || supplied != expected) return false
-        Config.shellHideToken = ""
+        Config.shellShortcutVerified = true
         setLauncherHidden(context, true)
         return true
     }
