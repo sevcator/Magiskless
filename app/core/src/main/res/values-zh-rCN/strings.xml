@@ -7,7 +7,7 @@
     <string name="install">安装</string>
     <string name="section_home">主页</string>
     <string name="section_theme">主题</string>
-    <string name="denylist">排除列表</string>
+    <string name="sulist">sulist</string>
 
     <!--Home-->
     <string name="no_connection">无法连接</string>
@@ -145,10 +145,6 @@
     <string name="settings_update_custom">自定义通道</string>
     <string name="settings_update_custom_msg">自定义通道网址</string>
     <string name="settings_zygisk_summary">在 zygote 中运行 reisenless</string>
-    <string name="settings_denylist_title">遵守排除列表</string>
-    <string name="settings_denylist_summary">reisenless 不会修改列表中的进程</string>
-    <string name="settings_denylist_config_title">配置排除列表</string>
-    <string name="settings_denylist_config_summary">选择加入排除列表的进程</string>
     <string name="settings_hosts_title">systemless hosts</string>
     <string name="settings_hosts_summary">为广告屏蔽应用提供 systemless hosts 支持</string>
     <string name="settings_hosts_toast">已添加 systemless hosts 模块</string>
@@ -257,7 +253,13 @@
     <string name="download_dialog_title">输入镜像 url</string>
     <string name="download_dialog_msg">完整 ota 镜像或出厂镜像</string>
     <string name="settings_sulist_title">sulist</string>
-    <string name="settings_sulist_summary">只有 sulist 中的应用可以请求 root 权限。所有其他请求都会被自动拒绝。</string>
+    <string name="settings_sulist_summary">只有选中的应用和进程可以使用 root 或看到 reisenless 更改</string>
+    <string name="settings_sulist_config_title">配置 sulist</string>
+    <string name="settings_sulist_config_summary">选择允许使用 reisenless 的应用和进程</string>
+    <string name="settings_hide_shell_app_title">在 shell 内隐藏应用</string>
+    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
+    <string name="settings_restore_shell_app_title">恢复应用</string>
+    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">网页界面</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">通过 strong integrity</string>

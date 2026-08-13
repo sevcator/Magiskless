@@ -78,11 +78,7 @@ class SuRequestHandler(
     }
 
     suspend fun respond(action: Int, time: Long) {
-        if (action == SuPolicy.ALLOW && Config.suRestrict) {
-            policy.policy = SuPolicy.RESTRICT
-        } else {
-            policy.policy = action
-        }
+        policy.policy = action
         if (time >= 0) {
             policy.remain = TimeUnit.MINUTES.toSeconds(time)
         } else {

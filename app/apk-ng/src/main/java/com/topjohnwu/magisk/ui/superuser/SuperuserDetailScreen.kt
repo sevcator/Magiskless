@@ -27,7 +27,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,7 +59,6 @@ fun SuperuserDetailScreen(
     val revokeTitle = stringResource(CoreR.string.su_revoke_title)
     val revokeMsg = item?.let { stringResource(CoreR.string.su_revoke_msg, it.appName) } ?: ""
 
-    LaunchedEffect(Unit) { viewModel.refreshSuRestrict() }
 
     Scaffold(
         topBar = {
@@ -129,7 +127,7 @@ fun SuperuserDetailScreen(
                 }
             }
 
-            if (uiState.suRestrict || item.isRestricted) {
+            if (item.isRestricted) {
                 SettingsSwitch(
                     title = stringResource(CoreR.string.settings_su_restrict_title),
                     checked = item.isRestricted,

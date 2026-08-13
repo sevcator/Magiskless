@@ -22,6 +22,7 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_MNT_NS = "mnt_ns"
         const val SU_BIOMETRIC = "su_biometric"
         const val ZYGISK = "zygisk"
+        const val SULIST = "sulist"
         const val BOOTLOOP = "bootloop"
         const val SU_MANAGER = "requester"
         const val KEYSTORE = "keystore"
@@ -34,7 +35,8 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_NOTIFICATION = "su_notification"
         const val SU_REAUTH = "su_reauth"
         const val SU_TAPJACK = "su_tapjack"
-        const val SU_RESTRICT = "su_restrict"
+        const val SHELL_HIDE_TOKEN = "shell_hide_token"
+        const val SHELL_HIDDEN = "shell_hidden"
         const val LOCALE = "locale"
         const val DARK_THEME = "dark_theme_extended"
         const val ACCENT_PRIMARY = "accent_primary"
@@ -46,8 +48,10 @@ object Config : PreferenceConfig, DBConfig {
         const val UDONGE_ENABLED = "udonge_enabled"
         const val UDONGE_KEYBOX_URLS = "udonge_keybox_urls"
 
-        val NO_MIGRATION = setOf(ASKED_HOME, SU_REQUEST_TIMEOUT,
-            SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK)
+        val NO_MIGRATION = setOf(
+            ASKED_HOME, SU_REQUEST_TIMEOUT, SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK,
+            SHELL_HIDE_TOKEN, SHELL_HIDDEN,
+        )
     }
 
     object Value {
@@ -86,7 +90,7 @@ object Config : PreferenceConfig, DBConfig {
     @JvmField var keepVerity = false
     @JvmField var keepEnc = false
     @JvmField var recovery = false
-    var denyList = false
+    var suListActive = false
 
     var askedHome by preference(Key.ASKED_HOME, false)
     var bootloop by dbSettings(Key.BOOTLOOP, 0)
@@ -116,6 +120,8 @@ object Config : PreferenceConfig, DBConfig {
         set(value) { storedAccentSecondary = value }
     var udongeEnabled by preference(Key.UDONGE_ENABLED, true)
     var udongeKeyboxUrls by preference(Key.UDONGE_KEYBOX_URLS, "")
+    var shellHideToken by preference(Key.SHELL_HIDE_TOKEN, "")
+    var shellHidden by preference(Key.SHELL_HIDDEN, false)
 
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
@@ -128,6 +134,7 @@ object Config : PreferenceConfig, DBConfig {
         }
 
     var zygisk by dbSettings(Key.ZYGISK, Info.isEmulator)
+    var sulist by dbSettings(Key.SULIST, false)
     var suManager by dbStrings(Key.SU_MANAGER, "", true)
     var keyStoreRaw by dbStrings(Key.KEYSTORE, "", true)
     var migrationSource by dbStrings(Key.MIGRATION_SOURCE, "", true)
@@ -147,7 +154,6 @@ object Config : PreferenceConfig, DBConfig {
         }
     var suReAuth by preference(Key.SU_REAUTH, false)
     var suTapjack by preference(Key.SU_TAPJACK, true)
-    var suRestrict by preference(Key.SU_RESTRICT, true)
 
     private const val SU_FINGERPRINT = "su_fingerprint"
 

@@ -53,7 +53,7 @@ class DenyListViewModel : AsyncLoadViewModel() {
         loading = true
         val apps = withContext(Dispatchers.Default) {
             val pm = AppContext.packageManager
-            val denyList = Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist ls").exec().out
+            val denyList = Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --sulist ls").exec().out
                 .map { CmdlineListItem(it) }
             val apps = pm.getInstalledApplications(MATCH_UNINSTALLED_PACKAGES).run {
                 asFlow()

@@ -6,14 +6,30 @@ state=$root/state
 tee_state=$root/tee-state
 lock=$root/.service-lock
 work=$root/keybox-check
+boot_id="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)"
+
+process_is_current() {
+    local pid expected_start expected_boot current_start
+    pid="$1"
+    expected_start="$2"
+    expected_boot="$3"
+    [ -n "$pid" ] && [ -n "$expected_start" ] && [ "$expected_boot" = "$boot_id" ] || return 1
+    kill -0 "$pid" 2>/dev/null || return 1
+    current_start="$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null)"
+    [ -n "$current_start" ] && [ "$current_start" = "$expected_start" ]
+}
 
 if ! mkdir "$lock" 2>/dev/null; then
     owner="$(cat "$lock/pid" 2>/dev/null)"
-    [ -n "$owner" ] && kill -0 "$owner" 2>/dev/null && exit 0
+    owner_start="$(cat "$lock/start" 2>/dev/null)"
+    owner_boot="$(cat "$lock/boot" 2>/dev/null)"
+    process_is_current "$owner" "$owner_start" "$owner_boot" && exit 0
     rm -rf "$lock"
     mkdir "$lock" 2>/dev/null || exit 0
 fi
 printf '%s\n' "$$" > "$lock/pid"
+awk '{print $22}' "/proc/$$/stat" > "$lock/start" 2>/dev/null
+printf '%s\n' "$boot_id" > "$lock/boot"
 cleanup() {
     rm -rf "$work" "$root/tee-runtime.new" "$lock"
 }
@@ -27,10 +43,6 @@ until [ "$(getprop sys.boot_completed)" = 1 ]; do
 done
 
 [ -f "$state/disabled" ] && exit 0
-
-if ms --denylist ls 2>/dev/null | grep -q '^com\.google\.android\.gms'; then
-    ms --denylist rm com.google.android.gms >/dev/null 2>&1
-fi
 
 refresh_keybox() {
     local urls marker now last best score candidate count checked size temp
@@ -58,7 +70,10 @@ refresh_keybox() {
         wget -q -T 12 -O "$score" "$candidate" >/dev/null 2>&1 || continue
         size="$(wc -c < "$score" 2>/dev/null)"
         [ -n "$size" ] && [ "$size" -le 262144 ] || continue
+        grep -q '<NumberOfKeyboxes>' "$score" || continue
         grep -q '<Keybox' "$score" || continue
+        grep -Eq -- '-----BEGIN (EC |RSA )?PRIVATE KEY-----' "$score" || continue
+        grep -q 'AndroidAttestation' "$score" || continue
         grep -q -- '-----BEGIN CERTIFICATE-----' "$score" || continue
         grep -q -- '-----END CERTIFICATE-----' "$score" || continue
         count="$(grep -c -- '-----BEGIN CERTIFICATE-----' "$score")"
@@ -77,7 +92,7 @@ refresh_keybox() {
 }
 
 start_tee() {
-    local sdk abi source run next old target patch version current pid
+    local sdk abi source run next old target patch version current pid pid_start pid_boot
     sdk="$(getprop ro.build.version.sdk 2>/dev/null)"
     [ "$sdk" -ge 29 ] 2>/dev/null || return 0
     abi="$(getprop ro.product.cpu.abi 2>/dev/null)"
@@ -133,9 +148,15 @@ start_tee() {
     chmod 600 "$tee_state"/* 2>/dev/null
 
     pid="$(cat "$run/.pid" 2>/dev/null)"
-    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && return 0
+    pid_start="$(cat "$run/.pid-start" 2>/dev/null)"
+    pid_boot="$(cat "$run/.pid-boot" 2>/dev/null)"
+    process_is_current "$pid" "$pid_start" "$pid_boot" && return 0
+    rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
     (cd "$run" && exec ./supervisor ./daemon "$tee_state" </dev/null >/dev/null 2>&1) &
-    printf '%s\n' "$!" > "$run/.pid"
+    pid="$!"
+    printf '%s\n' "$pid" > "$run/.pid"
+    awk '{print $22}' "/proc/$pid/stat" > "$run/.pid-start" 2>/dev/null
+    printf '%s\n' "$boot_id" > "$run/.pid-boot"
 }
 
 refresh_keybox

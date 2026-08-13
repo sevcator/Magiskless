@@ -16,10 +16,8 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.ktx.activity
-import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.MediaStoreUtils
-import com.topjohnwu.magisk.databinding.DialogSettingsAppNameBinding
 import com.topjohnwu.magisk.databinding.DialogSettingsDownloadPathBinding
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.core.utils.TextHolder
@@ -71,51 +69,17 @@ object AppSettings : BaseSettingsItem.Section() {
     override val title = CoreR.string.home_app_title.asText()
 }
 
-object Hide : BaseSettingsItem.Input() {
-    override val title = CoreR.string.settings_hide_app_title.asText()
-    override val description = CoreR.string.settings_hide_app_summary.asText()
-    override var value = ""
-
-    override val inputResult
-        get() = if (isError) null else result
-
+object ShellHide : BaseSettingsItem.Blank() {
     @get:Bindable
-    var result = "settings"
-        set(value) = set(value.lowercase(), field, { field = it }, BR.result, BR.error)
-
-    val maxLength
-        get() = AppMigration.MAX_LABEL_LENGTH
-
-    @get:Bindable
-    val isError
-        get() = result.length > maxLength || result.isBlank()
-
-    override fun getView(context: Context) = DialogSettingsAppNameBinding
-        .inflate(LayoutInflater.from(context)).also { it.data = this }.root
-}
-
-object Restore : BaseSettingsItem.Blank() {
-    override val title = CoreR.string.settings_restore_app_title.asText()
-    override val description = CoreR.string.settings_restore_app_summary.asText()
-
-    override fun onPressed(view: View, handler: Handler) {
-        handler.onItemPressed(view, this) {
-            MagiskDialog(view.activity).apply {
-                setTitle(CoreR.string.settings_restore_app_title)
-                setMessage(CoreR.string.restore_app_confirmation)
-                setButton(MagiskDialog.ButtonType.POSITIVE) {
-                    text = android.R.string.ok
-                    onClick {
-                        handler.onItemAction(view, this@Restore)
-                    }
-                }
-                setButton(MagiskDialog.ButtonType.NEGATIVE) {
-                    text = android.R.string.cancel
-                }
-                setCancelable(true)
-                show()
-            }
-        }
+    override val title get() = if (Config.shellHidden) {
+        CoreR.string.settings_restore_shell_app_title.asText()
+    } else {
+        CoreR.string.settings_hide_shell_app_title.asText()
+    }
+    override val description get() = if (Config.shellHidden) {
+        CoreR.string.settings_restore_shell_app_summary.asText()
+    } else {
+        CoreR.string.settings_hide_shell_app_summary.asText()
     }
 }
 
@@ -176,9 +140,15 @@ object Zygisk : BaseSettingsItem.Toggle() {
     val mismatch get() = value != Info.isZygiskEnabled
 }
 
-object DenyListConfig : BaseSettingsItem.Blank() {
-    override val title = CoreR.string.settings_denylist_config_title.asText()
-    override val description = CoreR.string.settings_denylist_config_summary.asText()
+object SuListConfig : BaseSettingsItem.Blank() {
+    override val title = CoreR.string.settings_sulist_config_title.asText()
+    override val description = CoreR.string.settings_sulist_config_summary.asText()
+}
+
+object SuList : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.settings_sulist_title.asText()
+    override val description = CoreR.string.settings_sulist_summary.asText()
+    override var value by Config::sulist
 }
 
 object UdongeSettings : BaseSettingsItem.Section() {
@@ -317,10 +287,4 @@ object Reauthenticate : BaseSettingsItem.Toggle() {
     override fun refresh() {
         isEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
     }
-}
-
-object SuList : BaseSettingsItem.Toggle() {
-    override val title = CoreR.string.settings_sulist_title.asText()
-    override val description = CoreR.string.settings_sulist_summary.asText()
-    override var value by Config::suRestrict
 }

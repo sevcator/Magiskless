@@ -47,7 +47,7 @@ class DenyListRvItem(
                     .filter { isExpanded || it.defaultSelection }
                     .forEach { it.toggle() }
             } else {
-                Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist rm ${info.packageName}").submit()
+                Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --sulist rm ${info.packageName}").submit()
                 processes.filter { it.isEnabled }.forEach {
                     if (it.process.isIsolated) {
                         it.toggle()
@@ -113,7 +113,7 @@ class ProcessRvItem(
         set(value) = set(value, process.isEnabled, { process.isEnabled = it }, BR.enabled) {
             val arg = if (it) "add" else "rm"
             val (name, pkg) = process
-            Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist $arg $pkg \'$name\'").submit()
+            Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --sulist $arg $pkg \'$name\'").submit()
         }
 
     fun toggle() {

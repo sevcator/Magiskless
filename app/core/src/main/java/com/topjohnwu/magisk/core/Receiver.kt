@@ -54,11 +54,11 @@ open class Receiver : BaseReceiver() {
             }
             Intent.ACTION_PACKAGE_FULLY_REMOVED -> {
                 getPkg(intent)?.let {
-                    Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist rm $it").submit()
+                    Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --sulist rm $it").submit()
                 }
             }
             Intent.ACTION_LOCALE_CHANGED -> Shortcuts.setupDynamic(context)
-            Intent.ACTION_MY_PACKAGE_REPLACED -> Unit
+            Intent.ACTION_MY_PACKAGE_REPLACED -> Shortcuts.syncLauncherState(context)
         }
     }
 }

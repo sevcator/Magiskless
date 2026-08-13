@@ -22,8 +22,36 @@ const NBPROP: &Utf8CStr = cstr!("ro.dalvik.vm.native.bridge");
 const UNMOUNT_MASK: u32 =
     ZygiskStateFlags::ProcessOnDenyList.repr | ZygiskStateFlags::DenyListEnforced.repr;
 
+fn is_udonge_target(process: &str) -> bool {
+    matches!(
+        process,
+        "com.google.android.gms.unstable"
+            | "com.eltavine.duckdetector"
+            | "ru.nspk.mirpay"
+            | "ru.nspk.sbpay"
+            | "ru.sberbankmobile"
+            | "com.idamob.tinkoff.android"
+            | "ru.vtb24.mobilebanking.android"
+            | "ru.alfabank.mobile.android"
+            | "ru.gazprombank.android.mobilebank.app"
+            | "ru.raiffeisennews"
+            | "ru.rosbank.android"
+            | "ru.mkb.mobile"
+            | "ru.rshb.dbo"
+            | "ru.letobank.Prometheus"
+            | "com.openbank"
+            | "ru.sovcombank.halva"
+            | "com.sovcombank.club"
+            | "ru.yoo.money"
+            | "com.yandex.bank"
+            | "ru.ozon.fintech.finance"
+            | "com.qiwi.wallet"
+            | "com.axlebolt.standoff2"
+    )
+}
+
 pub fn zygisk_should_load_module(flags: u32) -> bool {
-    flags & UNMOUNT_MASK != UNMOUNT_MASK && flags & ZygiskStateFlags::ProcessIsMagiskApp.repr == 0
+    flags & ZygiskStateFlags::ProcessIsMagiskApp.repr == 0
 }
 
 #[allow(unused_variables)]
@@ -101,7 +129,7 @@ impl ZygiskState {
             if fork_dont_care() == 0 {
                 exec_zygiskd(is_64_bit, remote);
             }
-            if let Some(module_fds) = daemon.get_module_fds(is_64_bit) {
+            if let Some(module_fds) = daemon.get_module_fds(is_64_bit, false, true) {
                 local.send_fds(&module_fds)?;
             }
             if local.read_decodable::<i32>()? != 0 {
@@ -181,11 +209,24 @@ impl MagiskD {
         }();
     }
 
-    fn get_module_fds(&self, is_64_bit: bool) -> Option<Vec<RawFd>> {
+    fn get_module_fds(
+        &self,
+        is_64_bit: bool,
+        udonge_only: bool,
+        allow_udonge: bool,
+    ) -> Option<Vec<RawFd>> {
         self.module_list.get().map(|module_list| {
             module_list
                 .iter()
-                .map(|m| if is_64_bit { m.z64 } else { m.z32 })
+                .map(|m| {
+                    if udonge_only && (m.name != UDONGE_MODULE_NAME || !allow_udonge) {
+                        -1
+                    } else if is_64_bit {
+                        m.z64
+                    } else {
+                        m.z32
+                    }
+                })
                 // All fds passed over sockets have to be valid file descriptors.
                 // To work around this issue, send over STDOUT_FILENO as an indicator of an
                 // invalid fd as it will always be /dev/null in magiskd.
@@ -212,7 +253,11 @@ impl MagiskD {
 
         // Next send modules
         if zygisk_should_load_module(flags)
-            && let Some(module_fds) = self.get_module_fds(is_64_bit)
+            && let Some(module_fds) = self.get_module_fds(
+                is_64_bit,
+                flags & UNMOUNT_MASK == UNMOUNT_MASK,
+                is_udonge_target(&process),
+            )
         {
             client.send_fds(&module_fds)?;
         }

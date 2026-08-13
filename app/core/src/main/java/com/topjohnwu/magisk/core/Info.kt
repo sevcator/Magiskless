@@ -76,7 +76,7 @@ object Info {
                 v[0], v.size >= 3 && v[2] == "D",
                 runCatching { fastCmd(shell, "$main -V").toInt() }.getOrDefault(-1)
             )
-            Config.denyList = fastCmdResult(shell, "$main --denylist status")
+            Config.suListActive = fastCmdResult(shell, "$main --sulist status")
         }
 
         val map = mutableMapOf<String, String>()

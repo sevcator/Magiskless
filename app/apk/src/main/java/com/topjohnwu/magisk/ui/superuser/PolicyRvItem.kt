@@ -35,7 +35,7 @@ class PolicyRvItem(
     var isExpanded = false
         set(value) = set(value, field, { field = it }, BR.expanded)
 
-    val showSlider = Config.suRestrict || item.policy == SuPolicy.RESTRICT
+    val showSlider = item.policy == SuPolicy.RESTRICT
 
     @get:Bindable
     var isEnabled

@@ -61,7 +61,7 @@ pub struct DbSettings {
     pub multiuser_mode: MultiuserMode,
     pub mnt_ns: MntNsMode,
     pub boot_count: i32,
-    pub denylist: bool,
+    pub sulist: bool,
     pub zygisk: bool,
 }
 
@@ -96,7 +96,7 @@ impl DbEntryKey {
             DbEntryKey::RootAccess => "root_access",
             DbEntryKey::SuMultiuserMode => "multiuser_mode",
             DbEntryKey::SuMntNs => "mnt_ns",
-            DbEntryKey::DenylistConfig => "denylist",
+            DbEntryKey::SulistConfig => "sulist",
             DbEntryKey::ZygiskConfig => "zygisk",
             DbEntryKey::BootloopCount => "bootloop",
             DbEntryKey::SuManager => "requester",
@@ -122,7 +122,7 @@ impl SqlTable for DbSettings {
                 self.multiuser_mode = MultiuserMode::from_i32(value).unwrap_or_default()
             }
             "mnt_ns" => self.mnt_ns = MntNsMode { repr: value },
-            "denylist" => self.denylist = value != 0,
+            "sulist" => self.sulist = value != 0,
             "zygisk" => self.zygisk = value != 0,
             "bootloop" => self.boot_count = value,
             _ => {}
@@ -251,7 +251,7 @@ impl MagiskD {
             DbEntryKey::RootAccess => RootAccess::default() as i32,
             DbEntryKey::SuMultiuserMode => MultiuserMode::default() as i32,
             DbEntryKey::SuMntNs => MntNsMode::default().repr,
-            DbEntryKey::DenylistConfig => 0,
+            DbEntryKey::SulistConfig => 0,
             DbEntryKey::ZygiskConfig => self.is_emulator as i32,
             DbEntryKey::BootloopCount => 0,
             _ => -1,

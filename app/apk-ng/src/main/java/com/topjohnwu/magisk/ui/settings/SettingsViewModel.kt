@@ -20,14 +20,14 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel : BaseViewModel() {
 
-    private val _denyListEnabled = MutableStateFlow(Config.denyList)
-    val denyListEnabled: StateFlow<Boolean> = _denyListEnabled.asStateFlow()
+    private val _suListEnabled = MutableStateFlow(Config.sulist)
+    val suListEnabled: StateFlow<Boolean> = _suListEnabled.asStateFlow()
 
     val zygiskMismatch get() = Config.zygisk != Info.isZygiskEnabled
 
     var authenticate: (onSuccess: () -> Unit) -> Unit = { it() }
 
-    fun navigateToDenyList() {
+    fun navigateToSuList() {
         navigateTo(Route.DenyList)
     }
 
@@ -42,14 +42,14 @@ class SettingsViewModel : BaseViewModel() {
         }
     }
 
-    fun toggleDenyList(enabled: Boolean) {
-        _denyListEnabled.value = enabled
+    fun toggleSuList(enabled: Boolean) {
+        _suListEnabled.value = enabled
         val cmd = if (enabled) "enable" else "disable"
-        Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --denylist $cmd").submit { result ->
+        Shell.cmd("${BuildConfig.MAIN_BIN_NAME} --sulist $cmd").submit { result ->
             if (result.isSuccess) {
-                Config.denyList = enabled
+                Config.sulist = enabled
             } else {
-                _denyListEnabled.value = !enabled
+                _suListEnabled.value = !enabled
             }
         }
     }

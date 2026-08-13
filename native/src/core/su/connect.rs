@@ -125,13 +125,7 @@ impl SuAppContext<'_> {
         extras.iter().for_each(|e| e.add_intent(&mut cmd));
         cmd.env("CLASSPATH", "/system/framework/am.jar");
 
-        // On Android 12+ am start writes to stderr, not stdout, so check exit
-        // code instead of stdout content to avoid an infinite spin.
-        for _ in 0..10 {
-            if cmd.status().map_or(false, |s| s.success()) {
-                break;
-            }
-        }
+        let _ = cmd.status();
     }
 
     fn app_request(&mut self) {

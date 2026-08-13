@@ -9,16 +9,16 @@ using namespace std;
 
 [[noreturn]] static void usage() {
     fprintf(stderr,
-R"EOF(DenyList Config CLI
+R"EOF(sulist config cli
 
-Usage: magisk --denylist [action [arguments...] ]
+Usage: magisk --sulist [action [arguments...] ]
 Actions:
    status          Return the enforcement status
-   enable          Enable denylist enforcement
-   disable         Disable denylist enforcement
-   add PKG [PROC]  Add a new target to the denylist
-   rm PKG [PROC]   Remove target(s) from the denylist
-   ls              Print the current denylist
+   enable          Enable sulist enforcement
+   disable         Disable sulist enforcement
+   add PKG [PROC]  Allow a package or process through sulist
+   rm PKG [PROC]   Remove a package or process from sulist
+   ls              Print the current sulist
    exec CMDs...    Execute commands in isolated mount
                    namespace and do all unmounts
 
@@ -110,25 +110,25 @@ int denylist_cli(rust::Vec<rust::String> &args) {
         res = DenyResponse::ERROR;
     switch (res) {
     case DenyResponse::NOT_ENFORCED:
-        fprintf(stderr, "Denylist is not enforced\n");
+        fprintf(stderr, "sulist is not enforced\n");
         goto return_code;
     case DenyResponse::ENFORCED:
-        fprintf(stderr, "Denylist is enforced\n");
+        fprintf(stderr, "sulist is enforced\n");
         goto return_code;
     case DenyResponse::ITEM_EXIST:
-        fprintf(stderr, "Target already exists in denylist\n");
+        fprintf(stderr, "target already exists in sulist\n");
         goto return_code;
     case DenyResponse::ITEM_NOT_EXIST:
-        fprintf(stderr, "Target does not exist in denylist\n");
+        fprintf(stderr, "target does not exist in sulist\n");
         goto return_code;
     case DenyResponse::NO_NS:
-        fprintf(stderr, "The kernel does not support mount namespace\n");
+        fprintf(stderr, "the kernel does not support mount namespace\n");
         goto return_code;
     case DenyResponse::INVALID_PKG:
-        fprintf(stderr, "Invalid package / process name\n");
+        fprintf(stderr, "invalid package / process name\n");
         goto return_code;
     case DenyResponse::ERROR:
-        fprintf(stderr, "deny: Daemon error\n");
+        fprintf(stderr, "sulist: daemon error\n");
         return -1;
     case DenyResponse::OK:
         break;

@@ -143,6 +143,10 @@ pub fn setup_runtime() {
         }
     }
 
+    if runtime_complete(UDONGE_RUNTIME) {
+        cstr!(UDONGE_UNLOADED).remove().ok();
+    }
+
     if is_enabled() {
         let post_fs_data = cstr::buf::default()
             .join_path(UDONGE_RUNTIME)

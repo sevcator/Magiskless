@@ -413,20 +413,18 @@ private fun MagiskSection(viewModel: SettingsViewModel) {
                 }
             )
 
-            // DenyList
-            val denyListEnabled by viewModel.denyListEnabled.collectAsState()
+            val suListEnabled by viewModel.suListEnabled.collectAsState()
             SettingsSwitch(
-                title = stringResource(CoreR.string.settings_denylist_title),
-                summary = stringResource(CoreR.string.settings_denylist_summary),
-                checked = denyListEnabled,
-                onCheckedChange = { viewModel.toggleDenyList(it) }
+                title = stringResource(CoreR.string.settings_sulist_title),
+                summary = stringResource(CoreR.string.settings_sulist_summary),
+                checked = suListEnabled,
+                onCheckedChange = { viewModel.toggleSuList(it) }
             )
 
-            // DenyList Config
             SettingsArrow(
-                title = stringResource(CoreR.string.settings_denylist_config_title),
-                summary = stringResource(CoreR.string.settings_denylist_config_summary),
-                onClick = { viewModel.navigateToDenyList() }
+                title = stringResource(CoreR.string.settings_sulist_config_title),
+                summary = stringResource(CoreR.string.settings_sulist_config_summary),
+                onClick = { viewModel.navigateToSuList() }
             )
         }
     }
@@ -656,19 +654,6 @@ private fun SuperuserSection(viewModel: SettingsViewModel) {
             )
         }
 
-        // Restrict (version >= 30.1)
-        if (Const.Version.atLeast_30_1()) {
-            var restrict by remember { mutableStateOf(Config.suRestrict) }
-            SettingsSwitch(
-                title = stringResource(CoreR.string.settings_su_restrict_title),
-                summary = stringResource(CoreR.string.settings_su_restrict_summary),
-                checked = restrict,
-                onCheckedChange = {
-                    restrict = it
-                    Config.suRestrict = it
-                }
-            )
-        }
     }
 }
 

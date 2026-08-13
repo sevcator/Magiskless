@@ -2,7 +2,7 @@ use super::connect::SuAppContext;
 use super::db::RootSettings;
 use crate::daemon::{AID_ROOT, AID_SHELL, MagiskD, to_app_id, to_user_id};
 use crate::db::{DbSettings, MultiuserMode, RootAccess};
-use crate::ffi::{SuPolicy, SuRequest, exec_root_shell};
+use crate::ffi::{SuPolicy, SuRequest, exec_root_shell, is_uid_on_sulist};
 use crate::socket::IpcRead;
 use base::{LoggedResult, ResultExt, WriteExt, debug, error, exit_on_error, libc, warn};
 use std::os::fd::IntoRawFd;
@@ -241,6 +241,11 @@ impl MagiskD {
             // If it's the manager, allow it silently
             if to_app_id(uid) == to_app_id(mgr_uid) {
                 return Ok(Arc::new(SuInfo::allow(uid)));
+            }
+
+            if cfg.sulist && uid != AID_SHELL && !is_uid_on_sulist(uid) {
+                warn!("root access is limited by sulist");
+                return Ok(Arc::new(SuInfo::deny(uid)));
             }
 
             // Check su access settings

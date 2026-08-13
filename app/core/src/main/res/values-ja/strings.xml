@@ -7,7 +7,7 @@
     <string name="install">インストール</string>
     <string name="section_home">ホーム</string>
     <string name="section_theme">テーマ</string>
-    <string name="denylist">denylist</string>
+    <string name="sulist">sulist</string>
 
     <!--Home-->
     <string name="no_connection">インターネット接続なし</string>
@@ -122,10 +122,6 @@
     <string name="settings_update_custom">カスタム</string>
     <string name="settings_update_custom_msg">カスタム url を入力</string>
     <string name="settings_zygisk_summary">reisenless の一部を zygote デーモン上で実行します</string>
-    <string name="settings_denylist_title">denylist を適用</string>
-    <string name="settings_denylist_summary">denylist 内のプロセスは reisenless の変更がすべて戻されます</string>
-    <string name="settings_denylist_config_title">denylist を構成</string>
-    <string name="settings_denylist_config_summary">denylist に含めるプロセスを選択します</string>
     <string name="settings_hosts_title">systemless hosts</string>
     <string name="settings_hosts_summary">広告ブロックアプリのための systemless hosts サポートを有効化します</string>
     <string name="settings_hosts_toast">systemless hosts モジュールを追加しました</string>
@@ -257,7 +253,13 @@
     <string name="done_action">%1$s のアクション実行が完了しました</string>
     <string name="env_full_fix_msg">デバイスで reisenless を正常に動作させるには再書き込みが必要です。アプリ内で reisenless を再インストールしてください。リカバリーモードでは正しいデバイス情報を取得できません。</string>
     <string name="settings_sulist_title">sulist</string>
-    <string name="settings_sulist_summary">sulist に登録されたアプリのみ root 権限を要求できます。その他の要求はすべて自動的に拒否されます。</string>
+    <string name="settings_sulist_summary">選択したアプリとプロセスのみ root と reisenless の変更を使用できます</string>
+    <string name="settings_sulist_config_title">sulist を設定</string>
+    <string name="settings_sulist_config_summary">reisenless の使用を許可するアプリとプロセスを選択します</string>
+    <string name="settings_hide_shell_app_title">shell 内でアプリを隠す</string>
+    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
+    <string name="settings_restore_shell_app_title">アプリを復元</string>
+    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">webui</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">strong integrity を通過</string>

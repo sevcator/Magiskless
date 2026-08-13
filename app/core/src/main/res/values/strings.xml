@@ -7,7 +7,7 @@
     <string name="install">install</string>
     <string name="section_home">home</string>
     <string name="section_theme">themes</string>
-    <string name="denylist">denylist</string>
+    <string name="sulist">sulist</string>
 
     <!--Home-->
     <string name="no_connection">no connection available</string>
@@ -150,10 +150,6 @@
     <string name="settings_update_custom">custom</string>
     <string name="settings_update_custom_msg">insert a custom channel url</string>
     <string name="settings_zygisk_summary">run parts of reisenless in the zygote daemon</string>
-    <string name="settings_denylist_title">enforce denylist</string>
-    <string name="settings_denylist_summary">processes on the denylist will have all reisenless modifications reverted</string>
-    <string name="settings_denylist_config_title">configure denylist</string>
-    <string name="settings_denylist_config_summary">select the processes to be included on the denylist</string>
     <string name="settings_hosts_title">systemless hosts</string>
     <string name="settings_hosts_summary">systemless hosts support for ad blocking apps</string>
     <string name="settings_hosts_toast">added systemless hosts module</string>
@@ -258,7 +254,13 @@
     <string name="reboot_apply_change">reboot to apply changes</string>
     <string name="restore_app_confirmation">this will restore the hidden app back to the original app. do you really want to do this?</string>
     <string name="settings_sulist_title">sulist</string>
-    <string name="settings_sulist_summary">only apps on the sulist can request root access. all other requests are automatically denied.</string>
+    <string name="settings_sulist_summary">only listed apps and processes can use root or see reisenless changes</string>
+    <string name="settings_sulist_config_title">configure sulist</string>
+    <string name="settings_sulist_config_summary">select apps and processes allowed to use reisenless</string>
+    <string name="settings_hide_shell_app_title">hide app inside shell</string>
+    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
+    <string name="settings_restore_shell_app_title">restore the app</string>
+    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">webui</string>
 
 </resources>

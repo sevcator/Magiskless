@@ -157,7 +157,7 @@ static void process_main_buffer(struct log_msg *msg) {
         return;
     }
 
-    if (is_deny_target(entry.uid, cmdline)) {
+    if (!is_deny_target(entry.uid, cmdline)) {
         int pid = msg->entry.pid;
         kill(pid, SIGSTOP);
         if (fork_dont_care() == 0) {
@@ -179,7 +179,7 @@ static void process_events_buffer(struct log_msg *msg) {
         auto am_proc_start = reinterpret_cast<const android_event_am_proc_start *>(event_data);
         auto proc = string_view(am_proc_start->process_name.data,
                                 am_proc_start->process_name.length);
-        if (is_deny_target(am_proc_start->uid.data, proc)) {
+        if (!is_deny_target(am_proc_start->uid.data, proc)) {
             int pid = am_proc_start->pid.data;
             if (fork_dont_care() == 0) {
                 int ppid = parse_ppid(pid);

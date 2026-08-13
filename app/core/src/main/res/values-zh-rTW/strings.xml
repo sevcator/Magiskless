@@ -7,7 +7,7 @@
     <string name="install">安裝</string>
     <string name="section_home">首頁</string>
     <string name="section_theme">主題</string>
-    <string name="denylist">黑名單</string>
+    <string name="sulist">sulist</string>
 
     <!--Home-->
     <string name="no_connection">無法連線</string>
@@ -139,10 +139,6 @@
     <string name="settings_update_custom">自訂頻道</string>
     <string name="settings_update_custom_msg">輸入一個自訂的網址</string>
     <string name="settings_zygisk_summary">在 zygote 中執行 reisenless</string>
-    <string name="settings_denylist_title">強制黑名單</string>
-    <string name="settings_denylist_summary">reisenless 黑名單上的處理程序將復原變更</string>
-    <string name="settings_denylist_config_title">設定黑名單</string>
-    <string name="settings_denylist_config_summary">選擇要包含在黑名單的處理程序</string>
     <string name="settings_hosts_title">主機（hosts）模組化</string>
     <string name="settings_hosts_summary">為廣告阻擋程式提供主機模組</string>
     <string name="settings_hosts_toast">已安裝主機模組</string>
@@ -248,7 +244,13 @@
     <string name="running">執行中</string>
     <string name="done_action">%1$s 的操作已完成</string>
     <string name="settings_sulist_title">sulist</string>
-    <string name="settings_sulist_summary">只有 sulist 中的應用程式可以要求 root 權限。其他要求將自動拒絕。</string>
+    <string name="settings_sulist_summary">只有選取的應用程式和處理程序可以使用 root 或看到 reisenless 變更</string>
+    <string name="settings_sulist_config_title">設定 sulist</string>
+    <string name="settings_sulist_config_summary">選擇允許使用 reisenless 的應用程式和處理程序</string>
+    <string name="settings_hide_shell_app_title">在 shell 內隱藏應用程式</string>
+    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
+    <string name="settings_restore_shell_app_title">還原應用程式</string>
+    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">網頁介面</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">通過 strong integrity</string>

@@ -36,7 +36,7 @@ Advanced Options (Internal APIs):
    --clone SRC DEST          clone SRC to DEST
    --sqlite SQL              exec SQL commands to Magisk database
    --path                    print Magisk tmpfs mount path
-   --denylist ARGS           denylist config CLI
+   --sulist ARGS             sulist config CLI
    --preinit-device          resolve a device to store preinit files
 
 Available applets:
@@ -72,7 +72,7 @@ enum MagiskAction {
     CloneFile(CloneFile),
     Sqlite(Sqlite),
     Path(PathCmd),
-    DenyList(DenyList),
+    SuList(SuList),
     PreInitDevice(PreInitDevice),
 }
 
@@ -161,8 +161,8 @@ struct Sqlite {
 struct PathCmd {}
 
 #[derive(FromArgs)]
-#[argh(subcommand, name = "--denylist")]
-struct DenyList {
+#[argh(subcommand, name = "--sulist")]
+struct SuList {
     #[argh(positional, greedy)]
     args: Vec<String>,
 }
@@ -257,7 +257,7 @@ impl MagiskAction {
                     println!("{tmp}");
                 }
             }
-            DenyList(self::DenyList { mut args }) => {
+            SuList(self::SuList { mut args }) => {
                 return Ok(denylist_cli(&mut args));
             }
             PreInitDevice(_) => {

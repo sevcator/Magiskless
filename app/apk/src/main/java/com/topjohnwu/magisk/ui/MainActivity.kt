@@ -65,6 +65,7 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
     private var isRootFragment = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Shortcuts.consumeShellShortcut(this, intent)
         splashController.preOnCreate()
         if (isRunningAsStub && !splashController.showingSplash) {
             Theme.apply(this)
@@ -73,6 +74,12 @@ class MainActivity : NavigationActivity<ActivityMainMd2Binding>(), SplashScreenH
         }
         super.onCreate(savedInstanceState)
         splashController.onCreate(savedInstanceState)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        Shortcuts.consumeShellShortcut(this, intent)
     }
 
     override fun onResume() {

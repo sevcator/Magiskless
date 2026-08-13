@@ -170,15 +170,7 @@ static bool add_hide_set(const char *pkg, const char *proc) {
     auto p = pkg_to_procs[pkg].emplace(proc);
     if (!p.second)
         return false;
-    LOGI("denylist add: [%s/%s]\n", pkg, proc);
-    if (!denylist_enforced)
-        return true;
-    if (str_eql(pkg, ISOLATED_MAGIC)) {
-        // Kill all matching isolated processes
-        kill_process<&proc_name_match<str_starts_with>>(proc, true);
-    } else {
-        kill_process(proc);
-    }
+    LOGI("sulist add: [%s/%s]\n", pkg, proc);
     return true;
 }
 
@@ -198,8 +190,8 @@ void scan_deny_apps() {
         }
         int app_id = get_app_id(users, it->first);
         if (app_id == 0) {
-            LOGI("denylist rm: [%s]\n", it->first.data());
-            ssprintf(sql, sizeof(sql), "DELETE FROM denylist WHERE package_name='%s'",
+            LOGI("sulist rm: [%s]\n", it->first.data());
+            ssprintf(sql, sizeof(sql), "DELETE FROM sulist WHERE package_name='%s'",
                      it->first.data());
             db_exec(sql);
             it = pkg_to_procs.erase(it);
@@ -219,10 +211,10 @@ static bool ensure_data() {
     if (pkg_to_procs_)
         return true;
 
-    LOGI("denylist: initializing internal data structures\n");
+    LOGI("sulist: initializing internal data structures\n");
 
     default_new(pkg_to_procs_);
-    bool res = db_exec("SELECT * FROM denylist", {}, [](StringSlice columns, const DbValues &values) {
+    bool res = db_exec("SELECT * FROM sulist", {}, [](StringSlice columns, const DbValues &values) {
         const char *package_name;
         const char *process;
         for (int i = 0; i < columns.size(); ++i) {
@@ -271,7 +263,7 @@ static int add_list(const char *pkg, const char *proc) {
     // Add to database
     char sql[4096];
     ssprintf(sql, sizeof(sql),
-            "INSERT INTO denylist (package_name, process) VALUES('%s', '%s')", pkg, proc);
+            "INSERT INTO sulist (package_name, process) VALUES('%s', '%s')", pkg, proc);
     return db_exec(sql) ? DenyResponse::OK : DenyResponse::ERROR;
 }
 
@@ -292,13 +284,27 @@ static int rm_list(const char *pkg, const char *proc) {
         auto it = pkg_to_procs.find(pkg);
         if (it != pkg_to_procs.end()) {
             if (proc[0] == '\0') {
+                if (denylist_enforced) {
+                    for (const auto &name : it->second) {
+                        if (str_eql(pkg, ISOLATED_MAGIC))
+                            kill_process<&proc_name_match<str_starts_with>>(name.data(), true);
+                        else
+                            kill_process(name.data());
+                    }
+                }
                 update_app_id(get_app_id(pkg), it->first, true);
                 pkg_to_procs.erase(it);
                 remove = true;
-                LOGI("denylist rm: [%s]\n", pkg);
+                LOGI("sulist rm: [%s]\n", pkg);
             } else if (it->second.erase(proc) != 0) {
+                if (denylist_enforced) {
+                    if (str_eql(pkg, ISOLATED_MAGIC))
+                        kill_process<&proc_name_match<str_starts_with>>(proc, true);
+                    else
+                        kill_process(proc);
+                }
                 remove = true;
-                LOGI("denylist rm: [%s/%s]\n", pkg, proc);
+                LOGI("sulist rm: [%s/%s]\n", pkg, proc);
                 if (it->second.empty()) {
                     update_app_id(get_app_id(pkg), it->first, true);
                     pkg_to_procs.erase(it);
@@ -312,10 +318,10 @@ static int rm_list(const char *pkg, const char *proc) {
 
     char sql[4096];
     if (proc[0] == '\0')
-        ssprintf(sql, sizeof(sql), "DELETE FROM denylist WHERE package_name='%s'", pkg);
+        ssprintf(sql, sizeof(sql), "DELETE FROM sulist WHERE package_name='%s'", pkg);
     else
         ssprintf(sql, sizeof(sql),
-                "DELETE FROM denylist WHERE package_name='%s' AND process='%s'", pkg, proc);
+                "DELETE FROM sulist WHERE package_name='%s' AND process='%s'", pkg, proc);
     return db_exec(sql) ? DenyResponse::OK : DenyResponse::ERROR;
 }
 
@@ -363,7 +369,7 @@ int enable_deny() {
         if (procfp == nullptr && (procfp = opendir("/proc")) == nullptr)
             return DenyResponse::ERROR;
 
-        LOGI("* Enable DenyList\n");
+        LOGI("* enable sulist\n");
 
         if (!ensure_data())
             return DenyResponse::ERROR;
@@ -385,21 +391,21 @@ int enable_deny() {
         }
     }
 
-    MagiskD::Get().set_db_setting(DbEntryKey::DenylistConfig, true);
+    MagiskD::Get().set_db_setting(DbEntryKey::SulistConfig, true);
     return DenyResponse::OK;
 }
 
 int disable_deny() {
     if (denylist_enforced.exchange(false)) {
-        LOGI("* Disable DenyList\n");
+        LOGI("* disable sulist\n");
     }
-    MagiskD::Get().set_db_setting(DbEntryKey::DenylistConfig, false);
+    MagiskD::Get().set_db_setting(DbEntryKey::SulistConfig, false);
     return DenyResponse::OK;
 }
 
 void initialize_denylist() {
     if (!denylist_enforced) {
-        if (MagiskD::Get().get_db_setting(DbEntryKey::DenylistConfig))
+        if (MagiskD::Get().get_db_setting(DbEntryKey::SulistConfig))
             enable_deny();
     }
 }
@@ -430,8 +436,15 @@ bool is_deny_target(int uid, string_view process) {
     return false;
 }
 
+bool is_uid_on_sulist(int uid) {
+    mutex_guard lock(data_lock);
+    if (!ensure_data())
+        return false;
+    return app_id_to_pkgs.contains(to_app_id(uid));
+}
+
 void update_deny_flags(int uid, rust::Str process, uint32_t &flags) {
-    if (is_deny_target(uid, { process.begin(), process.end() })) {
+    if (denylist_enforced && !is_deny_target(uid, { process.begin(), process.end() })) {
         flags |= +ZygiskStateFlags::ProcessOnDenyList;
     }
     if (denylist_enforced) {

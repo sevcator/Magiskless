@@ -12,7 +12,6 @@ import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
@@ -20,10 +19,10 @@ import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.ktx.toast
-import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.RootUtils
+import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.events.AddHomeIconEvent
 import com.topjohnwu.magisk.events.AuthEvent
@@ -40,7 +39,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
 
     private fun createItems(): List<BaseSettingsItem> {
         val context = AppContext
-        val hidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
 
         // Customization
         val list = mutableListOf(
@@ -55,8 +53,8 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             AppSettings,
             DoHToggle, DownloadPath
         ))
-        if (Info.env.isActive && Const.USER_ID == 0) {
-            if (hidden) list.add(Restore) else list.add(Hide)
+        if (Config.shellHidden || (Info.env.isActive && Const.USER_ID == 0)) {
+            list.add(ShellHide)
         }
 
         // Magisk
@@ -66,7 +64,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                 SystemlessHosts
             ))
             if (Const.Version.atLeast_24_0()) {
-                list.addAll(listOf(Zygisk, DenyListConfig))
+                list.addAll(listOf(Zygisk, SuList, SuListConfig))
             }
             list.addAll(listOf(UdongeSettings, UdongeIntegrity, UdongeKeyboxes, UdongeUpdate))
         }
@@ -85,9 +83,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 // Can hide overlay windows on 12.0+
                 list.remove(Tapjack)
-            }
-            if (Const.Version.atLeast_30_1()) {
-                list.add(SuList)
             }
         }
 
@@ -109,10 +104,18 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             LanguageSystem -> view.activity.startActivity(LocaleSetting.localeSettingsIntent)
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
-            DenyListConfig -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
-            is Hide -> viewModelScope.launch { AppMigration.hide(view.activity, item.value) }
-            Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
+            SuListConfig -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
+            ShellHide -> {
+                if (Config.shellHidden) {
+                    Shortcuts.restoreLauncher(view.context)
+                    ShellHide.notifyPropertyChanged(BR.title)
+                    ShellHide.notifyPropertyChanged(BR.description)
+                } else if (!Shortcuts.requestShellShortcut(view.context)) {
+                    SnackbarEvent(R.string.add_shortcut_msg).publish()
+                }
+            }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
+            SuList -> SnackbarEvent(R.string.reboot_apply_change).publish()
             UdongeIntegrity -> {
                 val requested = UdongeIntegrity.value
                 if (requested) Config.zygisk = true

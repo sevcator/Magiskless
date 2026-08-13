@@ -7,7 +7,7 @@
     <string name="install">установка</string>
     <string name="section_home">главная</string>
     <string name="section_theme">темы</string>
-    <string name="denylist">denylist</string>
+    <string name="sulist">sulist</string>
 
     <!--Home-->
     <string name="no_connection">нет подключения к сети</string>
@@ -142,10 +142,6 @@
     <string name="settings_update_custom">сторонний канал</string>
     <string name="settings_update_custom_msg">укажите ссылку</string>
     <string name="settings_zygisk_summary">запускать компоненты reisenless в zygote процессе</string>
-    <string name="settings_denylist_title">активировать denylist</string>
-    <string name="settings_denylist_summary">все изменения, внесённые reisenless-ом, будут скрыты от процессов, отмеченных в denylist</string>
-    <string name="settings_denylist_config_title">настройка denylist</string>
-    <string name="settings_denylist_config_summary">отметьте процессы для скрытия в denylist</string>
     <string name="settings_hosts_title">внесистемный hosts файл</string>
     <string name="settings_hosts_summary">поддержка внесистемного hosts файла для приложений, блокирующих рекламу</string>
     <string name="settings_hosts_toast">модуль для внесистемного hosts файла установлен</string>
@@ -257,7 +253,13 @@
     <string name="running">выполняется</string>
     <string name="done_action">действие %1$s выполнено</string>
     <string name="settings_sulist_title">sulist</string>
-    <string name="settings_sulist_summary">только приложения из sulist могут запрашивать root-доступ. все остальные запросы автоматически отклоняются.</string>
+    <string name="settings_sulist_summary">только выбранные приложения и процессы могут использовать root и видеть изменения reisenless</string>
+    <string name="settings_sulist_config_title">настройка sulist</string>
+    <string name="settings_sulist_config_summary">выберите приложения и процессы, которым разрешён доступ к reisenless</string>
+    <string name="settings_hide_shell_app_title">скрыть приложение внутри shell</string>
+    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
+    <string name="settings_restore_shell_app_title">восстановить приложение</string>
+    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">веб-интерфейс</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">пройти strong integrity</string>

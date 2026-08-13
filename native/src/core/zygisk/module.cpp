@@ -397,9 +397,10 @@ void ZygiskContext::app_specialize_pre() {
     rust::Vec<int> module_fds;
     owned_fd fd = get_module_info(args.app->uid, module_fds);
     if ((info_flags & UNMOUNT_MASK) == UNMOUNT_MASK) {
-        ZLOGI("[%s] is on the denylist\n", process);
+        ZLOGI("[%s] is outside sulist\n", process);
         flags |= DO_REVERT_UNMOUNT;
-    } else if (fd >= 0) {
+    }
+    if (fd >= 0) {
         run_modules_pre(module_fds);
     }
 }

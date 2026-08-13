@@ -2,7 +2,7 @@
 <resources>
     <style name="SplashTheme" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/startup_pink</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_reisen_white_padded</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo</item>
     </style>
     <style name="StubSplashTheme" parent="SplashTheme"/>
 </resources>

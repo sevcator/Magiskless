@@ -78,6 +78,7 @@ void denylist_handler(int client);
 void initialize_denylist();
 void scan_deny_apps();
 bool is_deny_target(int uid, std::string_view process);
+bool is_uid_on_sulist(int uid);
 void revert_unmount(int pid = -1) noexcept;
 void update_deny_flags(int uid, rust::Str process, uint32_t &flags);
 
