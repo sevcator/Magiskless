@@ -10,7 +10,10 @@ use crate::module::disable_modules;
 use crate::mount::{clean_mounts, setup_preinit_dir};
 use crate::resetprop::get_prop;
 use crate::selinux::restorecon;
-use crate::udonge::{run_service as run_udonge_service, setup_runtime as setup_udonge_runtime};
+use crate::udonge::{
+    is_enabled as udonge_enabled, run_service as run_udonge_service,
+    setup_runtime as setup_udonge_runtime,
+};
 use base::const_format::concatcp;
 use base::{BufReadExt, FsPathBuilder, ResultExt, cstr, error, info};
 use bitflags::bitflags;
@@ -151,12 +154,15 @@ impl MagiskD {
         }
 
         exec_common_scripts(cstr!("post-fs-data"));
-        self.zygisk_enabled.store(
-            self.get_db_setting(DbEntryKey::ZygiskConfig) != 0,
-            Ordering::Release,
-        );
-        initialize_denylist();
         setup_udonge_runtime();
+        let mut zygisk_enabled = self.get_db_setting(DbEntryKey::ZygiskConfig) != 0;
+        if udonge_enabled() && !zygisk_enabled {
+            self.set_db_setting(DbEntryKey::ZygiskConfig, 1).log_ok();
+            zygisk_enabled = true;
+        }
+        self.zygisk_enabled
+            .store(zygisk_enabled, Ordering::Release);
+        initialize_denylist();
         self.handle_modules();
         clean_mounts();
 
