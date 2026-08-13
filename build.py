@@ -642,6 +642,7 @@ def build_udonge():
             "-fno-rtti",
             "-ffunction-sections",
             "-fdata-sections",
+            "-static-libstdc++",
             "-shared",
             "-Wl,--gc-sections",
             "-Wl,--build-id=none",
