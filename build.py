@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import glob
+import hashlib
 import json
 import multiprocessing
 import os
@@ -10,11 +11,13 @@ import re
 import shutil
 import stat
 import string
+import struct
 import subprocess
 import sys
 import tarfile
 import tempfile
 import urllib.request
+import zlib
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
@@ -551,6 +554,27 @@ def _zip_bytes(zf: ZipFile, name: str, data: bytes, mode: int = 0o644):
     zf.writestr(info, data)
 
 
+def _patch_tee_dex(data: bytes) -> bytes:
+    replacements = (
+        (b"/data/adb/tricky_store", b"/data/adb/udonge/state"),
+        (
+            b"/data/adb/modules/tricky_store/libcertgen.so",
+            b"/data/adb/udonge/./tee-runtime/libcertgen.so",
+        ),
+    )
+    for source, target in replacements:
+        if len(source) != len(target):
+            error("Udonge TEE path replacements must preserve DEX string lengths")
+        if source not in data:
+            error(f"Udonge TEE path is missing from classes.dex: {source.decode()}")
+        data = data.replace(source, target)
+
+    patched = bytearray(data)
+    patched[12:32] = hashlib.sha1(patched[32:]).digest()
+    patched[8:12] = struct.pack("<I", zlib.adler32(patched[12:]) & 0xFFFFFFFF)
+    return bytes(patched)
+
+
 def build_udonge():
     ensure_paths()
     header("* Building the built-in Udonge payload")
@@ -666,6 +690,8 @@ def build_udonge():
         for source in sorted(item for item in payload.rglob("*") if item.is_file()):
             name = source.relative_to(payload).as_posix()
             data = source.read_bytes()
+            if name == "tee/classes.dex":
+                data = _patch_tee_dex(data)
             if name.endswith(".sh") or name in {"tee/daemon"} or name.endswith("/inject") or name.endswith("/supervisor"):
                 mode = 0o700
             else:

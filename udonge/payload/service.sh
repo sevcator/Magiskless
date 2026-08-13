@@ -1,9 +1,11 @@
 #!/system/bin/sh
 
+umask 077
 root=/data/adb/udonge
 runtime=$root/runtime
 state=$root/state
-tee_state=$root/tee-state
+tee_state=$state
+legacy_tee_state=$root/tee-state
 lock=$root/.service-lock
 work=$root/keybox-check
 boot_id="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)"
@@ -43,6 +45,19 @@ until [ "$(getprop sys.boot_completed)" = 1 ]; do
 done
 
 [ -f "$state/disabled" ] && exit 0
+
+if [ -d "$legacy_tee_state" ]; then
+    for name in keybox.xml target.txt security_patch.txt hbk boot_props_mode boot_hash.bin boot_key.bin; do
+        if [ -f "$legacy_tee_state/$name" ] && [ ! -e "$tee_state/$name" ]; then
+            mv "$legacy_tee_state/$name" "$tee_state/$name"
+        fi
+    done
+    if [ -d "$legacy_tee_state/persistent_keys" ] && [ ! -e "$tee_state/persistent_keys" ]; then
+        mv "$legacy_tee_state/persistent_keys" "$tee_state/persistent_keys"
+    fi
+    rm -rf "$legacy_tee_state"
+fi
+chmod 700 "$root" "$state"
 
 refresh_keybox() {
     local urls marker now last best score candidate count checked size temp
@@ -111,6 +126,7 @@ start_tee() {
         old="$root/tee-runtime.old"
         rm -rf "$next" "$old"
         mkdir -p "$next" "$tee_state"
+        chmod 700 "$next" "$tee_state"
         cp "$source/libTEESimulator.so" "$next/" || return 0
         [ ! -f "$source/libcertgen.so" ] || cp "$source/libcertgen.so" "$next/"
         cp "$source/inject" "$next/inject" || return 0
@@ -128,6 +144,7 @@ start_tee() {
         fi
     else
         mkdir -p "$tee_state"
+        chmod 700 "$tee_state" "$run"
     fi
 
     if [ ! -f "$tee_state/keybox.xml" ]; then
@@ -145,14 +162,21 @@ start_tee() {
         [ -z "$patch" ] || printf 'system=%s\n' "$patch" > "$tee_state/security_patch.txt"
     fi
     [ -f "$tee_state/hbk" ] || head -c 32 /dev/urandom > "$tee_state/hbk"
-    chmod 600 "$tee_state"/* 2>/dev/null
+    for item in "$tee_state"/*; do
+        [ -e "$item" ] || continue
+        if [ -d "$item" ]; then
+            chmod 700 "$item"
+        else
+            chmod 600 "$item"
+        fi
+    done
 
     pid="$(cat "$run/.pid" 2>/dev/null)"
     pid_start="$(cat "$run/.pid-start" 2>/dev/null)"
     pid_boot="$(cat "$run/.pid-boot" 2>/dev/null)"
     process_is_current "$pid" "$pid_start" "$pid_boot" && return 0
     rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
-    (cd "$run" && exec ./supervisor ./daemon "$tee_state" </dev/null >/dev/null 2>&1) &
+    (cd "$run" && exec ./supervisor ./daemon </dev/null >/dev/null 2>&1) &
     pid="$!"
     printf '%s\n' "$pid" > "$run/.pid"
     awk '{print $22}' "/proc/$pid/stat" > "$run/.pid-start" 2>/dev/null

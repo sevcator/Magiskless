@@ -1,5 +1,6 @@
 #!/system/bin/sh
 
+umask 077
 root=/data/adb/udonge
 runtime=$root/runtime
 state=$root/state
