@@ -30,6 +30,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.arch.VMFactory
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
@@ -226,7 +227,7 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
         }
         if (!Info.isEmulator && Info.env.isActive && System.getenv("PATH")
                 ?.split(':')
-                ?.filterNot { java.io.File("$it/magisk").exists() }
+                ?.filterNot { java.io.File(it, BuildConfig.MAIN_BIN_NAME).exists() }
                 ?.any { java.io.File("$it/su").exists() } == true) {
             messages.add(CoreR.string.unsupport_general_title to CoreR.string.unsupport_other_su_msg)
         }
