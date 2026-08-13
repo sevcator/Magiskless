@@ -176,11 +176,27 @@ start_tee() {
     pid_boot="$(cat "$run/.pid-boot" 2>/dev/null)"
     process_is_current "$pid" "$pid_start" "$pid_boot" && return 0
     rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
+    rm -f "$state/tee-unavailable"
     (cd "$run" && exec ./supervisor ./daemon </dev/null >/dev/null 2>&1) &
     pid="$!"
     printf '%s\n' "$pid" > "$run/.pid"
-    awk '{print $22}' "/proc/$pid/stat" > "$run/.pid-start" 2>/dev/null
+    pid_start="$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null)"
+    printf '%s\n' "$pid_start" > "$run/.pid-start"
     printf '%s\n' "$boot_id" > "$run/.pid-boot"
+
+    (
+        sleep 60
+        if process_is_current "$pid" "$pid_start" "$boot_id"; then
+            if pidof TEESimulator >/dev/null 2>&1; then
+                rm -f "$state/tee-unavailable"
+            else
+                kill "$pid" 2>/dev/null
+                rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
+                : > "$state/tee-unavailable"
+                chmod 600 "$state/tee-unavailable"
+            fi
+        fi
+    ) &
 }
 
 refresh_keybox
