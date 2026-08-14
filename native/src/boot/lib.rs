@@ -16,7 +16,14 @@ mod patch;
 mod payload;
 // Suppress warnings in generated code
 #[allow(warnings)]
-mod proto;
+mod proto {
+    pub mod update_metadata {
+        include!(concat!(
+            env!("OUT_DIR"),
+            "/update-metadata/update_metadata.rs"
+        ));
+    }
+}
 mod sign;
 
 #[cxx::bridge]

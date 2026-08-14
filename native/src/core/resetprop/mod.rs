@@ -9,7 +9,15 @@ use std::sync::LazyLock;
 
 mod cli;
 mod persist;
-mod proto;
+#[allow(warnings)]
+mod proto {
+    pub mod persistent_properties {
+        include!(concat!(
+            env!("OUT_DIR"),
+            "/persistent-properties/persistent_properties.rs"
+        ));
+    }
+}
 
 static SYS_PROP: LazyLock<SysProp> = LazyLock::new(|| unsafe { get_sys_prop() });
 

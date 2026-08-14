@@ -247,6 +247,23 @@ def run_cargo(cmds: list[str]):
     env = os.environ.copy()
     env["PATH"] = f"{rust_sysroot / "bin"}{os.pathsep}{env["PATH"]}"
     env["CARGO_BUILD_RUSTFLAGS"] = f"-Z threads={min(8, cpu_count)}"
+    host = {
+        "windows": "windows-x86_64",
+        "linux": "linux-x86_64",
+        "darwin": "darwin-x86_64",
+    }[os_name]
+    tool_bin = ndk_path / "toolchains" / "llvm" / "prebuilt" / host / "bin"
+    clang_prefixes = {
+        "aarch64-linux-android": "aarch64-linux-android",
+        "thumbv7neon-linux-androideabi": "armv7a-linux-androideabi",
+        "i686-linux-android": "i686-linux-android",
+        "x86_64-linux-android": "x86_64-linux-android",
+        "riscv64-linux-android": "riscv64-linux-android",
+    }
+    driver_ext = ".cmd" if is_windows else ""
+    for triple, prefix in clang_prefixes.items():
+        key = f"CARGO_TARGET_{triple.upper().replace('-', '_')}_LINKER"
+        env[key] = str(tool_bin / f"{prefix}23-clang{driver_ext}")
     # Cargo calls executables in $RUSTROOT/lib/rustlib/$TRIPLE/bin, we need
     # to make sure the runtime linker also search $RUSTROOT/lib for libraries.
     # This is only required on Unix, as Windows search dlls from PATH.
