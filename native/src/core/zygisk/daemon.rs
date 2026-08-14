@@ -23,6 +23,7 @@ const UNMOUNT_MASK: u32 =
     ZygiskStateFlags::ProcessOnDenyList.repr | ZygiskStateFlags::DenyListEnforced.repr;
 
 fn is_udonge_target(process: &str) -> bool {
+    let process = process.split_once(':').map_or(process, |(package, _)| package);
     matches!(
         process,
         "com.google.android.gms.unstable"

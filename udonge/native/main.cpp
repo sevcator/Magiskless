@@ -56,7 +56,13 @@ bool read_str(int fd, std::string &value) {
 #endif
 
 const char *CONF_DIR = UDONGE_ROOT "/state";
+std::string base_package(const std::string &process_name) {
+    size_t separator = process_name.find(':');
+    return process_name.substr(0, separator);
+}
+
 bool is_candidate(const std::string &package_name) {
+    const std::string name = base_package(package_name);
     static const char *const packages[] = {
         "com.eltavine.duckdetector", "ru.nspk.mirpay", "ru.nspk.sbpay",
         "ru.sberbankmobile", "com.idamob.tinkoff.android",
@@ -69,7 +75,7 @@ bool is_candidate(const std::string &package_name) {
         "com.axlebolt.standoff2",
     };
     for (const char *candidate : packages) {
-        if (package_name == candidate) return true;
+        if (name == candidate) return true;
     }
     return false;
 }
@@ -90,16 +96,17 @@ public:
 
         std::string package_name = jstr(args->nice_name);
         if (package_name.empty()) return;
+        std::string package = base_package(package_name);
         is_gms_unstable_ = package_name == "com.google.android.gms.unstable";
         if (!is_gms_unstable_ && !is_candidate(package_name)) return;
         if (!fetch_config()) return;
 
         if (is_gms_unstable_) return;
-        if (cfg_.shouldStealth(package_name)) {
+        if (cfg_.shouldStealth(package)) {
             api_->setOption(zygisk::FORCE_DENYLIST_UNMOUNT);
             return;
         }
-        if (cfg_.shouldCloak(package_name)) {
+        if (cfg_.shouldCloak(package)) {
             cloak_ = true;
             keep_loaded_ = true;
             api_->setOption(zygisk::FORCE_DENYLIST_UNMOUNT);
