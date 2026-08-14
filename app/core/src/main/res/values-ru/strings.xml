@@ -126,8 +126,8 @@
     <string name="color_purple">фиолетовый</string>
     <string name="color_teal">бирюзовый</string>
     <string name="color_gray">серый</string>
-    <string name="settings_hide_app_title">скрытие приложения reisenless</string>
-    <string name="settings_hide_app_summary">пересобрать приложение reisenless с другим названием и случайным именем пакета</string>
+    <string name="settings_hide_app_title">скрыть reisenless</string>
+    <string name="settings_hide_app_summary">reisensense &gt;w&lt;</string>
     <string name="settings_restore_app_title">восстановление приложения reisenless</string>
     <string name="settings_restore_app_summary">восстановить приложение reisenless к исходному состоянию</string>
     <string name="language">язык</string>
@@ -254,10 +254,6 @@
     <string name="settings_sulist_summary">только выбранные приложения и процессы могут использовать root и видеть изменения reisenless</string>
     <string name="settings_sulist_config_title">настройка sulist</string>
     <string name="settings_sulist_config_summary">выберите приложения и процессы, которым разрешён доступ к reisenless</string>
-    <string name="settings_hide_shell_app_title">скрыть приложение внутри shell</string>
-    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
-    <string name="settings_restore_shell_app_title">восстановить приложение</string>
-    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">веб-интерфейс</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">пройти strong integrity</string>

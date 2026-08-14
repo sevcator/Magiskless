@@ -39,9 +39,6 @@ object Config : PreferenceConfig, DBConfig {
         const val SU_NOTIFICATION = "su_notification"
         const val SU_REAUTH = "su_reauth"
         const val SU_TAPJACK = "su_tapjack"
-        const val SHELL_HIDE_TOKEN = "shell_hide_token"
-        const val SHELL_SHORTCUT_VERIFIED = "shell_shortcut_verified"
-        const val SHELL_HIDDEN = "shell_hidden"
         const val LOCALE = "locale"
         const val DARK_THEME = "dark_theme_extended"
         const val ACCENT_PRIMARY = "accent_primary"
@@ -54,7 +51,6 @@ object Config : PreferenceConfig, DBConfig {
 
         val NO_MIGRATION = setOf(
             ASKED_HOME, SU_REQUEST_TIMEOUT, SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK,
-            SHELL_HIDE_TOKEN, SHELL_SHORTCUT_VERIFIED, SHELL_HIDDEN,
         )
     }
 
@@ -114,7 +110,7 @@ object Config : PreferenceConfig, DBConfig {
                 Value.THEME_LIGHT
             }
         }
-    private var storedAccentPrimary by preference(Key.ACCENT_PRIMARY, 0xFF7E57C2.toInt())
+    private var storedAccentPrimary by preference(Key.ACCENT_PRIMARY, 0xFFF4A6C1.toInt())
     private var storedAccentSecondary by preference(Key.ACCENT_SECONDARY, 0xFFF4A6C1.toInt())
     var accentPrimary
         get() = migrateAccent(storedAccentPrimary, true)
@@ -130,10 +126,6 @@ object Config : PreferenceConfig, DBConfig {
     var udongeKeyboxUrls
         get() = storedUdongeKeyboxUrls.ifBlank { DEFAULT_UDONGE_KEYBOX_URLS }
         set(value) { storedUdongeKeyboxUrls = value }
-    var shellHideToken by preference(Key.SHELL_HIDE_TOKEN, "")
-    var shellShortcutVerified by preference(Key.SHELL_SHORTCUT_VERIFIED, false)
-    var shellHidden by preference(Key.SHELL_HIDDEN, false)
-
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
     var locale

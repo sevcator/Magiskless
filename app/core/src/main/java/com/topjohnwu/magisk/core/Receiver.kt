@@ -58,7 +58,6 @@ open class Receiver : BaseReceiver() {
                 }
             }
             Intent.ACTION_LOCALE_CHANGED -> Shortcuts.setupDynamic(context)
-            Intent.ACTION_MY_PACKAGE_REPLACED -> Shortcuts.syncLauncherState(context)
         }
     }
 }

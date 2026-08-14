@@ -254,10 +254,6 @@
     <string name="settings_sulist_summary">只有选中的应用和进程可以使用 root 或看到 reisenless 更改</string>
     <string name="settings_sulist_config_title">配置 sulist</string>
     <string name="settings_sulist_config_summary">选择允许使用 reisenless 的应用和进程</string>
-    <string name="settings_hide_shell_app_title">在 shell 内隐藏应用</string>
-    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
-    <string name="settings_restore_shell_app_title">恢复应用</string>
-    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">网页界面</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">通过 strong integrity</string>

@@ -21,7 +21,6 @@ import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.utils.LocaleSetting
 import com.topjohnwu.magisk.core.utils.RootUtils
-import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.events.AddHomeIconEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
@@ -51,19 +50,12 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             AppSettings,
             DoHToggle
         ))
-        if (Config.shellHidden || (Info.env.isActive && Const.USER_ID == 0)) {
-            list.add(ShellHide)
-        }
-
-        // Magisk
         if (Info.env.isActive) {
-            list.addAll(listOf(
-                Magisk,
-                SystemlessHosts
-            ))
+            list.add(SystemlessHosts)
             if (Const.Version.atLeast_24_0()) {
-                list.addAll(listOf(Zygisk, SuList))
+                list.add(Zygisk)
             }
+            list.add(SuList)
             list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeUpdate))
         }
 
@@ -82,19 +74,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
             SuList -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
-            ShellHide -> {
-                if (Config.shellHidden) {
-                    Shortcuts.restoreLauncher(view.context)
-                    ShellHide.notifyPropertyChanged(BR.title)
-                    ShellHide.notifyPropertyChanged(BR.description)
-                } else {
-                    if (!Shortcuts.requestShellShortcut(view.context)) {
-                        SnackbarEvent(R.string.add_shortcut_msg).publish()
-                    }
-                    ShellHide.notifyPropertyChanged(BR.title)
-                    ShellHide.notifyPropertyChanged(BR.description)
-                }
-            }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
             UdongeUpdate -> SettingsFragmentDirections
                 .actionSettingsFragmentToInstallFragment().navigate()

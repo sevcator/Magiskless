@@ -254,10 +254,6 @@
     <string name="settings_sulist_summary">選択したアプリとプロセスのみ root と reisenless の変更を使用できます</string>
     <string name="settings_sulist_config_title">sulist を設定</string>
     <string name="settings_sulist_config_summary">reisenless の使用を許可するアプリとプロセスを選択します</string>
-    <string name="settings_hide_shell_app_title">shell 内でアプリを隠す</string>
-    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
-    <string name="settings_restore_shell_app_title">アプリを復元</string>
-    <string name="settings_restore_shell_app_summary">reisensense :(</string>
     <string name="webui">webui</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">strong integrity を通過</string>

@@ -4,7 +4,6 @@ import android.content.res.Resources
 import android.text.InputType
 import android.view.View
 import android.widget.EditText
-import androidx.databinding.Bindable
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.core.BuildConfig
@@ -53,20 +52,6 @@ object AppSettings : BaseSettingsItem.Section() {
     override val title = CoreR.string.home_app_title.asText()
 }
 
-object ShellHide : BaseSettingsItem.Blank() {
-    @get:Bindable
-    override val title get() = if (Config.shellHidden) {
-        CoreR.string.settings_restore_shell_app_title.asText()
-    } else {
-        CoreR.string.settings_hide_shell_app_title.asText()
-    }
-    override val description get() = if (Config.shellHidden) {
-        CoreR.string.settings_restore_shell_app_summary.asText()
-    } else {
-        CoreR.string.settings_hide_shell_app_summary.asText()
-    }
-}
-
 object AddShortcut : BaseSettingsItem.Blank() {
     override val title = CoreR.string.add_shortcut_title.asText()
     override val description = CoreR.string.setting_add_shortcut_summary.asText()
@@ -84,10 +69,6 @@ object SystemlessHosts : BaseSettingsItem.Blank() {
 }
 
 // --- Magisk
-
-object Magisk : BaseSettingsItem.Section() {
-    override val title = CoreR.string.magisk.asText()
-}
 
 object Zygisk : BaseSettingsItem.Toggle() {
     override val title = CoreR.string.zygisk.asText()

@@ -133,8 +133,8 @@
     <string name="color_purple">purple</string>
     <string name="color_teal">teal</string>
     <string name="color_gray">gray</string>
-    <string name="settings_hide_app_title">hide the reisenless app</string>
-    <string name="settings_hide_app_summary">install a proxy app with a random package id and custom app label</string>
+    <string name="settings_hide_app_title">hide reisenless</string>
+    <string name="settings_hide_app_summary">reisensense &gt;w&lt;</string>
     <string name="settings_restore_app_title">restore the reisenless app</string>
     <string name="settings_restore_app_summary">unhide the app and restore the original apk</string>
     <string name="language">language</string>
@@ -255,14 +255,6 @@
     <string name="settings_sulist_summary">only listed apps and processes can use root or see reisenless changes</string>
     <string name="settings_sulist_config_title">configure sulist</string>
     <string name="settings_sulist_config_summary">select apps and processes allowed to use reisenless</string>
-    <string name="settings_hide_shell_app_title">hide app inside shell</string>
-    <string name="settings_hide_shell_app_summary">reisensense &gt;w&lt;</string>
-    <string name="settings_restore_shell_app_title">restore the app</string>
-    <string name="settings_restore_shell_app_summary">reisensense :(</string>
-    <string name="shell_title">shell</string>
-    <string name="shell_hint">command</string>
-    <string name="shell_run">run</string>
-    <string name="shell_ready">shell ready. type reisenless to open the manager.</string>
     <string name="webui">webui</string>
 
 </resources>

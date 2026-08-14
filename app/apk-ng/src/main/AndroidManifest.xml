@@ -25,12 +25,6 @@
         </activity-alias>
 
         <activity
-            android:name=".ui.ShellActivity"
-            android:exported="true"
-            android:label="@string/shell_title"
-            android:theme="@style/Main" />
-
-        <activity
             android:name=".ui.surequest.SuRequestActivity"
             android:directBootAware="true"
             android:exported="false"

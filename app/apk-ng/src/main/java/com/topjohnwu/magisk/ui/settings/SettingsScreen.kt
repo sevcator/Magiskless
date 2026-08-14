@@ -1,5 +1,6 @@
 package com.topjohnwu.magisk.ui.settings
 
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.background
@@ -90,6 +91,10 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 MagiskSection(viewModel)
                 Spacer(Modifier.height(12.dp))
                 UdongeSection()
+            }
+            if (Info.showSuperUser) {
+                Spacer(Modifier.height(12.dp))
+                SuperuserSection(viewModel)
             }
         }
     }
@@ -342,7 +347,10 @@ private fun AppSettingsSection() {
                     if (isHidden) CoreR.string.settings_restore_app_title
                     else CoreR.string.settings_hide_app_title
                 ),
-                summary = context.packageName,
+                summary = stringResource(
+                    if (isHidden) CoreR.string.settings_restore_app_summary
+                    else CoreR.string.settings_hide_app_summary
+                ),
                 onClick = {
                     if (isHidden) showRestoreDialog = true else showHideDialog = true
                 }
@@ -356,7 +364,6 @@ private fun AppSettingsSection() {
 
 @Composable
 private fun MagiskSection(viewModel: SettingsViewModel) {
-    SmallTitle(text = stringResource(CoreR.string.magisk))
     Card(modifier = Modifier.fillMaxWidth()) {
         // Systemless Hosts
         SettingsArrow(
@@ -382,13 +389,113 @@ private fun MagiskSection(viewModel: SettingsViewModel) {
                 }
             )
 
-            val suListEnabled by viewModel.suListEnabled.collectAsState()
-            SettingsSwitchAction(
-                title = stringResource(CoreR.string.settings_sulist_title),
-                summary = stringResource(CoreR.string.settings_sulist_summary),
-                checked = suListEnabled,
-                onClick = { viewModel.navigateToSuList() },
-                onCheckedChange = { viewModel.toggleSuList(it) }
+        }
+
+        val suListEnabled by viewModel.suListEnabled.collectAsState()
+        SettingsSwitchAction(
+            title = stringResource(CoreR.string.settings_sulist_title),
+            summary = stringResource(CoreR.string.settings_sulist_summary),
+            checked = suListEnabled,
+            onClick = { viewModel.navigateToSuList() },
+            onCheckedChange = { viewModel.toggleSuList(it) }
+        )
+    }
+}
+
+@Composable
+private fun SuperuserSection(viewModel: SettingsViewModel) {
+    val resources = LocalResources.current
+
+    SmallTitle(text = stringResource(CoreR.string.superuser))
+    Card(modifier = Modifier.fillMaxWidth()) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            var tapjack by remember { mutableStateOf(Config.suTapjack) }
+            SettingsSwitch(
+                title = stringResource(CoreR.string.settings_su_tapjack_title),
+                summary = stringResource(CoreR.string.settings_su_tapjack_summary),
+                checked = tapjack,
+                onCheckedChange = {
+                    tapjack = it
+                    Config.suTapjack = it
+                }
+            )
+        }
+
+        var suAuth by remember { mutableStateOf(Config.suAuth) }
+        SettingsSwitch(
+            title = stringResource(CoreR.string.settings_su_auth_title),
+            summary = stringResource(
+                if (Info.isDeviceSecure) CoreR.string.settings_su_auth_summary
+                else CoreR.string.settings_su_auth_insecure
+            ),
+            checked = suAuth,
+            enabled = Info.isDeviceSecure,
+            onCheckedChange = { enabled ->
+                viewModel.withAuth {
+                    suAuth = enabled
+                    Config.suAuth = enabled
+                }
+            }
+        )
+
+        val autoResponseEntries = remember {
+            resources.getStringArray(CoreR.array.auto_response).toList()
+        }
+        var autoResponse by remember { mutableIntStateOf(Config.suAutoResponse) }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.auto_response),
+            items = autoResponseEntries,
+            selectedIndex = autoResponse,
+            onSelectedIndexChange = { selected ->
+                val apply = {
+                    autoResponse = selected
+                    Config.suAutoResponse = selected
+                }
+                if (Config.suAuth) viewModel.withAuth(apply) else apply()
+            }
+        )
+
+        val timeoutEntries = remember {
+            resources.getStringArray(CoreR.array.request_timeout).toList()
+        }
+        val timeoutValues = remember { listOf(10, 15, 20, 30, 45, 60) }
+        var timeoutIndex by remember {
+            mutableIntStateOf(timeoutValues.indexOf(Config.suDefaultTimeout).coerceAtLeast(0))
+        }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.request_timeout),
+            items = timeoutEntries,
+            selectedIndex = timeoutIndex,
+            onSelectedIndexChange = {
+                timeoutIndex = it
+                Config.suDefaultTimeout = timeoutValues[it]
+            }
+        )
+
+        val notificationEntries = remember {
+            resources.getStringArray(CoreR.array.su_notification).toList()
+        }
+        var notification by remember { mutableIntStateOf(Config.suNotification) }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.superuser_notification),
+            items = notificationEntries,
+            selectedIndex = notification,
+            onSelectedIndexChange = {
+                notification = it
+                Config.suNotification = it
+            }
+        )
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            var reauthenticate by remember { mutableStateOf(Config.suReAuth) }
+            SettingsSwitch(
+                title = stringResource(CoreR.string.settings_su_reauth_title),
+                summary = stringResource(CoreR.string.settings_su_reauth_summary),
+                checked = reauthenticate,
+                onCheckedChange = {
+                    reauthenticate = it
+                    Config.suReAuth = it
+                }
             )
         }
     }
@@ -490,7 +597,6 @@ private fun UpdateChannelUrlDialog(show: Boolean, onDismiss: () -> Unit) {
     }
 }
 
-@Composable
 @Composable
 private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     val defaultName = stringResource(CoreR.string.settings)

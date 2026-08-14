@@ -25,6 +25,8 @@ class SettingsViewModel : BaseViewModel() {
 
     val zygiskMismatch get() = Config.zygisk != Info.isZygiskEnabled
 
+    var authenticate: (onSuccess: () -> Unit) -> Unit = { it() }
+
     fun navigateToSuList() {
         navigateTo(Route.DenyList)
     }
@@ -51,6 +53,8 @@ class SettingsViewModel : BaseViewModel() {
             }
         }
     }
+
+    fun withAuth(action: () -> Unit) = authenticate(action)
 
     fun notifyZygiskChange() {
         if (zygiskMismatch) showSnackbar(R.string.reboot_apply_change)
