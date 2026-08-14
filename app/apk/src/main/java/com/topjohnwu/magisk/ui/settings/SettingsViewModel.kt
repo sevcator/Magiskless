@@ -1,9 +1,6 @@
 package com.topjohnwu.magisk.ui.settings
 
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
+import android.os.Build
 import android.view.View
 import android.widget.Toast
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -11,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.arch.BaseViewModel
 import com.topjohnwu.magisk.core.AppContext
+import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
@@ -19,10 +17,11 @@ import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.activity
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.Udonge
-import com.topjohnwu.magisk.core.utils.LocaleSetting
+import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.events.AddHomeIconEvent
+import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
@@ -36,6 +35,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
 
     private fun createItems(): List<BaseSettingsItem> {
         val context = AppContext
+        val hidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
 
         // Customization
         val list = mutableListOf(
@@ -46,10 +46,10 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             list.add(AddShortcut)
 
         // Manager
-        list.addAll(listOf(
-            AppSettings,
-            DoHToggle
-        ))
+        list.add(DoHToggle)
+        if (Info.env.isActive && Const.USER_ID == 0) {
+            list.add(if (hidden) Restore else Hide)
+        }
         if (Info.env.isActive) {
             list.add(SystemlessHosts)
             if (Const.Version.atLeast_24_0()) {
@@ -59,11 +59,29 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeUpdate))
         }
 
+        if (Info.showSuperUser) {
+            list.addAll(listOf(
+                Superuser,
+                Authentication,
+                AutomaticResponse,
+                RequestTimeout,
+                SUNotification,
+            ))
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                list.add(list.indexOf(Authentication), Tapjack)
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                list.add(Reauthenticate)
+            }
+        }
+
         return list
     }
 
     override fun onItemPressed(view: View, item: BaseSettingsItem, doAction: () -> Unit) {
         when (item) {
+            Authentication -> AuthEvent(doAction).publish()
+            AutomaticResponse -> if (Config.suAuth) AuthEvent(doAction).publish() else doAction()
             else -> doAction()
         }
     }
@@ -74,6 +92,8 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
             SuList -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
+            is Hide -> viewModelScope.launch { AppMigration.hide(view.activity, item.value) }
+            Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
             UdongeUpdate -> SettingsFragmentDirections
                 .actionSettingsFragmentToInstallFragment().navigate()

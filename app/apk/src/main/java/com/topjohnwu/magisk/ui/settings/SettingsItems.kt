@@ -1,9 +1,13 @@
 package com.topjohnwu.magisk.ui.settings
 
+import android.content.Context
 import android.content.res.Resources
+import android.os.Build
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
+import androidx.databinding.Bindable
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
 import com.topjohnwu.magisk.core.BuildConfig
@@ -11,7 +15,9 @@ import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.ktx.activity
+import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.LocaleSetting
+import com.topjohnwu.magisk.databinding.DialogSettingsAppNameBinding
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.core.utils.TextHolder
 import com.topjohnwu.magisk.core.utils.asText
@@ -48,8 +54,50 @@ object Theme : BaseSettingsItem.Blank() {
 
 // --- App
 
-object AppSettings : BaseSettingsItem.Section() {
-    override val title = CoreR.string.home_app_title.asText()
+object Hide : BaseSettingsItem.Input() {
+    override val title = CoreR.string.settings_hide_app_title.asText()
+    override val description = CoreR.string.settings_hide_app_summary.asText()
+    override var value = ""
+
+    override val inputResult
+        get() = if (isError) null else result
+
+    @get:Bindable
+    var result = "settings"
+        set(value) = set(value.lowercase(), field, { field = it }, BR.result, BR.error)
+
+    val maxLength
+        get() = AppMigration.MAX_LABEL_LENGTH
+
+    @get:Bindable
+    val isError
+        get() = result.length > maxLength || result.isBlank()
+
+    override fun getView(context: Context) = DialogSettingsAppNameBinding
+        .inflate(LayoutInflater.from(context)).also { it.data = this }.root
+}
+
+object Restore : BaseSettingsItem.Blank() {
+    override val title = CoreR.string.settings_restore_app_title.asText()
+    override val description = CoreR.string.settings_restore_app_summary.asText()
+
+    override fun onPressed(view: View, handler: Handler) {
+        handler.onItemPressed(view, this) {
+            MagiskDialog(view.activity).apply {
+                setTitle(CoreR.string.settings_restore_app_title)
+                setMessage(CoreR.string.restore_app_confirmation)
+                setButton(MagiskDialog.ButtonType.POSITIVE) {
+                    text = android.R.string.ok
+                    onClick { handler.onItemAction(view, this@Restore) }
+                }
+                setButton(MagiskDialog.ButtonType.NEGATIVE) {
+                    text = android.R.string.cancel
+                }
+                setCancelable(true)
+                show()
+            }
+        }
+    }
 }
 
 object AddShortcut : BaseSettingsItem.Blank() {
@@ -137,5 +185,62 @@ object UdongeUpdate : BaseSettingsItem.Blank() {
             CoreR.string.udonge_update_summary,
             BuildConfig.APP_VERSION_NAME,
         )
+    }
+}
+
+object Superuser : BaseSettingsItem.Section() {
+    override val title = CoreR.string.superuser.asText()
+}
+
+object Tapjack : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.settings_su_tapjack_title.asText()
+    override val description = CoreR.string.settings_su_tapjack_summary.asText()
+    override var value by Config::suTapjack
+}
+
+object Authentication : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.settings_su_auth_title.asText()
+    override var description = CoreR.string.settings_su_auth_summary.asText()
+    override var value by Config::suAuth
+
+    override fun refresh() {
+        isEnabled = Info.isDeviceSecure
+        if (!isEnabled) {
+            description = CoreR.string.settings_su_auth_insecure.asText()
+        }
+    }
+}
+
+object AutomaticResponse : BaseSettingsItem.Selector() {
+    override val title = CoreR.string.auto_response.asText()
+    override val entryRes = CoreR.array.auto_response
+    override var value by Config::suAutoResponse
+}
+
+object RequestTimeout : BaseSettingsItem.Selector() {
+    override val title = CoreR.string.request_timeout.asText()
+    override val entryRes = CoreR.array.request_timeout
+
+    private val entryValues = listOf(10, 15, 20, 30, 45, 60)
+    override var value = entryValues.indexOf(Config.suDefaultTimeout).coerceAtLeast(0)
+        set(value) {
+            field = value
+            Config.suDefaultTimeout = entryValues[value]
+        }
+}
+
+object SUNotification : BaseSettingsItem.Selector() {
+    override val title = CoreR.string.superuser_notification.asText()
+    override val entryRes = CoreR.array.su_notification
+    override var value by Config::suNotification
+}
+
+object Reauthenticate : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.settings_su_reauth_title.asText()
+    override val description = CoreR.string.settings_su_reauth_summary.asText()
+    override var value by Config::suReAuth
+
+    override fun refresh() {
+        isEnabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
     }
 }
