@@ -1,4 +1,6 @@
 #include <sys/mman.h>
+#include <sys/sendfile.h>
+#include <sys/syscall.h>
 #include <android/dlext.h>
 #include <dlfcn.h>
 
@@ -10,6 +12,22 @@
 #include "module.hpp"
 
 using namespace std;
+
+static int localize_module_fd(int source, off_t size) {
+    owned_fd local(syscall(__NR_memfd_create, "jit-cache", MFD_CLOEXEC));
+    if (local < 0 || size <= 0)
+        return -1;
+
+    off_t offset = 0;
+    while (offset < size) {
+        ssize_t written = sendfile(local, source, &offset, size - offset);
+        if (written <= 0)
+            return -1;
+    }
+    if (lseek(local, 0, SEEK_SET) < 0)
+        return -1;
+    return local.release();
+}
 
 static int zygisk_request(int req) {
     int fd = connect_daemon(RequestCode::ZYGISK);
@@ -347,9 +365,11 @@ void ZygiskContext::run_modules_pre(rust::Vec<int> &fds) {
             fds[i] = -1;
             continue;
         }
+        owned_fd local(localize_module_fd(fd, s.st_size));
+        int library_fd = local < 0 ? static_cast<int>(fd) : static_cast<int>(local);
         android_dlextinfo info {
             .flags = ANDROID_DLEXT_USE_LIBRARY_FD,
-            .library_fd = fd,
+            .library_fd = library_fd,
         };
         if (void *h = android_dlopen_ext("/memfd:anon", RTLD_LAZY, &info)) {
             if (void *e = dlsym(h, "zygisk_module_entry")) {
