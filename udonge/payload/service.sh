@@ -31,6 +31,36 @@ tee_child_is_current() {
     return 1
 }
 
+find_tee_supervisor() {
+    local run child supervisor name cmdline
+    run="$1"
+    for child in $(pidof TEESimulator 2>/dev/null); do
+        supervisor="$(awk '/^PPid:/{print $2}' "/proc/$child/status" 2>/dev/null)"
+        [ -n "$supervisor" ] || continue
+        name="$(cat "/proc/$supervisor/comm" 2>/dev/null)"
+        [ "$name" = supervisor ] || continue
+        cmdline="$(tr '\000' ' ' < "/proc/$supervisor/cmdline" 2>/dev/null)"
+        case "$cmdline" in
+            *"./daemon $run"*)
+                printf '%s\n' "$supervisor"
+                return 0
+                ;;
+        esac
+    done
+    return 1
+}
+
+remember_tee_supervisor() {
+    local run pid start
+    run="$1"
+    pid="$2"
+    start="$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null)"
+    [ -n "$start" ] || return 1
+    printf '%s\n' "$pid" > "$run/.pid"
+    printf '%s\n' "$start" > "$run/.pid-start"
+    printf '%s\n' "$boot_id" > "$run/.pid-boot"
+}
+
 if ! mkdir "$lock" 2>/dev/null; then
     owner="$(cat "$lock/pid" 2>/dev/null)"
     owner_start="$(cat "$lock/start" 2>/dev/null)"
@@ -117,7 +147,7 @@ refresh_keybox() {
 }
 
 start_tee() {
-    local sdk abi source run next old target patch version current pid pid_start pid_boot
+    local sdk abi source run next old target patch version current pid pid_start pid_boot healthy
     sdk="$(getprop ro.build.version.sdk 2>/dev/null)"
     [ "$sdk" -ge 29 ] 2>/dev/null || return 0
     abi="$(getprop ro.product.cpu.abi 2>/dev/null)"
@@ -190,11 +220,22 @@ start_tee() {
         fi
     done
 
+    rm -rf "$tee_state/logs"
+
+    healthy="$(find_tee_supervisor "$run")"
+    if [ -n "$healthy" ] && remember_tee_supervisor "$run" "$healthy"; then
+        rm -f "$state/tee-unavailable"
+        return 0
+    fi
+
     pid="$(cat "$run/.pid" 2>/dev/null)"
     pid_start="$(cat "$run/.pid-start" 2>/dev/null)"
     pid_boot="$(cat "$run/.pid-boot" 2>/dev/null)"
     if process_is_current "$pid" "$pid_start" "$pid_boot"; then
-        tee_child_is_current "$pid" && rm -f "$state/tee-unavailable"
+        if tee_child_is_current "$pid"; then
+            rm -f "$state/tee-unavailable"
+            rm -rf "$tee_state/logs"
+        fi
         return 0
     fi
     rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
@@ -208,15 +249,15 @@ start_tee() {
 
     (
         sleep 60
-        if process_is_current "$pid" "$pid_start" "$boot_id"; then
-            if tee_child_is_current "$pid"; then
-                rm -f "$state/tee-unavailable"
-            else
-                kill "$pid" 2>/dev/null
-                rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
-                : > "$state/tee-unavailable"
-                chmod 600 "$state/tee-unavailable"
-            fi
+        healthy="$(find_tee_supervisor "$run")"
+        if [ -n "$healthy" ] && remember_tee_supervisor "$run" "$healthy"; then
+            rm -f "$state/tee-unavailable"
+            rm -rf "$tee_state/logs"
+        else
+            process_is_current "$pid" "$pid_start" "$boot_id" && kill "$pid" 2>/dev/null
+            rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
+            : > "$state/tee-unavailable"
+            chmod 600 "$state/tee-unavailable"
         fi
     ) &
 }

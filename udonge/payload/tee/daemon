@@ -2,6 +2,7 @@
 
 umask 077
 MODDIR=$1
+export RUST_LOG=off
 
 if [ -f "$MODDIR/classes.dex" ]; then
     CLASSPATH="$MODDIR/classes.dex"

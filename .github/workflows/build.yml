@@ -84,6 +84,7 @@ jobs:
           test -x "$dexdump"
           "$dexdump" -f "$RUNNER_TEMP/udonge-tee.dex" >/dev/null
           grep -Fq 'MODDIR=$1' "$RUNNER_TEMP/udonge-tee-daemon"
+          grep -Fq 'export RUST_LOG=off' "$RUNNER_TEMP/udonge-tee-daemon"
           grep -Fq '"$MODDIR" --nice-name=TEESimulator' "$RUNNER_TEMP/udonge-tee-daemon"
           badging="$("$aapt" dump badging "$apk")"
           grep -Fq "package: name='io.sevcator.reisenless'" <<< "$badging"
