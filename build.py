@@ -585,56 +585,11 @@ def build_udonge():
         "darwin": "darwin-x86_64",
     }[os_name]
     tool_bin = ndk_path / "toolchains" / "llvm" / "prebuilt" / host / "bin"
-    env = find_jdk()
-    javac = shutil.which("javac", path=env.get("PATH"))
-    jar = shutil.which("jar", path=env.get("PATH"))
-    if not javac or not jar:
-        error("JDK tools required to build Udonge are missing")
-
-    build_tools = _latest_android_tool(sdk_path / "build-tools")
-    platform = _latest_android_tool(sdk_path / "platforms")
-    d8 = build_tools / f"d8{'.bat' if is_windows else ''}"
-    android_jar = platform / "android.jar"
-    if not d8.exists() or not android_jar.exists():
-        error("Android SDK platform or D8 is missing")
-
     work = config["outdir"] / ".udonge-build"
     if work.exists():
         rm_rf(work)
-    classes = work / "classes"
-    dex_out = work / "dex"
     zygisk_out = work / "zygisk"
-    classes.mkdir(parents=True)
-    dex_out.mkdir(parents=True)
     zygisk_out.mkdir(parents=True)
-
-    java_source = Path("udonge", "java", "src", "EntryPoint.java")
-    proc = execv(
-        [javac, "--release", "17", "-classpath", android_jar, "-d", classes, java_source],
-        env=env,
-    )
-    if proc.returncode != 0:
-        error("Build Udonge Java payload failed!")
-
-    classes_jar = work / "classes.jar"
-    proc = execv([jar, "--create", "--file", classes_jar, "-C", classes, "."], env=env)
-    if proc.returncode != 0:
-        error("Package Udonge Java payload failed!")
-    proc = execv(
-        [
-            d8,
-            "--release",
-            "--no-desugaring",
-            "--min-api",
-            "23",
-            "--output",
-            dex_out,
-            classes_jar,
-        ],
-        env=env,
-    )
-    if proc.returncode != 0:
-        error("Build Udonge DEX payload failed!")
 
     native_sources = [
         Path("udonge", "native", name)
@@ -684,7 +639,6 @@ def build_udonge():
     payload = Path("udonge", "payload")
     with ZipFile(output, "w") as zf:
         _zip_bytes(zf, "version", f"{config['version']}\n".encode())
-        _zip_bytes(zf, "classes.dex", (dex_out / "classes.dex").read_bytes())
         for lib in sorted(zygisk_out.glob("*.so")):
             _zip_bytes(zf, f"zygisk/{lib.name}", lib.read_bytes())
         for source in sorted(item for item in payload.rglob("*") if item.is_file()):

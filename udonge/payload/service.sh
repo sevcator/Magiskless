@@ -173,9 +173,12 @@ start_tee() {
     elif ! grep -qxF com.eltavine.duckdetector "$target"; then
         printf 'com.eltavine.duckdetector\n' >> "$target"
     fi
-    if [ ! -f "$tee_state/security_patch.txt" ]; then
+    if [ ! -f "$tee_state/security_patch.txt" ] || {
+        grep -q '^system=' "$tee_state/security_patch.txt" &&
+        ! grep -Eq '^(all|vendor|boot)=' "$tee_state/security_patch.txt";
+    }; then
         patch="$(sed -n 's/^SECURITY_PATCH=//p' "$state/pif.conf" | head -n 1)"
-        [ -z "$patch" ] || printf 'system=%s\n' "$patch" > "$tee_state/security_patch.txt"
+        [ -z "$patch" ] || printf 'all=%s\n' "$patch" > "$tee_state/security_patch.txt"
     fi
     [ -f "$tee_state/hbk" ] || head -c 32 /dev/urandom > "$tee_state/hbk"
     for item in "$tee_state"/*; do
@@ -190,10 +193,13 @@ start_tee() {
     pid="$(cat "$run/.pid" 2>/dev/null)"
     pid_start="$(cat "$run/.pid-start" 2>/dev/null)"
     pid_boot="$(cat "$run/.pid-boot" 2>/dev/null)"
-    process_is_current "$pid" "$pid_start" "$pid_boot" && return 0
+    if process_is_current "$pid" "$pid_start" "$pid_boot"; then
+        tee_child_is_current "$pid" && rm -f "$state/tee-unavailable"
+        return 0
+    fi
     rm -f "$run/.pid" "$run/.pid-start" "$run/.pid-boot"
     rm -f "$state/tee-unavailable"
-    (cd "$run" && exec ./supervisor ./daemon </dev/null >/dev/null 2>&1) &
+    (cd "$run" && exec ./supervisor ./daemon "$run" </dev/null >/dev/null 2>&1) &
     pid="$!"
     printf '%s\n' "$pid" > "$run/.pid"
     pid_start="$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null)"

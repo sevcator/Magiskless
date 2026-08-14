@@ -56,8 +56,6 @@ bool read_str(int fd, std::string &value) {
 #endif
 
 const char *CONF_DIR = UDONGE_ROOT "/state";
-const char *RUNTIME_DIR = UDONGE_ROOT "/runtime";
-
 bool is_candidate(const std::string &package_name) {
     static const char *const packages[] = {
         "com.eltavine.duckdetector", "ru.nspk.mirpay", "ru.nspk.sbpay",
@@ -89,13 +87,12 @@ public:
         cloak_ = false;
         is_gms_unstable_ = false;
         keep_loaded_ = false;
-        dex_data_.clear();
 
         std::string package_name = jstr(args->nice_name);
         if (package_name.empty()) return;
         is_gms_unstable_ = package_name == "com.google.android.gms.unstable";
         if (!is_gms_unstable_ && !is_candidate(package_name)) return;
-        if (!fetch_config(is_gms_unstable_)) return;
+        if (!fetch_config()) return;
 
         if (is_gms_unstable_) return;
         if (cfg_.shouldStealth(package_name)) {
@@ -112,7 +109,6 @@ public:
     void postAppSpecialize(const AppSpecializeArgs *) override {
         if (is_gms_unstable_) {
             cloak::spoof_build(env_, cfg_);
-            cloak::load_dex(env_, dex_data_);
             api_->setOption(zygisk::DLCLOSE_MODULE_LIBRARY);
             return;
         }
@@ -127,7 +123,6 @@ private:
     Api *api_ = nullptr;
     JNIEnv *env_ = nullptr;
     cloak::Config cfg_;
-    std::string dex_data_;
     bool cloak_ = false;
     bool is_gms_unstable_ = false;
     bool keep_loaded_ = false;
@@ -140,18 +135,17 @@ private:
         return result;
     }
 
-    bool fetch_config(bool include_dex) {
+    bool fetch_config() {
         int fd = api_->connectCompanion();
         if (fd < 0) return false;
-        uint8_t request = include_dex ? 2 : 1;
+        uint8_t request = 1;
         std::string targets;
         std::string props;
         std::string pif;
         bool ok = xwrite(fd, &request, 1)
             && read_str(fd, targets)
             && read_str(fd, props)
-            && read_str(fd, pif)
-            && read_str(fd, dex_data_);
+            && read_str(fd, pif);
         close(fd);
         if (!ok) return false;
         cfg_ = cloak::parse_config(targets, props, pif);
@@ -165,13 +159,9 @@ static void companion_handler(int client) {
     std::string targets = cloak::read_file(std::string(CONF_DIR) + "/targets.conf");
     std::string props = cloak::read_file(std::string(CONF_DIR) + "/props.conf");
     std::string pif = cloak::read_file(std::string(CONF_DIR) + "/pif.conf");
-    std::string dex = request == 2
-        ? cloak::read_file(std::string(RUNTIME_DIR) + "/classes.dex")
-        : "";
     write_str(client, targets);
     write_str(client, props);
     write_str(client, pif);
-    write_str(client, dex);
 }
 
 REGISTER_ZYGISK_MODULE(UdongeModule)

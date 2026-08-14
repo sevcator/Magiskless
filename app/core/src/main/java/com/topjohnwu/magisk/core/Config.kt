@@ -12,9 +12,7 @@ object Config : PreferenceConfig, DBConfig {
 
     const val DEFAULT_UDONGE_KEYBOX_URLS =
         "https://raw.githubusercontent.com/sevcator/Reisenless/master/udonge/payload/defaults/keybox.xml\n" +
-        "https://gist.githubusercontent.com/GreyElaina/2401596f3b8a01f8602768ad5221e2fd/raw/kb_b.xml\n" +
-        "https://raw.githubusercontent.com/aosp-mirror/platform_system_core/android-13.0.0_r27/" +
-        "trusty/keymaster/set_attestation_key/keymaster_soft_attestation_keys.xml"
+        "https://gist.githubusercontent.com/GreyElaina/2401596f3b8a01f8602768ad5221e2fd/raw/kb_b.xml"
 
     override val stringDB get() = ServiceLocator.stringDB
     override val settingsDB get() = ServiceLocator.settingsDB

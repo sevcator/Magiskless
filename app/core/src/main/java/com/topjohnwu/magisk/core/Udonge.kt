@@ -26,6 +26,7 @@ object Udonge {
             .distinct()
             .take(16)
             .joinToString("\n")
+            .ifBlank { Config.DEFAULT_UDONGE_KEYBOX_URLS }
         val encoded = Base64.encodeToString(normalized.toByteArray(), Base64.NO_WRAP)
         val command = "mkdir -p '$state' && printf '%s' '$encoded' | " +
             "base64 -d > '$state/keybox_urls.conf' && : > '$state/.keybox-refresh'"
