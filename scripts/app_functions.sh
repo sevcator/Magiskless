@@ -58,6 +58,69 @@ fix_env() {
   chown -R 0:0 $MAGISKBIN
 }
 
+refresh_udonge_runtime() {
+  local root=${SECURE_DIR}/udonge
+  local runtime=$root/runtime
+  local next=$root/runtime.new
+  local old=$root/runtime.old
+  local archive=$MAGISKBIN/udonge.bin
+  local version required
+
+  [ -f "$archive" ] || return 0
+  version=$($MAGISKBIN/busybox unzip -p "$archive" version 2>/dev/null | tr -d '\r\n')
+  [ -n "$version" ] || return 1
+
+  rm -rf "$next"
+  mkdir -p "$next" || return 1
+  $MAGISKBIN/busybox unzip -oq "$archive" -d "$next" || {
+    rm -rf "$next"
+    return 1
+  }
+
+  required="version post-fs-data.sh service.sh defaults/keybox.xml defaults/keybox_urls.conf defaults/pif.conf defaults/props.conf defaults/targets.conf"
+  case "$ARCH" in
+    arm64)
+      required="$required zygisk/arm64-v8a.so tee/arm64-v8a/inject tee/arm64-v8a/libTEESimulator.so tee/arm64-v8a/libcertgen.so tee/arm64-v8a/supervisor tee/classes.dex tee/daemon"
+      ;;
+    arm)
+      required="$required zygisk/armeabi-v7a.so tee/armeabi-v7a/inject tee/armeabi-v7a/libTEESimulator.so tee/armeabi-v7a/supervisor tee/classes.dex tee/daemon"
+      ;;
+    x64)
+      required="$required zygisk/x86_64.so"
+      ;;
+    x86)
+      required="$required zygisk/x86.so"
+      ;;
+  esac
+  for file in $required; do
+    [ -f "$next/$file" ] || {
+      rm -rf "$next"
+      return 1
+    }
+  done
+  [ "$(cat "$next/version" 2>/dev/null)" = "$version" ] || {
+    rm -rf "$next"
+    return 1
+  }
+
+  mkdir -p "$root" || return 1
+  rm -rf "$old"
+  [ ! -d "$runtime" ] || mv "$runtime" "$old" || {
+    rm -rf "$next"
+    return 1
+  }
+  if mv "$next" "$runtime"; then
+    rm -rf "$old"
+    chmod -R 600 "$runtime"
+    find "$runtime" -type d -exec chmod 700 {} \;
+    chmod 700 "$runtime/post-fs-data.sh" "$runtime/service.sh"
+    return 0
+  fi
+  [ -d "$runtime" ] || [ ! -d "$old" ] || mv "$old" "$runtime"
+  rm -rf "$next"
+  return 1
+}
+
 # $1 = install dir
 # $2 = boot partition
 direct_install() {
@@ -76,6 +139,7 @@ direct_install() {
 
   rm -f $1/new-boot.img
   fix_env $1
+  refresh_udonge_runtime || return 3
   run_migrations
 
   return 0
