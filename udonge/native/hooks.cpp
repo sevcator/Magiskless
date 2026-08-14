@@ -63,6 +63,7 @@ static const char *const kMountsExtra[] = {
     "worker",         // Magisk overlay worker bind mounts
     "mirror",         // Magisk mirror bind mounts
     ".core",          // /sbin/.core or similar Magisk paths
+    "/adb/modules/",
 };
 
 static bool basename_is_su(const char *path) {
@@ -127,14 +128,31 @@ static bool is_self_proc_file(const char *path, const char *name) {
     return strcmp(path, buf) == 0;
 }
 
+static bool is_mount_name(const char *name) {
+    return strcmp(name, "mounts") == 0 ||
+           strcmp(name, "mountinfo") == 0 ||
+           strcmp(name, "mountstats") == 0;
+}
+
 static bool is_mount_path(const char *path) {
     if (!path) return false;
-    // /proc/mounts is a system-global symlink to /proc/self/mounts
-    if (strcmp(path, "/proc/mounts") == 0)    return true;
-    if (strcmp(path, "/proc/net/tcp") == 0)   return false; // not a mount file
-    return is_self_proc_file(path, "mounts")    ||
-           is_self_proc_file(path, "mountinfo") ||
-           is_self_proc_file(path, "mountstats");
+    if (strcmp(path, "/proc/mounts") == 0) return true;
+    if (strncmp(path, "/proc/", 6) != 0) return false;
+    const char *owner = path + 6;
+    const char *slash = strchr(owner, '/');
+    if (!slash || slash == owner) return false;
+    bool valid_owner = strncmp(owner, "self/", 5) == 0 ||
+                       strncmp(owner, "thread-self/", 12) == 0;
+    if (!valid_owner) {
+        valid_owner = true;
+        for (const char *p = owner; p < slash; ++p) {
+            if (*p < '0' || *p > '9') {
+                valid_owner = false;
+                break;
+            }
+        }
+    }
+    return valid_owner && is_mount_name(slash + 1);
 }
 
 static std::vector<char> read_all_fd(int fd) {

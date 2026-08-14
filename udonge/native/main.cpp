@@ -99,7 +99,7 @@ public:
         std::string package = base_package(package_name);
         is_gms_unstable_ = package_name == "com.google.android.gms.unstable";
         if (!is_gms_unstable_ && !is_candidate(package_name)) return;
-        if (!fetch_config()) return;
+        if (!fetch_config(package)) return;
 
         if (is_gms_unstable_) return;
         if (cfg_.shouldStealth(package)) {
@@ -142,20 +142,34 @@ private:
         return result;
     }
 
-    bool fetch_config() {
+    bool fetch_config(const std::string &package) {
         int fd = api_->connectCompanion();
-        if (fd < 0) return false;
-        uint8_t request = 1;
         std::string targets;
         std::string props;
         std::string pif;
-        bool ok = xwrite(fd, &request, 1)
-            && read_str(fd, targets)
-            && read_str(fd, props)
-            && read_str(fd, pif);
-        close(fd);
-        if (!ok) return false;
+        if (fd >= 0) {
+            uint8_t request = 1;
+            bool ok = xwrite(fd, &request, 1)
+                && read_str(fd, targets)
+                && read_str(fd, props)
+                && read_str(fd, pif);
+            close(fd);
+            if (!ok) {
+                targets.clear();
+                props.clear();
+                pif.clear();
+            }
+        }
+        if (targets.empty()) {
+            targets = cloak::read_file(std::string(CONF_DIR) + "/targets.conf");
+            props = cloak::read_file(std::string(CONF_DIR) + "/props.conf");
+            pif = cloak::read_file(std::string(CONF_DIR) + "/pif.conf");
+        }
         cfg_ = cloak::parse_config(targets, props, pif);
+        if (is_gms_unstable_) return !cfg_.gms_build.empty();
+        if (!cfg_.shouldCloak(package) && !cfg_.shouldStealth(package)) {
+            cfg_.packages.insert(package);
+        }
         return true;
     }
 };
