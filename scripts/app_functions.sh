@@ -121,6 +121,18 @@ refresh_udonge_runtime() {
   return 1
 }
 
+install_udonge_boot_scripts() {
+  local stage dir script
+  for stage in post-fs-data service; do
+    dir=${SECURE_DIR}/$stage.d
+    script=$dir/udonge.sh
+    mkdir -p "$dir" || return 1
+    printf '#!/system/bin/sh\nexec %s/udonge/runtime/%s.sh\n' \
+      "$SECURE_DIR" "$stage" > "$script" || return 1
+    chmod 700 "$script" || return 1
+  done
+}
+
 # $1 = install dir
 # $2 = boot partition
 direct_install() {
@@ -140,6 +152,7 @@ direct_install() {
   rm -f $1/new-boot.img
   fix_env $1
   refresh_udonge_runtime || return 3
+  install_udonge_boot_scripts || return 3
   run_migrations
 
   return 0
