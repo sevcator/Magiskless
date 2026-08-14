@@ -839,12 +839,13 @@ fn convert_zygisk_modules_to_memfd(modules: &mut [ModuleInfo]) {
             };
             if memfd >= 0 {
                 unsafe {
-                    if libc::sendfile(memfd, fd, ptr::null_mut(), i32::MAX as usize) < 0 {
-                        libc::close(memfd);
-                    } else {
+                    let copied = libc::sendfile(memfd, fd, ptr::null_mut(), i32::MAX as usize) >= 0
+                        && libc::lseek(memfd, 0, libc::SEEK_SET) >= 0;
+                    if copied {
                         libc::close(fd);
                         return memfd;
                     }
+                    libc::close(memfd);
                 }
             }
             use_memfd = false;

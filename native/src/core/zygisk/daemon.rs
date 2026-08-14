@@ -4,7 +4,9 @@ use crate::consts::{MAIN_BIN_NAME, MODULEROOT, ZYGISKLDR};
 use crate::daemon::{MagiskD, to_user_id};
 use crate::ffi::{ZygiskRequest, ZygiskStateFlags, get_magisk_tmp, update_deny_flags};
 use crate::resetprop::{get_prop, set_prop};
-use crate::udonge::{UDONGE_MODULE_NAME, UDONGE_ROOT, UDONGE_RUNTIME};
+use crate::udonge::{
+    UDONGE_MODULE_NAME, UDONGE_ROOT, UDONGE_RUNTIME, is_enabled as udonge_enabled,
+};
 use crate::socket::{IpcRead, UnixSocketExt};
 use base::libc::STDOUT_FILENO;
 use base::{
@@ -13,7 +15,8 @@ use base::{
 };
 use nix::fcntl::OFlag;
 use std::fmt::Write;
-use std::os::fd::{AsRawFd, RawFd};
+use std::fs::File;
+use std::os::fd::{AsRawFd, FromRawFd, RawFd};
 use std::os::unix::net::UnixStream;
 use std::ptr;
 use std::sync::atomic::Ordering;
@@ -130,7 +133,7 @@ impl ZygiskState {
             if fork_dont_care() == 0 {
                 exec_zygiskd(is_64_bit, remote);
             }
-            if let Some(module_fds) = daemon.get_module_fds(is_64_bit, false, true) {
+            if let Some((module_fds, _opened)) = daemon.get_module_fds(is_64_bit, false, true) {
                 local.send_fds(&module_fds)?;
             }
             if local.read_decodable::<i32>()? != 0 {
@@ -210,29 +213,85 @@ impl MagiskD {
         }();
     }
 
+    fn open_udonge_module(is_64_bit: bool) -> Option<File> {
+        #[cfg(target_arch = "aarch64")]
+        let abi = if is_64_bit {
+            "arm64-v8a.so"
+        } else {
+            "armeabi-v7a.so"
+        };
+        #[cfg(target_arch = "arm")]
+        let abi = if is_64_bit { return None } else { "armeabi-v7a.so" };
+        #[cfg(target_arch = "x86_64")]
+        let abi = if is_64_bit { "x86_64.so" } else { "x86.so" };
+        #[cfg(target_arch = "x86")]
+        let abi = if is_64_bit { return None } else { "x86.so" };
+        #[cfg(target_arch = "riscv64")]
+        return None;
+
+        let source = File::open(format!("{UDONGE_RUNTIME}/zygisk/{abi}")).ok()?;
+        let memfd = unsafe {
+            libc::syscall(
+                libc::SYS_memfd_create,
+                raw_cstr!("jit-cache"),
+                libc::MFD_CLOEXEC,
+            ) as RawFd
+        };
+        if memfd < 0 {
+            return None;
+        }
+        let copied = unsafe {
+            libc::sendfile(
+                memfd,
+                source.as_raw_fd(),
+                ptr::null_mut(),
+                i32::MAX as usize,
+            ) >= 0
+                && libc::lseek(memfd, 0, libc::SEEK_SET) >= 0
+        };
+        if !copied {
+            unsafe { libc::close(memfd) };
+            return None;
+        }
+        Some(unsafe { File::from_raw_fd(memfd) })
+    }
+
     fn get_module_fds(
         &self,
         is_64_bit: bool,
         udonge_only: bool,
         allow_udonge: bool,
-    ) -> Option<Vec<RawFd>> {
+    ) -> Option<(Vec<RawFd>, Vec<File>)> {
         self.module_list.get().map(|module_list| {
-            module_list
-                .iter()
-                .map(|m| {
-                    if udonge_only && (m.name != UDONGE_MODULE_NAME || !allow_udonge) {
-                        -1
-                    } else if is_64_bit {
-                        m.z64
-                    } else {
-                        m.z32
+            let mut fds = Vec::with_capacity(module_list.len() + 1);
+            let mut opened = Vec::with_capacity(1);
+            let mut has_udonge = false;
+            for module in module_list {
+                let mut fd = if is_64_bit { module.z64 } else { module.z32 };
+                if module.name == UDONGE_MODULE_NAME {
+                    has_udonge = true;
+                    if !udonge_enabled() || (udonge_only && !allow_udonge) {
+                        fd = -1;
+                    } else if let Some(file) = Self::open_udonge_module(is_64_bit) {
+                        fd = file.as_raw_fd();
+                        opened.push(file);
                     }
-                })
-                // All fds passed over sockets have to be valid file descriptors.
-                // To work around this issue, send over STDOUT_FILENO as an indicator of an
-                // invalid fd as it will always be /dev/null in magiskd.
-                .map(|fd| if fd < 0 { STDOUT_FILENO } else { fd })
-                .collect()
+                } else if udonge_only {
+                    fd = -1;
+                }
+                fds.push(if fd < 0 { STDOUT_FILENO } else { fd });
+            }
+            if !has_udonge && udonge_enabled() && (!udonge_only || allow_udonge) {
+                let fd = Self::open_udonge_module(is_64_bit)
+                    .map(|file| {
+                        let fd = file.as_raw_fd();
+                        opened.push(file);
+                        fd
+                    })
+                    .unwrap_or(STDOUT_FILENO);
+                fds.push(fd);
+            }
+            (fds, opened)
         })
     }
 
@@ -254,7 +313,7 @@ impl MagiskD {
 
         // Next send modules
         if zygisk_should_load_module(flags)
-            && let Some(module_fds) = self.get_module_fds(
+            && let Some((module_fds, _opened)) = self.get_module_fds(
                 is_64_bit,
                 flags & UNMOUNT_MASK == UNMOUNT_MASK,
                 is_udonge_target(&process),

@@ -61,6 +61,18 @@ remember_tee_supervisor() {
     printf '%s\n' "$boot_id" > "$run/.pid-boot"
 }
 
+sync_vbmeta_digest() {
+    local digest temp
+    [ "$(wc -c < "$state/boot_hash.bin" 2>/dev/null)" = 32 ] || return 1
+    digest="$(od -An -tx1 -v "$state/boot_hash.bin" 2>/dev/null | tr -d ' \n')"
+    [ "${#digest}" = 64 ] || return 1
+    temp="$state/.props.$$"
+    sed '/^ro\.boot\.vbmeta\.digest=/d' "$state/props.conf" 2>/dev/null > "$temp"
+    printf 'ro.boot.vbmeta.digest=%s\n' "$digest" >> "$temp"
+    chmod 600 "$temp"
+    mv -f "$temp" "$state/props.conf"
+}
+
 if ! mkdir "$lock" 2>/dev/null; then
     owner="$(cat "$lock/pid" 2>/dev/null)"
     owner_start="$(cat "$lock/start" 2>/dev/null)"
@@ -141,7 +153,10 @@ refresh_keybox() {
         cp "$work/best.xml" "$temp" && chmod 600 "$temp" && mv -f "$temp" "$tee_state/keybox.xml"
         rm -f "$temp"
     fi
-    [ -n "$now" ] && printf '%s\n' "$now" > "$marker"
+    if [ -n "$now" ]; then
+        printf '%s\n' "$now" > "$marker"
+        chmod 600 "$marker"
+    fi
     rm -f "$state/.keybox-refresh"
     rm -rf "$work"
 }
@@ -249,6 +264,7 @@ start_tee() {
 
     (
         sleep 60
+        sync_vbmeta_digest || true
         healthy="$(find_tee_supervisor "$run")"
         if [ -n "$healthy" ] && remember_tee_supervisor "$run" "$healthy"; then
             rm -f "$state/tee-unavailable"
@@ -264,6 +280,7 @@ start_tee() {
 
 refresh_keybox
 start_tee
+sync_vbmeta_digest || true
 
 version="$(cat "$runtime/version" 2>/dev/null)"
 certified="$(cat "$state/.certified" 2>/dev/null)"
@@ -271,4 +288,5 @@ if [ -f "$state/pif.conf" ] && [ "$version" != "$certified" ]; then
     am force-stop com.google.android.gms >/dev/null 2>&1
     am broadcast -a android.server.checkin.CHECKIN >/dev/null 2>&1
     printf '%s\n' "$version" > "$state/.certified"
+    chmod 600 "$state/.certified"
 fi
