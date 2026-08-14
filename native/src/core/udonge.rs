@@ -1,4 +1,4 @@
-use crate::consts::{BBPATH, MAGISK_VERSION, SECURE_DIR};
+use crate::consts::{BBPATH, DATABIN, MAGISK_VERSION, SECURE_DIR};
 use crate::ffi::{exec_script, exec_script_async, get_magisk_tmp};
 use base::const_format::concatcp;
 use base::{FsPathBuilder, ResultExt, cstr};
@@ -79,7 +79,13 @@ fn runtime_version_matches(root: &str) -> bool {
 
 pub fn setup_runtime() {
     let buffer = cstr::buf::default();
-    let archive = buffer.join_path(get_magisk_tmp()).join_path("udonge.bin");
+    let ramdisk_archive = buffer.join_path(get_magisk_tmp()).join_path("udonge.bin");
+    let persistent_archive = cstr::buf::default().join_path(DATABIN).join_path("udonge.bin");
+    let archive = if ramdisk_archive.exists() {
+        &ramdisk_archive
+    } else {
+        &persistent_archive
+    };
 
     cstr!(UDONGE_ROOT).mkdirs(0o700).log_ok();
     cstr!(UDONGE_ROOT).follow_link().chmod(0o700).log_ok();
@@ -104,7 +110,7 @@ pub fn setup_runtime() {
         let extracted = Command::new(&busybox)
             .arg("unzip")
             .arg("-oq")
-            .arg(&archive)
+            .arg(archive)
             .arg("-d")
             .arg(UDONGE_NEXT)
             .stdout(Stdio::null())
@@ -159,6 +165,9 @@ pub fn setup_runtime() {
 }
 
 pub fn run_service() {
+    if !runtime_version_matches(UDONGE_RUNTIME) {
+        setup_runtime();
+    }
     if !is_enabled() {
         return;
     }
