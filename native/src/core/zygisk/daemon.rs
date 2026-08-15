@@ -6,6 +6,7 @@ use crate::ffi::{ZygiskRequest, ZygiskStateFlags, get_magisk_tmp, update_deny_fl
 use crate::resetprop::{get_prop, set_prop};
 use crate::udonge::{
     UDONGE_MODULE_NAME, UDONGE_ROOT, UDONGE_RUNTIME, is_enabled as udonge_enabled,
+    is_hide_apps_target,
 };
 use crate::socket::{IpcRead, UnixSocketExt};
 use base::libc::STDOUT_FILENO;
@@ -26,6 +27,9 @@ const UNMOUNT_MASK: u32 =
     ZygiskStateFlags::ProcessOnDenyList.repr | ZygiskStateFlags::DenyListEnforced.repr;
 
 fn is_udonge_target(process: &str) -> bool {
+    if is_hide_apps_target(process) {
+        return true;
+    }
     let process = process.split_once(':').map_or(process, |(package, _)| package);
     matches!(
         process,

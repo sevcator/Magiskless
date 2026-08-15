@@ -1,7 +1,7 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application")
     kotlin("plugin.parcelize")
-    alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 setupMainApk()
@@ -35,6 +35,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":hideapps"))
     coreLibraryDesugaring(libs.jdk.libs)
 
     // Compose

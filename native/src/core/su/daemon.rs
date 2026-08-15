@@ -232,7 +232,7 @@ impl MagiskD {
 
             // We need to talk to the manager, get the app info
             let (mgr_uid, mgr_pkg) =
-                if access.policy == SuPolicy::Query || access.notify {
+                if cfg.sulist || access.policy == SuPolicy::Query || access.notify {
                     self.get_manager(to_user_id(eval_uid))
                 } else {
                     (-1, String::new())

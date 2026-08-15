@@ -21,6 +21,7 @@ import com.topjohnwu.magisk.databinding.DialogSettingsAppNameBinding
 import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.core.utils.TextHolder
 import com.topjohnwu.magisk.core.utils.asText
+import com.topjohnwu.magisk.hideapps.HideAppsRepository
 import com.topjohnwu.magisk.view.MagiskDialog
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.magisk.core.R as CoreR
@@ -136,6 +137,18 @@ object SuList : BaseSettingsItem.SplitToggle() {
     override val title = CoreR.string.settings_sulist_title.asText()
     override val description = CoreR.string.settings_sulist_summary.asText()
     override var value by Config::sulist
+}
+
+object HideApps : BaseSettingsItem.SplitToggle() {
+    override val title = CoreR.string.hide_apps_title.asText()
+    override val description = CoreR.string.hide_apps_summary.asText()
+    override var value
+        get() = HideAppsRepository(com.topjohnwu.magisk.core.AppContext).config.enabled
+        set(value) {
+            HideAppsRepository(com.topjohnwu.magisk.core.AppContext).setEnabled(value)
+        }
+
+    override fun refresh() = notifyPropertyChanged(BR.checked)
 }
 
 object UdongeSettings : BaseSettingsItem.Section() {

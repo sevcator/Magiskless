@@ -123,6 +123,9 @@
     <string name="udonge_update_title">update udonge</string>
     <string name="udonge_update_summary">version (%1$s)</string>
     <string name="udonge_keybox_hint">one https link per line</string>
+    <string name="udonge_rom_keywords_title">hide your system things</string>
+    <string name="udonge_rom_keywords_summary">hide runtime signals and framework traces for custom ROMs</string>
+    <string name="udonge_rom_keywords_hint">one ROM name per line (e.g. lineage, protonaosp)</string>
     <string name="color_preview">color preview</string>
     <string name="color_white">white</string>
     <string name="color_blue">blue</string>
@@ -255,6 +258,32 @@
     <string name="settings_sulist_summary">only listed apps and processes can use root or see reisenless changes</string>
     <string name="settings_sulist_config_title">configure sulist</string>
     <string name="settings_sulist_config_summary">select apps and processes allowed to use reisenless</string>
+    <string name="hide_apps_title" tools:ignore="MissingTranslation">hide apps</string>
+    <string name="hide_apps_summary" tools:ignore="MissingTranslation">hide selected packages from app queries</string>
+    <string name="hide_apps_service_active" tools:ignore="MissingTranslation">built-in filter active · %1$d app rules</string>
+    <string name="hide_apps_service_inactive" tools:ignore="MissingTranslation">built-in filter inactive · enable zygisk and reboot</string>
+    <string name="hide_apps_querying_app" tools:ignore="MissingTranslation">app whose queries will be filtered</string>
+    <string name="hide_apps_choose_app" tools:ignore="MissingTranslation">choose an app</string>
+    <string name="hide_apps_enable_rule" tools:ignore="MissingTranslation">enable filtering for this app</string>
+    <string name="hide_apps_whitelist_mode" tools:ignore="MissingTranslation">whitelist mode</string>
+    <string name="hide_apps_blacklist_summary" tools:ignore="MissingTranslation">checked packages are hidden</string>
+    <string name="hide_apps_whitelist_summary" tools:ignore="MissingTranslation">all packages except checked packages are hidden</string>
+    <string name="hide_apps_exclude_system" tools:ignore="MissingTranslation">always show system apps</string>
+    <string name="hide_apps_search" tools:ignore="MissingTranslation">search packages</string>
+    <string name="hide_apps_viewer_whitelist_title" tools:ignore="MissingTranslation">apps allowed to see hidden apps</string>
+    <string name="denylist" tools:ignore="MissingTranslation">deny list</string>
+    <string name="menu_sort" tools:ignore="MissingTranslation">sort</string>
+    <string name="sort_by_name" tools:ignore="MissingTranslation">sort by name</string>
+    <string name="sort_by_package_name" tools:ignore="MissingTranslation">sort by package name</string>
+    <string name="sort_by_install_time" tools:ignore="MissingTranslation">sort by install time</string>
+    <string name="sort_by_update_time" tools:ignore="MissingTranslation">sort by update time</string>
+    <string name="sort_reverse" tools:ignore="MissingTranslation">reverse order</string>
+    <string name="reinstall" tools:ignore="MissingTranslation">reinstall</string>
+    <string name="enabled" tools:ignore="MissingTranslation">enabled</string>
+    <string name="disabled" tools:ignore="MissingTranslation">disabled</string>
+    <string name="ramdisk" tools:ignore="MissingTranslation">ramdisk</string>
+    <string name="sponsor" tools:ignore="MissingTranslation">sponsor</string>
+    <string name="shared_uid" tools:ignore="MissingTranslation">shared uid</string>
     <string name="webui">webui</string>
 
 </resources>

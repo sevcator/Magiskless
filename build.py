@@ -608,9 +608,41 @@ def build_udonge():
     zygisk_out = work / "zygisk"
     zygisk_out.mkdir(parents=True)
 
+    java_out = work / "java"
+    java_out.mkdir(parents=True)
+    android_jar = _latest_android_tool(sdk_path / "platforms") / "android.jar"
+    build_tools = _latest_android_tool(sdk_path / "build-tools")
+    d8 = build_tools / ("d8.bat" if is_windows else "d8")
+    java_source = Path(
+        "udonge", "java", "com", "topjohnwu", "reisenless", "hideapps",
+        "PackageManagerProxy.java",
+    )
+    env = find_jdk()
+    proc = execv(
+        [
+            "javac",
+            "-source", "8",
+            "-target", "8",
+            "-classpath", android_jar,
+            "-d", java_out,
+            java_source,
+        ],
+        env=env,
+    )
+    if proc.returncode != 0:
+        error("Build Hide Apps Java runtime failed!")
+    class_files = sorted(java_out.rglob("*.class"))
+    proc = execv(
+        [d8, "--min-api", "26", "--output", java_out, *class_files],
+        env=env,
+    )
+    if proc.returncode != 0:
+        error("Build Hide Apps DEX runtime failed!")
+    hideapps_dex = java_out / "classes.dex"
+
     native_sources = [
         Path("udonge", "native", name)
-        for name in ("main.cpp", "config.cpp", "hooks.cpp", "spoof.cpp")
+        for name in ("main.cpp", "config.cpp", "hideapps.cpp", "hooks.cpp", "spoof.cpp")
     ]
     api = "23"
     secure_dir = config.get("secureDir", "/data/adb").rstrip("/")
@@ -645,6 +677,7 @@ def build_udonge():
             f'-DUDONGE_ROOT="{secure_dir}/udonge"',
             *native_sources,
             "-ldl",
+            "-llog",
             "-o",
             output,
         ]
@@ -656,6 +689,7 @@ def build_udonge():
     payload = Path("udonge", "payload")
     with ZipFile(output, "w") as zf:
         _zip_bytes(zf, "version", f"{config['version']}\n".encode())
+        _zip_bytes(zf, "hideapps.dex", hideapps_dex.read_bytes())
         for lib in sorted(zygisk_out.glob("*.so")):
             _zip_bytes(zf, f"zygisk/{lib.name}", lib.read_bytes())
         for source in sorted(item for item in payload.rglob("*") if item.is_file()):

@@ -45,6 +45,8 @@ import com.topjohnwu.magisk.ui.deny.DenyListViewModel
 import com.topjohnwu.magisk.ui.flash.FlashScreen
 import com.topjohnwu.magisk.ui.flash.FlashUtils
 import com.topjohnwu.magisk.ui.flash.FlashViewModel
+import com.topjohnwu.magisk.ui.hideapps.HideAppsScreen
+import com.topjohnwu.magisk.ui.hideapps.HideAppsViewModel
 import com.topjohnwu.magisk.ui.module.ActionScreen
 import com.topjohnwu.magisk.ui.module.ActionViewModel
 import com.topjohnwu.magisk.ui.navigation.LocalNavigator
@@ -119,6 +121,11 @@ class MainActivity : ComponentActivity(), SplashScreenHost {
                                     val vm: DenyListViewModel = viewModel(factory = VMFactory)
                                     LaunchedEffect(Unit) { vm.startLoading() }
                                     DenyListScreen(vm, onBack = { navigator.pop() })
+                                }
+                                entry<Route.HideApps> { _ ->
+                                    val vm: HideAppsViewModel = viewModel(factory = VMFactory)
+                                    LaunchedEffect(Unit) { vm.startLoading() }
+                                    HideAppsScreen(vm, onBack = { navigator.pop() })
                                 }
                                 entry<Route.Flash> { key ->
                                     val vm: FlashViewModel = viewModel(factory = VMFactory)

@@ -23,6 +23,7 @@ import com.topjohnwu.magisk.databinding.bindExtra
 import com.topjohnwu.magisk.events.AddHomeIconEvent
 import com.topjohnwu.magisk.events.AuthEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
+import com.topjohnwu.magisk.ui.hideapps.HideAppsRootClient
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.launch
 
@@ -56,6 +57,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
                 list.add(Zygisk)
             }
             list.add(SuList)
+            list.add(HideApps)
             list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeUpdate))
         }
 
@@ -92,6 +94,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             AddShortcut -> AddHomeIconEvent().publish()
             SystemlessHosts -> createHosts()
             SuList -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
+            HideApps -> SettingsFragmentDirections.actionSettingsFragmentToHideAppsFragment().navigate()
             is Hide -> viewModelScope.launch { AppMigration.hide(view.activity, item.value) }
             Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
@@ -104,6 +107,17 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
     override fun onItemToggleAction(view: View, item: BaseSettingsItem) {
         when (item) {
             SuList -> SnackbarEvent(R.string.reboot_apply_change).publish()
+            HideApps -> {
+                val requested = HideApps.value
+                Shell.EXECUTOR.execute {
+                    if (requested) {
+                        Udonge.setEnabled(true)
+                        Config.zygisk = true
+                    }
+                    HideAppsRootClient.syncCurrentConfig()
+                }
+                SnackbarEvent(R.string.reboot_apply_change).publish()
+            }
             UdongeKeyboxes -> {
                 val requested = UdongeKeyboxes.value
                 if (requested) Config.zygisk = true

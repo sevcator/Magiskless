@@ -12,6 +12,12 @@
         tools:layout="@layout/fragment_deny_md2" />
 
     <fragment
+        android:id="@+id/hideAppsFragment"
+        android:name="com.topjohnwu.magisk.ui.hideapps.HideAppsFragment"
+        android:label="HideAppsFragment"
+        tools:layout="@layout/fragment_hide_apps_md2" />
+
+    <fragment
         android:id="@+id/homeFragment"
         android:name="com.topjohnwu.magisk.ui.home.HomeFragment"
         android:label="HomeFragment"
@@ -97,6 +103,14 @@
         <action
             android:id="@+id/action_settingsFragment_to_denyFragment"
             app:destination="@id/denyFragment"
+            app:enterAnim="@anim/fragment_enter"
+            app:exitAnim="@anim/fragment_exit"
+            app:popEnterAnim="@anim/fragment_enter_pop"
+            app:popExitAnim="@anim/fragment_exit_pop" />
+
+        <action
+            android:id="@+id/action_settingsFragment_to_hideAppsFragment"
+            app:destination="@id/hideAppsFragment"
             app:enterAnim="@anim/fragment_enter"
             app:exitAnim="@anim/fragment_exit"
             app:popEnterAnim="@anim/fragment_enter_pop"

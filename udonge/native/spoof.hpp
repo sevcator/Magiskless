@@ -13,4 +13,10 @@ void spoof_build(JNIEnv *env, const Config &cfg);
 // which could break payment apps that validate device identity.
 void spoof_display(JNIEnv *env, const Config &cfg);
 
+// Overwrite Build.TYPE → "user" and Build.TAGS → "release-keys" unconditionally.
+// Called for all cloak targets to fix the Build constant cross-check that Duck
+// Detector performs against the fingerprint tail. The property hook covers the
+// native/reflection path; this covers the static Java constant.
+void spoof_build_type(JNIEnv *env);
+
 } // namespace cloak

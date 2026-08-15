@@ -73,11 +73,21 @@ static bool basename_is_su(const char *path) {
            strcmp(b, "magiskpolicy") == 0 || strcmp(b, "resetprop") == 0;
 }
 
+// Return true if the path contains any user-configured ROM keyword.
+// Called from is_blocked(), which is already guarded by a !path check.
+static bool is_rom_path(const char *path) {
+    if (!g_cfg) return false;
+    for (const auto &kw : g_cfg->rom_keywords)
+        if (strstr(path, kw.c_str())) return true;
+    return false;
+}
+
 static bool is_blocked(const char *path) {
     if (!path) return false;
     for (const char *s : kBlockedSubstr)
         if (strstr(path, s)) return true;
-    return basename_is_su(path);
+    if (basename_is_su(path)) return true;
+    return is_rom_path(path);
 }
 
 // ---- originals ----
@@ -180,6 +190,12 @@ static std::vector<char> filter_blocked_lines(const std::vector<char> &raw,
         if (keep && extra_mounts_check) {
             for (const char *s : kMountsExtra)
                 if (memmem(p, len, s, strlen(s))) { keep = false; break; }
+        }
+        // Also filter lines containing ROM keywords (e.g. lineage framework files in maps)
+        if (keep && g_cfg) {
+            for (const auto &kw : g_cfg->rom_keywords) {
+                if (memmem(p, len, kw.c_str(), kw.size())) { keep = false; break; }
+            }
         }
         if (keep) out.insert(out.end(), p, p + len);
         p += len;
@@ -446,9 +462,29 @@ static bool is_debug_replace_prop(const char *name) {
         if (strcmp(name, p) == 0) return true;
     return false;
 }
+// Props whose VALUE is checked against ROM keywords and suppressed if it matches.
+// Used for props that carry the ROM name in their value rather than their key.
+static const char *const kRomValueCheckProps[] = {
+    "ro.build.flavor",
+    "ro.build.display.id",
+};
+
 static bool is_deleted_prop(const char *name) {
     for (const char *p : kDeletedProps)
         if (strcmp(name, p) == 0) return true;
+    // Dynamic: any prop whose NAME contains a ROM keyword is suppressed
+    if (g_cfg) {
+        for (const auto &kw : g_cfg->rom_keywords)
+            if (strstr(name, kw.c_str())) return true;
+    }
+    return false;
+}
+
+// Returns true if value contains a user-configured ROM keyword.
+static bool value_has_rom_keyword(const char *value) {
+    if (!value || !g_cfg) return false;
+    for (const auto &kw : g_cfg->rom_keywords)
+        if (strstr(value, kw.c_str())) return true;
     return false;
 }
 
@@ -459,6 +495,12 @@ static int replace_userdebug(char *buf, int len) {
     memmove(pos + 4, pos + 9, tail + 1);
     memcpy(pos, "user", 4);
     return len - 5;
+}
+
+static bool is_rom_value_check_prop(const char *name) {
+    for (const char *p : kRomValueCheckProps)
+        if (strcmp(name, p) == 0) return true;
+    return false;
 }
 
 // ---- property hooks (classic API) ----
@@ -493,6 +535,16 @@ static int h_prop_get(const char *name, char *value) {
                 memcpy(value, rp, n);
                 value[n] = '\0';
                 return (int)n;
+            }
+            return len;
+        }
+        // Suppress props whose value exposes a ROM keyword (e.g. ro.build.flavor
+        // = "lineage_enchilada-user" after userdebug replacement).
+        if (is_rom_value_check_prop(name)) {
+            int len = o_prop_get(name, value);
+            if (len > 0 && value_has_rom_keyword(value)) {
+                value[0] = '\0';
+                return 0;
             }
             return len;
         }
@@ -533,6 +585,8 @@ static void cb_trampoline(void *cookie, const char *name, const char *value, uin
                 const char *rp = find_recovery_prop(name);
                 if (rp && value && strstr(value, "recovery")) {
                     value = rp;
+                } else if (is_rom_value_check_prop(name) && value_has_rom_keyword(value)) {
+                    value = "";
                 } else if (is_debug_replace_prop(name) && value && strstr(value, "userdebug")) {
                     size_t n = strlen(value);
                     if (n < sizeof(tl_cb_buf)) {

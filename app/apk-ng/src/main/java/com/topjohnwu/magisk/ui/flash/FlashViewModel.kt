@@ -105,13 +105,6 @@ class FlashViewModel : BaseViewModel() {
                         MagiskInstaller.Patch(uri, outItems, logItems).exec()
                     })
                 }
-                Const.Value.DOWNLOAD -> {
-                    uri ?: return@launch
-                    _showReboot.value = false
-                    onResult(withContext(Dispatchers.IO) {
-                        MagiskInstaller.Download(uri.toString(), outItems, logItems).exec()
-                    })
-                }
             }
         }
     }

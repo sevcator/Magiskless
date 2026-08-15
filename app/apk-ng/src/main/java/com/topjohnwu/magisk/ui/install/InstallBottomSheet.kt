@@ -52,7 +52,6 @@ fun InstallBottomSheet(
     installVm: InstallViewModel,
 ) {
     val installUiState by installVm.uiState.collectAsState()
-    val showDownloadDialog = rememberSaveable { mutableStateOf(false) }
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { installVm.onPatchFileSelected(it) }
     }
@@ -78,20 +77,6 @@ fun InstallBottomSheet(
         }
     }
 
-    LaunchedEffect(installUiState.showDownloadDialog) {
-        if (installUiState.showDownloadDialog) {
-            showDownloadDialog.value = true
-            installVm.onDownloadDialogConsumed()
-        }
-    }
-
-    if (showDownloadDialog.value) {
-        DownloadComposableDialog(
-            showDialog = showDownloadDialog,
-            onConfirm = { url -> installVm.onDownloadUrlSelected(url) }
-        )
-    }
-
     if (show.value) {
         ModalBottomSheet(
             onDismissRequest = { show.value = false },
@@ -111,14 +96,6 @@ fun InstallBottomSheet(
                     onClick = {
                         show.value = false
                         installVm.selectMethod(InstallViewModel.Method.PATCH)
-                    },
-                )
-
-                SettingsArrow(
-                    title = stringResource(CoreR.string.download_patch_file),
-                    onClick = {
-                        show.value = false
-                        installVm.selectMethod(InstallViewModel.Method.DOWNLOAD)
                     },
                 )
 

@@ -2,6 +2,7 @@ package com.topjohnwu.magisk.ui.home
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.topjohnwu.magisk.arch.AsyncLoadViewModel
@@ -57,8 +58,11 @@ class HomeViewModel : AsyncLoadViewModel() {
         ensureEnv()
     }
 
+    @SuppressLint("UnsafeImplicitIntentLaunch")
     fun onLinkPressed(link: String) {
-        val intent = Intent(Intent.ACTION_VIEW, link.toUri())
+        val intent = Intent(Intent.ACTION_VIEW, link.toUri()).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+        }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
             AppContext.startActivity(intent)

@@ -16,6 +16,7 @@ import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.tasks.AppMigration
+import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.view.Notifications
 import com.topjohnwu.magisk.view.Shortcuts
 import com.topjohnwu.superuser.Shell
@@ -56,6 +57,7 @@ class SplashController<T>(private val activity: T)
                     activity.showInvalidStateMessage()
                     return@getShell
                 }
+                RootUtils.Connection.await()
                 activity.initializeApp()
                 activity.runOnUiThread {
                     splashShown = true

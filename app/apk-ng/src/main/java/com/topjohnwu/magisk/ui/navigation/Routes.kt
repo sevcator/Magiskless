@@ -16,6 +16,10 @@ sealed interface Route : NavKey, Parcelable {
 
     @Parcelize
     @Serializable
+    data object HideApps : Route
+
+    @Parcelize
+    @Serializable
     data class Flash(
         val action: String,
         val additionalData: String? = null,

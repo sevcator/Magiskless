@@ -254,6 +254,19 @@
     <string name="settings_sulist_summary">только выбранные приложения и процессы могут использовать root и видеть изменения reisenless</string>
     <string name="settings_sulist_config_title">настройка sulist</string>
     <string name="settings_sulist_config_summary">выберите приложения и процессы, которым разрешён доступ к reisenless</string>
+    <string name="hide_apps_title">скрытие приложений</string>
+    <string name="hide_apps_summary">скрывать выбранные пакеты из запросов приложений</string>
+    <string name="hide_apps_service_active">встроенный фильтр активен · правил приложений: %1$d</string>
+    <string name="hide_apps_service_inactive">встроенный фильтр неактивен · включите zygisk и перезагрузите устройство</string>
+    <string name="hide_apps_querying_app">приложение, запросы которого фильтруются</string>
+    <string name="hide_apps_choose_app">выберите приложение</string>
+    <string name="hide_apps_enable_rule">включить фильтрацию для приложения</string>
+    <string name="hide_apps_whitelist_mode">режим белого списка</string>
+    <string name="hide_apps_blacklist_summary">отмеченные пакеты будут скрыты</string>
+    <string name="hide_apps_whitelist_summary">все пакеты, кроме отмеченных, будут скрыты</string>
+    <string name="hide_apps_exclude_system">всегда показывать системные приложения</string>
+    <string name="hide_apps_search">поиск пакетов</string>
+    <string name="hide_apps_viewer_whitelist_title">приложения, которым видны скрытые приложения</string>
     <string name="webui">веб-интерфейс</string>
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">пройти strong integrity</string>
@@ -263,4 +276,7 @@
     <string name="udonge_update_title">обновить udonge</string>
     <string name="udonge_update_summary">версия (%1$s)</string>
     <string name="udonge_keybox_hint">по одной https-ссылке на строку</string>
+    <string name="udonge_rom_keywords_title">скрыть следы системы</string>
+    <string name="udonge_rom_keywords_summary">скрыть runtime-сигналы и следы фреймворка кастомных ROM</string>
+    <string name="udonge_rom_keywords_hint">по одному имени ROM на строку (например: lineage, protonaosp)</string>
 </resources>

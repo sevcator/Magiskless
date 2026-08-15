@@ -42,6 +42,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":hideapps"))
     coreLibraryDesugaring(libs.jdk.libs)
 
     implementation(libs.indeterminate.checkbox)

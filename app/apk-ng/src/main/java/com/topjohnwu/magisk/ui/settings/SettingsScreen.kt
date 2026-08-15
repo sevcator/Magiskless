@@ -1,5 +1,8 @@
 package com.topjohnwu.magisk.ui.settings
 
+import android.annotation.SuppressLint
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -11,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -42,11 +44,14 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.ShortcutManagerCompat
+import com.topjohnwu.magisk.core.AppContext
 import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.Udonge
+import com.topjohnwu.magisk.hideapps.HideAppsRepository
+import com.topjohnwu.magisk.ui.hideapps.HideAppsRootClient
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.tasks.AppMigration
@@ -293,42 +298,6 @@ private fun AppSettingsSection() {
 
     SmallTitle(text = stringResource(CoreR.string.home_app_title))
     Card(modifier = Modifier.fillMaxWidth()) {
-        // Update Channel
-        val updateChannelEntries = remember {
-            resources.getStringArray(CoreR.array.update_channel).toList()
-        }
-        var updateChannel by remember {
-            mutableIntStateOf(Config.updateChannel.coerceIn(0, updateChannelEntries.size - 1))
-        }
-        var showUrlDialog by remember { mutableStateOf(false) }
-
-        SettingsDropdown(
-            title = stringResource(CoreR.string.settings_update_channel_title),
-            items = updateChannelEntries,
-            selectedIndex = updateChannel,
-            onSelectedIndexChange = { index ->
-                updateChannel = index
-                Config.updateChannel = index
-                Info.resetUpdate()
-                if (index == Config.Value.CUSTOM_CHANNEL && Config.customChannelUrl.isBlank()) {
-                    showUrlDialog = true
-                }
-            }
-        )
-
-        // Update Channel URL (for custom channel)
-        if (updateChannel == Config.Value.CUSTOM_CHANNEL) {
-            UpdateChannelUrlDialog(
-                show = showUrlDialog,
-                onDismiss = { showUrlDialog = false }
-            )
-            SettingsArrow(
-                title = stringResource(CoreR.string.settings_update_custom),
-                summary = Config.customChannelUrl.ifBlank { null },
-                onClick = { showUrlDialog = true }
-            )
-        }
-
         // DoH Toggle
         var doh by remember { mutableStateOf(Config.doh) }
         SettingsSwitch(
@@ -390,6 +359,12 @@ private fun MagiskSection(viewModel: SettingsViewModel) {
             )
 
         }
+
+        SettingsArrow(
+            title = stringResource(CoreR.string.hide_apps_title),
+            summary = stringResource(CoreR.string.hide_apps_summary),
+            onClick = viewModel::navigateToHideApps,
+        )
 
         val suListEnabled by viewModel.suListEnabled.collectAsState()
         SettingsSwitchAction(
@@ -507,6 +482,8 @@ private fun UdongeSection() {
     var enabled by remember { mutableStateOf(Config.udongeEnabled) }
     var showKeyboxes by rememberSaveable { mutableStateOf(false) }
     var keyboxUrls by rememberSaveable { mutableStateOf(Config.udongeKeyboxUrls) }
+    var showRomKeywords by rememberSaveable { mutableStateOf(false) }
+    var romKeywords by rememberSaveable { mutableStateOf(Config.udongeRomKeywords) }
 
     if (showKeyboxes) {
         AlertDialog(
@@ -538,6 +515,38 @@ private fun UdongeSection() {
         )
     }
 
+    if (showRomKeywords) {
+        AlertDialog(
+            onDismissRequest = { showRomKeywords = false },
+            title = { Text(stringResource(CoreR.string.udonge_rom_keywords_title)) },
+            text = {
+                OutlinedTextField(
+                    value = romKeywords,
+                    onValueChange = { romKeywords = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 4,
+                    maxLines = 10,
+                    label = { Text(stringResource(CoreR.string.udonge_rom_keywords_hint)) },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRomKeywords = false
+                    scope.launch(Dispatchers.IO) {
+                        if (Udonge.setRomKeywords(romKeywords)) {
+                            syncRomKeywordsHideApps(romKeywords)
+                        }
+                    }
+                }) { Text(stringResource(android.R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRomKeywords = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
+    }
+
     SmallTitle(text = stringResource(CoreR.string.udonge))
     Card(modifier = Modifier.fillMaxWidth()) {
         SettingsSwitchAction(
@@ -553,6 +562,11 @@ private fun UdongeSection() {
             },
         )
         SettingsArrow(
+            title = stringResource(CoreR.string.udonge_rom_keywords_title),
+            summary = stringResource(CoreR.string.udonge_rom_keywords_summary),
+            onClick = { showRomKeywords = true },
+        )
+        SettingsArrow(
             title = stringResource(CoreR.string.udonge_update_title),
             summary = stringResource(
                 CoreR.string.udonge_update_summary,
@@ -563,39 +577,31 @@ private fun UdongeSection() {
     }
 }
 
-// --- Dialogs ---
+// --- Helpers ---
 
-@Composable
-private fun UpdateChannelUrlDialog(show: Boolean, onDismiss: () -> Unit) {
-    val showState = rememberSaveable { mutableStateOf(show) }
-    showState.value = show
-    var url by rememberSaveable { mutableStateOf(Config.customChannelUrl) }
-
-    if (showState.value) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(stringResource(CoreR.string.settings_update_custom_msg)) },
-            text = {
-                OutlinedTextField(
-                    value = url,
-                    onValueChange = { url = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        Config.customChannelUrl = url
-                        Info.resetUpdate()
-                        onDismiss()
-                    }
-                ) {
-                    Text(stringResource(android.R.string.ok))
-                }
-            }
-        )
-    }
+@SuppressLint("InlinedApi", "QueryPermissionsNeeded")
+private fun syncRomKeywordsHideApps(keywords: String) {
+    val kwList = keywords.lineSequence()
+        .map(String::trim)
+        .filter { it.length >= 3 && it.none(Char::isWhitespace) }
+        .toList()
+    if (kwList.isEmpty()) return
+    val pm = AppContext.packageManager
+    @Suppress("DEPRECATION")
+    val installed = pm.getInstalledApplications(PackageManager.MATCH_UNINSTALLED_PACKAGES)
+    val romPkgs = installed
+        .filter { info -> kwList.any { kw -> info.packageName.contains(kw, ignoreCase = true) } }
+        .map { it.packageName }.toSet()
+    if (romPkgs.isEmpty()) return
+    val systemPkgs = installed.asSequence()
+        .filter { it.flags and ApplicationInfo.FLAG_SYSTEM != 0 }
+        .map { it.packageName }.toSet()
+    val repo = HideAppsRepository(AppContext)
+    repo.setHiddenAll(romPkgs)
+    HideAppsRootClient.sync(repo.config, systemPkgs)
 }
+
+// --- Dialogs ---
 
 @Composable
 private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {

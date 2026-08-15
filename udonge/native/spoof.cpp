@@ -58,4 +58,14 @@ void spoof_display(JNIEnv *env, const Config &cfg) {
     env->DeleteLocalRef(build);
 }
 
+void spoof_build_type(JNIEnv *env) {
+    if (!env) return;
+    jclass build = env->FindClass("android/os/Build");
+    if (!build) { env->ExceptionClear(); return; }
+    set_str(env, build, "TYPE", "user");
+    set_str(env, build, "TAGS", "release-keys");
+    env->ExceptionClear();
+    env->DeleteLocalRef(build);
+}
+
 } // namespace cloak

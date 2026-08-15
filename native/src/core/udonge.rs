@@ -11,11 +11,36 @@ const UDONGE_NEXT: &str = concatcp!(UDONGE_ROOT, "/runtime.new");
 const UDONGE_OLD: &str = concatcp!(UDONGE_ROOT, "/runtime.old");
 const UDONGE_DISABLED: &str = concatcp!(UDONGE_ROOT, "/state/disabled");
 const UDONGE_UNLOADED: &str = concatcp!(UDONGE_ROOT, "/state/unloaded");
+const HIDEAPPS_GLOBAL_LOADER: &str =
+    concatcp!(UDONGE_ROOT, "/state/hideapps-global-loader-v2");
 
 pub fn is_enabled() -> bool {
     runtime_complete(UDONGE_RUNTIME)
         && !cstr!(UDONGE_DISABLED).exists()
         && !cstr!(UDONGE_UNLOADED).exists()
+}
+
+pub fn is_hide_apps_target(process: &str) -> bool {
+    let package = process.split_once(':').map_or(process, |(package, _)| package);
+    let path = format!("{UDONGE_ROOT}/state/hideapps.conf");
+    let Ok(config) = std::fs::read_to_string(path) else {
+        return false;
+    };
+    config.lines().any(|line| {
+        let mut fields = line.split('\t');
+        match fields.next() {
+            Some("R") => fields.next() == Some(package),
+            Some("G") => {
+                let manager = fields.next().unwrap_or_default();
+                let hidden = fields.next().unwrap_or_default();
+                let exempt = fields.next().unwrap_or_default();
+                !hidden.is_empty()
+                    && package != manager
+                    && !exempt.split(',').any(|entry| entry == package)
+            }
+            _ => false,
+        }
+    })
 }
 
 fn runtime_file_exists(root: &str, name: &str) -> bool {
@@ -28,7 +53,7 @@ fn runtime_file_exists(root: &str, name: &str) -> bool {
 fn runtime_complete(root: &str) -> bool {
     const COMMON: &[&str] = &[
         "version",
-        "classes.dex",
+        "hideapps.dex",
         "post-fs-data.sh",
         "service.sh",
         "defaults/keybox.xml",
@@ -151,6 +176,13 @@ pub fn setup_runtime() {
 
     if runtime_complete(UDONGE_RUNTIME) {
         cstr!(UDONGE_UNLOADED).remove().ok();
+        if let Ok(boot_id) = std::fs::read_to_string("/proc/sys/kernel/random/boot_id") {
+            std::fs::write(HIDEAPPS_GLOBAL_LOADER, boot_id).log_ok();
+            cstr!(HIDEAPPS_GLOBAL_LOADER)
+                .follow_link()
+                .chmod(0o600)
+                .log_ok();
+        }
     }
 
     if is_enabled() {

@@ -39,4 +39,19 @@ object Udonge {
         "mkdir -p '$state' && : > '$state/.keybox-refresh' && " +
             "('$runtime/service.sh' </dev/null >/dev/null 2>&1 &)"
     ).exec().isSuccess
+
+    fun setRomKeywords(value: String): Boolean {
+        val normalized = value.lineSequence()
+            .map(String::trim)
+            .filter { it.length >= 3 && it.none { c -> c.isWhitespace() } }
+            .distinct()
+            .take(32)
+            .joinToString("\n")
+        val encoded = Base64.encodeToString(normalized.toByteArray(), Base64.NO_WRAP)
+        val command = "mkdir -p '$state' && printf '%s' '$encoded' | " +
+            "base64 -d > '$state/rom_keywords.conf'"
+        val success = Shell.cmd(command).exec().isSuccess
+        if (success) Config.udongeRomKeywords = normalized
+        return success
+    }
 }

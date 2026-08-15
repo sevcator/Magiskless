@@ -31,6 +31,10 @@ class SettingsViewModel : BaseViewModel() {
         navigateTo(Route.DenyList)
     }
 
+    fun navigateToHideApps() {
+        navigateTo(Route.HideApps)
+    }
+
     fun requestAddShortcut() {
         Shortcuts.addHomeIcon(AppContext)
     }

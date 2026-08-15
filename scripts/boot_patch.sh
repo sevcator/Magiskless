@@ -177,8 +177,9 @@ ui_print "- patching ramdisk"
 
 $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./$MAIN_BIN_NAME --preinit-device)
 
-# Rename to the stable, ramdisk-only payload name.
-[ -f "$MAIN_BIN_NAME" ] && mv "$MAIN_BIN_NAME" ms
+# Copy to the stable, ramdisk-only payload name. Keep the generated runtime
+# binary for the persistent /data environment installed after boot patching.
+[ -f "$MAIN_BIN_NAME" ] && cp "$MAIN_BIN_NAME" ms
 
 # Compress to save precious ramdisk space
 ./mboot compress=xz ms ms.xz
@@ -210,7 +211,7 @@ fi
 "add 000 .backup/.cfg config" \
 || abort "! unable to patch ramdisk"
 
-rm -f ramdisk.cpio.orig config *.xz
+rm -f ramdisk.cpio.orig config *.xz ms
 
 #################
 # Binary Patches
