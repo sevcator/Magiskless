@@ -22,6 +22,7 @@ import com.topjohnwu.magisk.databinding.set
 import com.topjohnwu.magisk.core.utils.TextHolder
 import com.topjohnwu.magisk.core.utils.asText
 import com.topjohnwu.magisk.hideapps.HideAppsRepository
+import com.topjohnwu.magisk.ui.hideapps.HideAppsRootClient
 import com.topjohnwu.magisk.view.MagiskDialog
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.magisk.core.R as CoreR
@@ -179,6 +180,42 @@ object UdongeKeyboxes : BaseSettingsItem.SplitToggle() {
                         Shell.EXECUTOR.execute {
                             if (Udonge.setKeyboxUrls(input.text.toString())) {
                                 Udonge.refreshKeyboxes()
+                            }
+                        }
+                    }
+                }
+                setButton(MagiskDialog.ButtonType.NEGATIVE) {
+                    text = android.R.string.cancel
+                }
+            }.show()
+        }
+    }
+}
+
+object UdongeRomKeywords : BaseSettingsItem.Blank() {
+    override val title = CoreR.string.udonge_rom_keywords_title.asText()
+    override val description = CoreR.string.udonge_rom_keywords_summary.asText()
+
+    override fun onPressed(view: View, handler: Handler) {
+        handler.onItemPressed(view, this) {
+            val input = EditText(view.context).apply {
+                hint = view.resources.getString(CoreR.string.udonge_rom_keywords_hint)
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                minLines = 4
+                maxLines = 10
+                setText(Config.udongeRomKeywords)
+                setSelection(text.length)
+            }
+            MagiskDialog(view.activity).apply {
+                setTitle(CoreR.string.udonge_rom_keywords_title)
+                setView(input)
+                setButton(MagiskDialog.ButtonType.POSITIVE) {
+                    text = android.R.string.ok
+                    onClick {
+                        val keywords = input.text.toString()
+                        Shell.EXECUTOR.execute {
+                            if (Udonge.setRomKeywords(keywords)) {
+                                HideAppsRootClient.syncRomKeywordsHideApps(keywords)
                             }
                         }
                     }

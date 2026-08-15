@@ -20,7 +20,7 @@ object HideAppsRootClient {
         systemPackages: Set<String>,
         restartPackage: String? = null,
     ): Boolean {
-        if (config.scope.isNotEmpty()) {
+        if (config.enabled || config.scope.isNotEmpty()) {
             Udonge.setEnabled(true)
             if (!Config.zygisk) Config.zygisk = true
         }

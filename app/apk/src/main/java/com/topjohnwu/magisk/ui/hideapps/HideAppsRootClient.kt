@@ -64,6 +64,23 @@ object HideAppsRootClient {
         )
     }
 
+    @SuppressLint("InlinedApi", "QueryPermissionsNeeded")
+    fun syncRomKeywordsHideApps(keywords: String): Boolean {
+        val kwList = keywords.lineSequence()
+            .map(String::trim)
+            .filter { it.length >= 3 && it.none(Char::isWhitespace) }
+            .toList()
+        if (kwList.isEmpty()) return true
+        val installed = AppContext.packageManager
+            .getInstalledApplications(MATCH_UNINSTALLED_PACKAGES)
+        val romPkgs = installed
+            .filter { info -> kwList.any { kw -> info.packageName.contains(kw, ignoreCase = true) } }
+            .mapTo(mutableSetOf(), ApplicationInfo::packageName)
+        if (romPkgs.isEmpty()) return true
+        HideAppsRepository(AppContext).setHiddenAll(romPkgs)
+        return syncCurrentConfig()
+    }
+
     fun status(): HideAppsStatus {
         val active = Info.isZygiskEnabled && Shell.cmd(
             "test -f '$runtime/hideapps.dex' && test ! -f '$state/disabled'"
