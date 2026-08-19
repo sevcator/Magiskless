@@ -285,5 +285,9 @@
     <string name="sponsor" tools:ignore="MissingTranslation">sponsor</string>
     <string name="shared_uid" tools:ignore="MissingTranslation">shared uid</string>
     <string name="webui">webui</string>
+    <string name="webui_root_required">root and an active Reisenless installation are required for WebUI</string>
+    <string name="webui_webview_required">Android System WebView required</string>
+    <string name="webui_webview_required_summary">This device does not have a usable Android WebView provider. Install or enable Android System WebView, then try again.</string>
+    <string name="webui_install_webview">install WebView</string>
 
 </resources>

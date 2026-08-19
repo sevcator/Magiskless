@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -72,6 +73,7 @@ import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.magisk.ui.component.ConfirmResult
 import com.topjohnwu.magisk.ui.component.MarkdownTextAsync
 import com.topjohnwu.magisk.ui.component.rememberConfirmDialog
+import com.topjohnwu.magisk.ui.webui.WebUIActivity
 import com.topjohnwu.magisk.utils.textHolder
 import kotlinx.coroutines.launch
 import com.topjohnwu.magisk.core.R as CoreR
@@ -197,6 +199,9 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
                 ModuleCard(
                     item = item,
                     viewModel = viewModel,
+                    onWebUiClick = {
+                        context.startActivity(WebUIActivity.intent(context, item.module.id, item.module.name))
+                    },
                     onUpdateClick = { onlineModule ->
                         if (onlineModule != null && Info.isConnected.value == true) {
                             pendingOnlineModule = onlineModule
@@ -211,7 +216,12 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
 }
 
 @Composable
-private fun ModuleCard(item: ModuleItem, viewModel: ModuleViewModel, onUpdateClick: (OnlineModule?) -> Unit) {
+private fun ModuleCard(
+    item: ModuleItem,
+    viewModel: ModuleViewModel,
+    onWebUiClick: () -> Unit,
+    onUpdateClick: (OnlineModule?) -> Unit,
+) {
     val infoAlpha = if (!item.isRemoved && item.isEnabled && !item.showNotice) 1f else 0.5f
     val strikeThrough = if (item.isRemoved) TextDecoration.LineThrough else TextDecoration.None
     val colorScheme = MaterialTheme.colorScheme
@@ -319,6 +329,30 @@ private fun ModuleCard(item: ModuleItem, viewModel: ModuleViewModel, onUpdateCli
                                 )
                                 Text(
                                     text = stringResource(CoreR.string.module_action),
+                                    color = actionIconTint,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                        }
+                    }
+                    if (item.showWebUi) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(containerColor = actionBg),
+                            contentPadding = PaddingValues(horizontal = 10.dp),
+                            onClick = onWebUiClick,
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(20.dp),
+                                    imageVector = Icons.Default.Language,
+                                    tint = actionIconTint,
+                                    contentDescription = stringResource(CoreR.string.webui),
+                                )
+                                Text(
+                                    text = stringResource(CoreR.string.webui),
                                     color = actionIconTint,
                                     style = MaterialTheme.typography.bodyMedium,
                                 )

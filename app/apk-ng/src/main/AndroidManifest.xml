@@ -35,6 +35,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.webui.WebUIActivity"
+            android:exported="false"
+            android:screenOrientation="unspecified" />
     </application>
 
 </manifest>
