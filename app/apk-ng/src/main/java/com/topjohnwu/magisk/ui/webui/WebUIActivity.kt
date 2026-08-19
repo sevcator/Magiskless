@@ -17,9 +17,8 @@ import androidx.webkit.WebViewAssetLoader
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R as CoreR
-import com.topjohnwu.magisk.core.utils.RootUtils
 import com.topjohnwu.magisk.core.ktx.toast
-import com.topjohnwu.superuser.nio.FileSystemManager
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,24 +63,23 @@ class WebUIActivity : ComponentActivity() {
         })
 
         lifecycleScope.launch {
-            val fileSystem = withContext(Dispatchers.IO) {
+            val webRoot = withContext(Dispatchers.IO) {
                 if (!Info.isRooted || !Info.env.isActive) null
-                else runCatching { RootUtils.fs }.getOrNull()
+                else prepareWebRoot(moduleId)
             }
-            if (fileSystem == null) {
+            if (webRoot == null) {
                 toast(CoreR.string.webui_root_required, Toast.LENGTH_SHORT)
                 finish()
             } else {
-                setupWebView(moduleId, moduleName, fileSystem)
+                setupWebView(moduleId, moduleName, webRoot)
             }
         }
     }
 
-    private fun setupWebView(moduleId: String, moduleName: String, fileSystem: FileSystemManager) {
-        val webRoot = File(Const.MODULE_PATH, "$moduleId/webroot")
+    private fun setupWebView(moduleId: String, moduleName: String, webRoot: File) {
         val loader = WebViewAssetLoader.Builder()
             .setDomain(WEB_DOMAIN)
-            .addPathHandler("/", RootFsPathHandler(webRoot, fileSystem))
+            .addPathHandler("/", RootFsPathHandler(webRoot))
             .build()
 
         val bridge = WebViewInterface(this, webView, moduleId, moduleName)
@@ -105,6 +103,21 @@ class WebUIActivity : ComponentActivity() {
         setContentView(webView)
         webView.loadUrl("https://$WEB_DOMAIN/index.html")
     }
+
+    private fun prepareWebRoot(moduleId: String): File? {
+        val source = File(Const.MODULE_PATH, "$moduleId/webroot")
+        val target = File(cacheDir, "webui/$moduleId")
+        val command = """
+            rm -rf ${shellQuote(target.path)} &&
+            mkdir -p ${shellQuote(target.path)} &&
+            cp -r ${shellQuote(source.path)}/. ${shellQuote(target.path)}/ &&
+            chmod -R a+rX ${shellQuote(target.path)}
+        """.trimIndent()
+        val result = runCatching { Shell.cmd(command).exec() }.getOrNull() ?: return null
+        return target.takeIf { result.code == 0 && File(it, "index.html").isFile }
+    }
+
+    private fun shellQuote(value: String) = "'${value.replace("'", "'\\''")}'"
 
     private fun showWebViewUnavailable() {
         android.app.AlertDialog.Builder(this)
