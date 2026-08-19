@@ -145,6 +145,12 @@ public:
         hide_rule_.clear();
         hide_dex_.clear();
 
+        // Child zygotes (notably WebView's sandbox zygote) must stay pristine.
+        // Installing process-local Java hooks here prevents the child zygote
+        // from publishing its command socket, so every WebView network process
+        // fails to start with ECONNREFUSED.
+        if (args->is_child_zygote && *args->is_child_zygote) return;
+
         std::string package_name = jstr(args->nice_name);
         if (package_name.empty()) return;
         std::string package = base_package(package_name);

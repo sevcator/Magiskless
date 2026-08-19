@@ -1,7 +1,6 @@
 #include "spoof.hpp"
 #include "config.hpp"
 
-#include <cstdlib>
 #include <string>
 
 namespace cloak {
@@ -15,13 +14,6 @@ static void set_str(JNIEnv *env, jclass cls, const char *field, const std::strin
     env->DeleteLocalRef(s);
 }
 
-static void set_int(JNIEnv *env, jclass cls, const char *field, int val) {
-    if (!cls) return;
-    jfieldID fid = env->GetStaticFieldID(cls, field, "I");
-    if (!fid) { env->ExceptionClear(); return; }
-    env->SetStaticIntField(cls, fid, val);
-}
-
 void spoof_build(JNIEnv *env, const Config &cfg) {
     if (!env || cfg.gms_build.empty()) return;
 
@@ -33,10 +25,15 @@ void spoof_build(JNIEnv *env, const Config &cfg) {
     for (const auto &kv : cfg.gms_build) {
         const std::string &k = kv.first;
         const std::string &v = kv.second;
-        if (k == "SECURITY_PATCH" || k == "INCREMENTAL" || k == "RELEASE") {
+        if (k == "SECURITY_PATCH" || k == "INCREMENTAL") {
             set_str(env, ver, k.c_str(), v);
-        } else if (k == "DEVICE_INITIAL_SDK_INT" || k == "SDK_INT") {
-            set_int(env, ver, k.c_str(), atoi(v.c_str()));
+        } else if (k == "DEVICE_INITIAL_SDK_INT" || k == "SDK_INT" ||
+                   k == "RELEASE") {
+            // Build.VERSION must describe the framework that is actually
+            // running. Pretending this framework is a future Android
+            // release makes Cronet select unavailable Java APIs and aborts
+            // com.google.android.gms.unstable, taking app networking with it.
+            continue;
         } else {
             set_str(env, build, k.c_str(), v);
         }
