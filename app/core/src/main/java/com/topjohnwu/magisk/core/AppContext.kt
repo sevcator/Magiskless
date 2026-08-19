@@ -39,7 +39,6 @@ object AppContext : ContextWrapper(null),
     private var ref = WeakReference<Activity>(null)
     private lateinit var application: Application
     private lateinit var networkObserver: NetworkObserver
-    private var startedActivities = 0
     private var profileInstallScheduled = false
 
     init {
@@ -53,9 +52,6 @@ object AppContext : ContextWrapper(null),
     }
 
     override fun onActivityStarted(activity: Activity) {
-        if (startedActivities++ == 0) {
-            networkObserver.start()
-        }
         if (!profileInstallScheduled && !BuildConfig.DEBUG && !isRunningAsStub) {
             profileInstallScheduled = true
             GlobalScope.launch(Dispatchers.IO) {
@@ -142,11 +138,7 @@ object AppContext : ContextWrapper(null),
     }
 
     override fun onActivityCreated(activity: Activity, bundle: Bundle?) {}
-    override fun onActivityStopped(activity: Activity) {
-        if (--startedActivities == 0) {
-            networkObserver.stop()
-        }
-    }
+    override fun onActivityStopped(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {}
     override fun onActivityDestroyed(activity: Activity) {}
     override fun onLowMemory() {}
