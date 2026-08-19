@@ -11,6 +11,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 
@@ -20,6 +23,7 @@ internal class WebViewInterface(
     private val webView: WebView,
     private val moduleId: String,
     private val moduleName: String,
+    private val scope: CoroutineScope,
 ) {
     @JavascriptInterface
     fun exec(command: String): String = runCommand(command).output
@@ -31,8 +35,9 @@ internal class WebViewInterface(
 
     @JavascriptInterface
     fun exec(command: String, options: String?, callback: String) {
-        val result = runCommand(withOptions(command, options))
-        postCallback(callback, result)
+        scope.launch(Dispatchers.IO) {
+            postCallback(callback, runCommand(withOptions(command, options)))
+        }
     }
 
     @JavascriptInterface
@@ -48,7 +53,9 @@ internal class WebViewInterface(
                 }
             }
         }
-        postCallback(callback, runCommand(commandLine))
+        scope.launch(Dispatchers.IO) {
+            postSpawnCallback(callback, runCommand(commandLine))
+        }
     }
 
     @JavascriptInterface
@@ -101,10 +108,20 @@ internal class WebViewInterface(
     private fun postCallback(callback: String, result: CommandResult) {
         val js = """
             (() => {
+                try { $callback(${result.code}, ${JSONObject.quote(result.output)}, ${JSONObject.quote(result.error)}); }
+                catch (e) { console.error(e); }
+            })();
+        """.trimIndent()
+        webView.post { webView.evaluateJavascript(js, null) }
+    }
+
+    private fun postSpawnCallback(callback: String, result: CommandResult) {
+        val js = """
+            (() => {
                 try {
                     const cb = $callback;
                     if (cb && cb.stdout) cb.stdout.emit('data', ${JSONObject.quote(result.output)});
-                    if (cb && cb.stderr && ${!result.error.isNullOrEmpty()}) cb.stderr.emit('data', ${JSONObject.quote(result.error)});
+                    if (cb && cb.stderr && ${result.error.isNotEmpty()}) cb.stderr.emit('data', ${JSONObject.quote(result.error)});
                     if (cb) cb.emit('exit', ${result.code});
                 } catch (e) { console.error(e); }
             })();

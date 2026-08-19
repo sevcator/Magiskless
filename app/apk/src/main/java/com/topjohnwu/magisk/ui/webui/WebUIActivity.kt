@@ -94,7 +94,10 @@ class WebUIActivity : ComponentActivity() {
                 }
             }
         }
-        webView.addJavascriptInterface(WebViewInterface(this, webView, moduleId, moduleName), "ksu")
+        webView.addJavascriptInterface(
+            WebViewInterface(this, webView, moduleId, moduleName, lifecycleScope),
+            "ksu",
+        )
         setContentView(webView)
         webView.loadUrl("https://$WEB_DOMAIN/index.html")
     }
@@ -132,7 +135,6 @@ class WebUIActivity : ComponentActivity() {
         if (::webView.isInitialized) {
             webView.removeJavascriptInterface("ksu")
             webView.stopLoading()
-            webView.destroy()
         }
         super.onDestroy()
     }

@@ -82,7 +82,7 @@ class WebUIActivity : ComponentActivity() {
             .addPathHandler("/", RootFsPathHandler(webRoot))
             .build()
 
-        val bridge = WebViewInterface(this, webView, moduleId, moduleName)
+        val bridge = WebViewInterface(this, webView, moduleId, moduleName, lifecycleScope)
         webView.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
                 view: WebView,
@@ -137,7 +137,6 @@ class WebUIActivity : ComponentActivity() {
         if (::webView.isInitialized) {
             webView.removeJavascriptInterface("ksu")
             webView.stopLoading()
-            webView.destroy()
         }
         super.onDestroy()
     }
