@@ -198,8 +198,21 @@ object AppMigration {
      * to Android's shell user; on current Android that starts an interactive
      * Play Protect verification flow and the handoff never completes.
      */
-    private fun installMigrationApk(apk: File): Boolean =
-        Shell.cmd("pm install -g ${apk.absolutePath}").exec().isSuccess
+    private fun installMigrationApk(apk: File): Boolean {
+        // The system UID has INSTALL_PACKAGES and does not route this
+        // dynamically signed APK through the shell user's Play Protect UI.
+        // Copy to a world-readable temporary path before switching UID.
+        val tmp = "/data/local/tmp/reisenless-migration.apk"
+        if (!Shell.cmd("cp -f ${apk.absolutePath} $tmp", "chmod 644 $tmp").exec().isSuccess) {
+            return false
+        }
+        return try {
+            Shell.cmd("su 1000 -c 'pm install -g $tmp'").exec().isSuccess ||
+                Shell.cmd("pm install -g $tmp").exec().isSuccess
+        } finally {
+            Shell.cmd("rm -f $tmp").exec()
+        }
+    }
 
     private suspend fun launchApp(context: Context, pkg: String): Boolean {
         if (!isValidPackageName(pkg) || pkg == context.packageName) return false
