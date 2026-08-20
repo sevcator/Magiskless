@@ -203,7 +203,13 @@ adb_pm_install() {
   local tmp=/data/local/tmp/temp.apk
   cp -f "$1" $tmp
   chmod 644 $tmp
-  su 2000 -c pm install -g $tmp || pm install -g $tmp || su 1000 -c pm install -g $tmp
+  # Run the package manager as root first.  On current Android releases the
+  # shell UID routes dynamically repackaged APKs through Play Protect and
+  # leaves an interactive verification dialog instead of completing the
+  # install.  AppMigration already runs this helper from a root shell, so the
+  # direct root install is both silent and reliable.  Keep the old fallbacks
+  # for non-root callers and older devices.
+  pm install -g $tmp || su 2000 -c pm install -g $tmp || su 1000 -c pm install -g $tmp
   local res=$?
   rm -f $tmp
   if [ $res = 0 ]; then
