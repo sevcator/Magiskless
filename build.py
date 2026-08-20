@@ -382,15 +382,17 @@ def _build_identity() -> dict[str, str]:
     proc = token("policy-domain", 6, 9)
     file_type = token("policy-file", 6, 9)
     udonge_type = token("policy-udonge", 6, 9)
+    main_binary = token("main-binary", 5, 8)
     return {
-        "buildId": token("main-binary", 5, 8),
+        "buildId": main_binary,
         "secureDir": secure_dir,
         "dataDir": "." + token("data-bin", 6, 10),
         "dbName": "." + token("database", 6, 10),
         "internalDir": "." + token("tmpfs-internal", 6, 10),
         "socketName": token("daemon-socket", 6, 10),
         "policyName": token("policy-binary", 5, 9),
-        "ramdiskName": token("ramdisk-binary", 5, 9),
+        # The ramdisk proxy must resolve to the daemon after /sbin is moved.
+        "ramdiskName": main_binary,
         "stubName": token("stub-apk", 6, 10) + ".apk",
         "initLdName": token("init-loader", 6, 10),
         "udongeDir": "." + token("udonge-root", 3, 3),
