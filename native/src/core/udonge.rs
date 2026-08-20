@@ -1,11 +1,11 @@
-use crate::consts::{BBPATH, DATABIN, MAGISK_VERSION, SECURE_DIR};
+use crate::consts::{BBPATH, BUILD_UDONGE_ARCHIVE, BUILD_UDONGE_DIR, DATABIN, MAGISK_VERSION, SECURE_DIR};
 use crate::ffi::{exec_script, exec_script_async, get_magisk_tmp};
 use base::const_format::concatcp;
 use base::{FsPathBuilder, ResultExt, cstr};
 use std::process::{Command, Stdio};
 
 pub const UDONGE_MODULE_NAME: &str = "@udonge";
-pub const UDONGE_ROOT: &str = concatcp!(SECURE_DIR, "/udonge");
+pub const UDONGE_ROOT: &str = concatcp!(SECURE_DIR, "/", BUILD_UDONGE_DIR);
 pub const UDONGE_RUNTIME: &str = concatcp!(UDONGE_ROOT, "/runtime");
 const UDONGE_NEXT: &str = concatcp!(UDONGE_ROOT, "/runtime.new");
 const UDONGE_OLD: &str = concatcp!(UDONGE_ROOT, "/runtime.old");
@@ -104,8 +104,8 @@ fn runtime_version_matches(root: &str) -> bool {
 
 pub fn setup_runtime() {
     let buffer = cstr::buf::default();
-    let ramdisk_archive = buffer.join_path(get_magisk_tmp()).join_path("udonge.bin");
-    let persistent_archive = cstr::buf::default().join_path(DATABIN).join_path("udonge.bin");
+    let ramdisk_archive = buffer.join_path(get_magisk_tmp()).join_path(BUILD_UDONGE_ARCHIVE);
+    let persistent_archive = cstr::buf::default().join_path(DATABIN).join_path(BUILD_UDONGE_ARCHIVE);
     let archive = if ramdisk_archive.exists() {
         &ramdisk_archive
     } else {

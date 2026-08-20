@@ -1,4 +1,4 @@
-use crate::consts::{APP_PACKAGE_NAME, MAGISK_VER_CODE, SECURE_DIR};
+use crate::consts::{APP_PACKAGE_NAME, BUILD_STUB_NAME, BUILD_SU_CACHE, MAGISK_VER_CODE, SECURE_DIR};
 use crate::daemon::{AID_APP_END, AID_APP_START, AID_USER_OFFSET, MagiskD, to_app_id};
 use crate::ffi::{DbEntryKey, get_magisk_tmp};
 use base::WalkResult::{Abort, Continue, Skip};
@@ -174,7 +174,7 @@ fn find_apk_path(pkg: &str) -> LoggedResult<Utf8CString> {
 }
 
 // Persistent root-only cache for the manager APK path.
-const APK_CACHE_FILE: &str = concatcp!(SECURE_DIR, "/.su_cache");
+const APK_CACHE_FILE: &str = concatcp!(SECURE_DIR, "/", BUILD_SU_CACHE);
 
 fn find_orig_apk_path() -> LoggedResult<Utf8CString> {
     // Fast path: read cached path from previous successful scan
@@ -442,7 +442,7 @@ impl MagiskD {
 
         let apk = cstr::buf::default()
             .join_path(get_magisk_tmp())
-            .join_path("stub.apk");
+            .join_path(BUILD_STUB_NAME);
 
         if let Ok(mut fd) = apk.open(OFlag::O_RDONLY | OFlag::O_CLOEXEC) {
             info.trusted_cert = read_certificate(&mut fd, MAGISK_VER_CODE);

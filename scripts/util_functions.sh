@@ -5,8 +5,13 @@
 #MAGISK_VERSION_STUB
 #SECURE_DIR_STUB
 #MAIN_BIN_NAME_STUB
+#BUILD_IDENTITY_STUB
 
 [ -n "$MAIN_BIN_NAME" ] || MAIN_BIN_NAME=ms
+[ -n "$DATA_DIR" ] || DATA_DIR=ms
+[ -n "$INTERNAL_DIR" ] || INTERNAL_DIR=.ms
+[ -n "$BUILD_TMPDIR" ] || BUILD_TMPDIR=/dev/tmp
+[ -n "$BACKUP_PREFIX" ] || BACKUP_PREFIX=/data/ms_backup_
 
 ###################
 # Global Variables
@@ -65,8 +70,8 @@ grep_get_prop() {
 getvar() {
   local VARNAME=$1
   local VALUE
-  local PROPPATH='/data/.ms /cache/.ms'
-  [ ! -z $MAGISKTMP ] && PROPPATH="$MAGISKTMP/.ms/config $PROPPATH"
+  local PROPPATH="/data/$INTERNAL_DIR /cache/$INTERNAL_DIR"
+  [ ! -z $MAGISKTMP ] && PROPPATH="$MAGISKTMP/$INTERNAL_DIR/config $PROPPATH"
   VALUE=$(grep_prop $VARNAME $PROPPATH)
   [ ! -z $VALUE ] && eval $VARNAME=\$VALUE
 }
@@ -537,11 +542,11 @@ check_data() {
     touch /data/.rw && rm /data/.rw && DATA=true
     # Test if data is decrypted
     $DATA && [ -d "${SECURE_DIR}" ] && touch "${SECURE_DIR}/.rw" && rm "${SECURE_DIR}/.rw" && DATA_DE=true
-    $DATA_DE && { [ -d "${SECURE_DIR}/ms" ] || mkdir -p "${SECURE_DIR}/ms"; } || DATA_DE=false
+    $DATA_DE && { [ -d "${SECURE_DIR}/${DATA_DIR}" ] || mkdir -p "${SECURE_DIR}/${DATA_DIR}"; } || DATA_DE=false
   fi
-  MAGISKBIN="/data/ms"
-  $DATA || MAGISKBIN="/cache/data_adb/ms"
-  $DATA_DE && MAGISKBIN="${SECURE_DIR}/ms"
+  MAGISKBIN="/data/${DATA_DIR}"
+  $DATA || MAGISKBIN="/cache/data_adb/${DATA_DIR}"
+  $DATA_DE && MAGISKBIN="${SECURE_DIR}/${DATA_DIR}"
 }
 
 run_migrations() {
@@ -559,8 +564,8 @@ run_migrations() {
     [ -f $gz ] || break
     SHA1=$(basename $gz | sed -e 's/stock_boot_//' -e 's/.img.gz//')
     [ -z $SHA1 ] && break
-    mkdir /data/ms_backup_${SHA1} 2>/dev/null
-    mv $gz /data/ms_backup_${SHA1}/boot.img.gz
+    mkdir ${BACKUP_PREFIX}${SHA1} 2>/dev/null
+    mv $gz ${BACKUP_PREFIX}${SHA1}/boot.img.gz
   done
 
   # Stock backups
@@ -570,10 +575,10 @@ run_migrations() {
     [ -f $BACKUP ] || continue
     if [ $name = 'boot' ]; then
       SHA1=$($MAGISKBIN/mboot sha1 $BACKUP)
-      mkdir /data/ms_backup_${SHA1} 2>/dev/null
+      mkdir ${BACKUP_PREFIX}${SHA1} 2>/dev/null
     fi
     [ -z $SHA1 ] && break
-    TARGET=/data/ms_backup_${SHA1}/${name}.img
+    TARGET=${BACKUP_PREFIX}${SHA1}/${name}.img
     cp $BACKUP $TARGET
     rm -f $BACKUP
     gzip -9f $TARGET
@@ -583,7 +588,7 @@ run_migrations() {
 }
 
 copy_preinit_files() {
-  local PREINITDIR=$MAGISKTMP/.ms/preinit
+  local PREINITDIR=$MAGISKTMP/$INTERNAL_DIR/preinit
   if [ ! -d $PREINITDIR ]; then
     ui_print "- unable to find preinit dir"
     return 1
@@ -763,5 +768,5 @@ install_module() {
 [ -z $BOOTMODE ] && ps -A 2>/dev/null | grep zygote | grep -qv grep && BOOTMODE=true
 [ -z $BOOTMODE ] && BOOTMODE=false
 
-TMPDIR=/dev/tmp
-MAGISKBIN="${SECURE_DIR}/ms"
+TMPDIR=$BUILD_TMPDIR
+MAGISKBIN="${SECURE_DIR}/${DATA_DIR}"

@@ -3,6 +3,7 @@
 ##################################
 
 #SECURE_DIR_STUB
+#BUILD_IDENTITY_STUB
 
 # $1 = delay
 # $2 = command
@@ -13,14 +14,14 @@ run_delay() {
 # $1 = version string
 # $2 = version code
 env_check() {
-  for file in "$MAIN_BIN_NAME" busybox mboot minit util_functions.sh boot_patch.sh udonge.bin; do
+  for file in "$MAIN_BIN_NAME" busybox mboot minit util_functions.sh boot_patch.sh "$UDONGE_ARCHIVE"; do
     [ -f "$MAGISKBIN/$file" ] || return 1
   done
   if [ "$2" -ge 25000 ]; then
-    [ -f "$MAGISKBIN/mpol" ] || return 1
+    [ -f "$MAGISKBIN/$POLICY_NAME" ] || return 1
   fi
   if [ "$2" -ge 25210 ]; then
-    [ -b "$MAGISKTMP/.ms/device/preinit" ] || [ -b "$MAGISKTMP/.ms/block/preinit" ] || return 2
+    [ -b "$MAGISKTMP/$INTERNAL_DIR/device/preinit" ] || [ -b "$MAGISKTMP/$INTERNAL_DIR/block/preinit" ] || return 2
   fi
   grep -xqF "MAGISK_VER='$1'" "$MAGISKBIN/util_functions.sh" || return 3
   grep -xqF "MAGISK_VER_CODE=$2" "$MAGISKBIN/util_functions.sh" || return 3
@@ -58,12 +59,44 @@ fix_env() {
   chown -R 0:0 $MAGISKBIN
 }
 
+migrate_legacy_layout() {
+  local legacy=/data/a''db
+  [ "$SECURE_DIR" = "$legacy" ] && return 0
+  [ -d "$legacy" ] || return 0
+
+  mkdir -p "$SECURE_DIR" || return 1
+  if [ -f "$legacy/ms.db" ] && [ ! -f "$SECURE_DIR/$DB_NAME" ]; then
+    cp -af "$legacy/ms.db" "$SECURE_DIR/$DB_NAME" || return 1
+  fi
+  for dir in modules modules_update post-fs-data.d service.d; do
+    if [ -d "$legacy/$dir" ]; then
+      mkdir -p "$SECURE_DIR/$dir" || return 1
+      cp -af "$legacy/$dir/." "$SECURE_DIR/$dir/" || return 1
+    fi
+  done
+  if [ -d "$legacy/udonge" ] && [ ! -d "$SECURE_DIR/$UDONGE_DIR" ]; then
+    cp -af "$legacy/udonge" "$SECURE_DIR/$UDONGE_DIR" || return 1
+  fi
+  rm -f "$SECURE_DIR/post-fs-data.d/udonge.sh" "$SECURE_DIR/service.d/udonge.sh"
+
+  for backup in /data/ms_''backup_*; do
+    [ -d "$backup" ] || continue
+    local suffix=${backup#/data/ms_backup_}
+    [ -d "${BACKUP_PREFIX}${suffix}" ] || mv "$backup" "${BACKUP_PREFIX}${suffix}"
+  done
+
+  rm -rf "$legacy/ms" "$legacy/ms.db" "$legacy/udonge" \
+    "$legacy/modules" "$legacy/modules_update" \
+    "$legacy/post-fs-data.d" "$legacy/service.d"
+  return 0
+}
+
 refresh_udonge_runtime() {
-  local root=${SECURE_DIR}/udonge
+  local root=${SECURE_DIR}/${UDONGE_DIR}
   local runtime=$root/runtime
   local next=$root/runtime.new
   local old=$root/runtime.old
-  local archive=$MAGISKBIN/udonge.bin
+  local archive=$MAGISKBIN/$UDONGE_ARCHIVE
   local version required
 
   [ -f "$archive" ] || return 0
@@ -125,10 +158,10 @@ install_udonge_boot_scripts() {
   local stage dir script
   for stage in post-fs-data service; do
     dir=${SECURE_DIR}/$stage.d
-    script=$dir/udonge.sh
+    script=$dir/$STAGE_SCRIPT
     mkdir -p "$dir" || return 1
-    printf '#!/system/bin/sh\nexec %s/udonge/runtime/%s.sh\n' \
-      "$SECURE_DIR" "$stage" > "$script" || return 1
+    printf '#!/system/bin/sh\nexec %s/%s/runtime/%s.sh\n' \
+      "$SECURE_DIR" "$UDONGE_DIR" "$stage" > "$script" || return 1
     chmod 700 "$script" || return 1
   done
 }
@@ -150,6 +183,7 @@ direct_install() {
   esac
 
   rm -f $1/new-boot.img
+  migrate_legacy_layout || return 3
   fix_env $1
   refresh_udonge_runtime || return 3
   install_udonge_boot_scripts || return 3
@@ -160,16 +194,16 @@ direct_install() {
 
 # $1 = uninstaller zip
 run_uninstaller() {
-  rm -rf /dev/tmp
-  mkdir -p /dev/tmp/install
-  unzip -o "$1" "assets/*" "lib/*" -d /dev/tmp/install
-  INSTALLER=/dev/tmp/install sh /dev/tmp/install/assets/uninstaller.sh dummy 1 "$1"
+  rm -rf "$BUILD_TMPDIR"
+  mkdir -p "$BUILD_TMPDIR/install"
+  unzip -o "$1" "assets/*" "lib/*" -d "$BUILD_TMPDIR/install"
+  INSTALLER="$BUILD_TMPDIR/install" sh "$BUILD_TMPDIR/install/assets/uninstaller.sh" dummy 1 "$1"
 }
 
 # $1 = boot partition
 restore_imgs() {
-  local SHA1=$(grep_prop SHA1 $MAGISKTMP/.ms/config)
-  local BACKUPDIR=/data/ms_backup_$SHA1
+  local SHA1=$(grep_prop SHA1 $MAGISKTMP/$INTERNAL_DIR/config)
+  local BACKUPDIR=${BACKUP_PREFIX}${SHA1}
   [ -d $BACKUPDIR ] || return 1
   [ -f $BACKUPDIR/boot.img.gz ] || return 1
   flash_image $BACKUPDIR/boot.img.gz $1

@@ -5,6 +5,7 @@
 #################
 
 #SECURE_DIR_STUB
+#BUILD_IDENTITY_STUB
 
 umask 022
 
@@ -27,8 +28,8 @@ ZIPFILE=$3
 
 mount /data 2>/dev/null
 
-[ -f ${SECURE_DIR}/ms/util_functions.sh ] || require_new_magisk
-. ${SECURE_DIR}/ms/util_functions.sh
+[ -f ${SECURE_DIR}/${DATA_DIR}/util_functions.sh ] || require_new_magisk
+. ${SECURE_DIR}/${DATA_DIR}/util_functions.sh
 [ $MAGISK_VER_CODE -lt 20400 ] && require_new_magisk
 
 install_module

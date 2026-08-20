@@ -55,8 +55,9 @@ fi
 pm install -r -g $(pwd)/magisk.apk
 
 # Extract files from APK
-unzip -oj magisk.apk 'assets/util_functions.sh' 'assets/stub.apk' 'assets/udonge.bin'
+unzip -oj magisk.apk 'assets/util_functions.sh'
 . ./util_functions.sh
+unzip -oj magisk.apk "assets/$STUB_NAME" "assets/$UDONGE_ARCHIVE"
 
 api_level_arch_detect
 
@@ -73,6 +74,8 @@ if $IS64BIT && [ -e "/system/bin/linker" ]; then
 fi
 
 [ -f magisk ] && mv magisk "$MAIN_BIN_NAME"
+[ -f mpol ] && mv mpol "$POLICY_NAME"
+[ -f init-ld ] && mv init-ld "$INIT_LD_NAME"
 
 # Stop zygote (and previous setup if exists)
 ./$MAIN_BIN_NAME --stop 2>/dev/null
@@ -134,7 +137,7 @@ mkdir ${SECURE_DIR}/modules 2>/dev/null
 mkdir ${SECURE_DIR}/post-fs-data.d 2>/dev/null
 mkdir ${SECURE_DIR}/service.d 2>/dev/null
 
-for file in "$MAIN_BIN_NAME" mpol stub.apk; do
+for file in "$MAIN_BIN_NAME" "$POLICY_NAME" "$STUB_NAME"; do
   [ -f "./$file" ] || continue
   chmod 755 ./$file
   cp -af ./$file $MAGISKTMP/$file
@@ -148,27 +151,27 @@ done
 cp -af ./mboot $MAGISKBIN/mboot
 cp -af ./minit $MAGISKBIN/minit
 cp -af ./busybox $MAGISKBIN/busybox
-[ -f ./udonge.bin ] && {
-  chmod 600 ./udonge.bin
-  cp -af ./udonge.bin $MAGISKTMP/udonge.bin
-  cp -af ./udonge.bin $MAGISKBIN/udonge.bin
+[ -f "./$UDONGE_ARCHIVE" ] && {
+  chmod 600 "./$UDONGE_ARCHIVE"
+  cp -af "./$UDONGE_ARCHIVE" "$MAGISKTMP/$UDONGE_ARCHIVE"
+  cp -af "./$UDONGE_ARCHIVE" "$MAGISKBIN/$UDONGE_ARCHIVE"
 }
 
 ln -s ./$MAIN_BIN_NAME $MAGISKTMP/su
 ln -s ./$MAIN_BIN_NAME $MAGISKTMP/resetprop
-ln -s ./mpol $MAGISKTMP/supolicy
+ln -s "./$POLICY_NAME" $MAGISKTMP/supolicy
 
-mkdir -p $MAGISKTMP/.ms/device
-mkdir -p $MAGISKTMP/.ms/worker
-mount_tmpfs $MAGISKTMP/.ms/worker
-mount --make-private $MAGISKTMP/.ms/worker
-touch $MAGISKTMP/.ms/config
+mkdir -p "$MAGISKTMP/$INTERNAL_DIR/device"
+mkdir -p "$MAGISKTMP/$INTERNAL_DIR/worker"
+mount_tmpfs "$MAGISKTMP/$INTERNAL_DIR/worker"
+mount --make-private "$MAGISKTMP/$INTERNAL_DIR/worker"
+touch "$MAGISKTMP/$INTERNAL_DIR/config"
 
 export MAGISKTMP
 MAKEDEV=1 $MAGISKTMP/$MAIN_BIN_NAME --preinit-device 2>&1
 
 RULESCMD=""
-rule="$MAGISKTMP/.ms/preinit/sepolicy.rule"
+rule="$MAGISKTMP/$INTERNAL_DIR/preinit/sepolicy.rule"
 [ -f "$rule" ] && RULESCMD="--apply $rule"
 
 # SELinux stuffs

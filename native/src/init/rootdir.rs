@@ -1,4 +1,5 @@
-use crate::consts::{MAGISK_PROC_CON, MAIN_BIN_NAME, ROOTMNT, ROOTOVL};
+use crate::consts::{BUILD_BACKUP_CONFIG, MAGISK_PROC_CON, MAIN_BIN_NAME, ROOTMNT, ROOTOVL};
+use base::const_format::concatcp;
 use crate::ffi::MagiskInit;
 use base::nix::fcntl::OFlag;
 use base::{
@@ -41,7 +42,9 @@ pub struct OverlayAttr(Utf8CString, Utf8CString);
 
 impl MagiskInit {
     pub(crate) fn parse_config_file(&mut self) {
-        if let Ok(fd) = cstr!("/data/.backup/.cfg").open(OFlag::O_RDONLY) {
+        if let Ok(fd) = cstr!(concatcp!("/data/.backup/", BUILD_BACKUP_CONFIG))
+            .open(OFlag::O_RDONLY)
+        {
             let mut reader = BufReader::new(fd);
             reader.for_each_prop(|key, val| {
                 if key == "PREINITDEVICE" {

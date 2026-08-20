@@ -1,3 +1,4 @@
+use crate::consts::REDIR_PATH;
 use crate::ffi::MagiskInit;
 use base::nix::fcntl::OFlag;
 use base::{LoggedResult, MappedFile, MutBytesExt, ResultExt, cstr, debug, error};
@@ -16,7 +17,7 @@ pub(crate) fn hexpatch_init_for_second_stage(writable: bool) {
     };
 
     let from = "/system/bin/init";
-    let to = "/data/._init";
+    let to = REDIR_PATH;
     let v = init.patch(from.as_bytes(), to.as_bytes());
     #[allow(unused_variables)]
     for off in &v {
@@ -94,10 +95,10 @@ impl MagiskInit {
             debug!("Bind mount /sdcard -> /sdcard");
         } else {
             // Binding mounting from rootfs is not supported before Linux 3.12
-            cstr!("/data/._init")
+            cstr!(REDIR_PATH)
                 .bind_mount_to(cstr!("/sdcard"), false)
                 .log_ok();
-            debug!("Bind mount /data/._init -> /sdcard");
+            debug!("Bind mount {REDIR_PATH} -> /sdcard");
         }
     }
 }

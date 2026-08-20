@@ -17,7 +17,9 @@ use std::str;
 use crate::check_env;
 use crate::compress::{get_decoder, get_encoder};
 use crate::ffi::FileFormat;
+use crate::flags::BUILD_BACKUP_CONFIG;
 use crate::patch::{patch_encryption, patch_verity};
+use base::const_format::concatcp;
 use base::libc::{
     S_IFBLK, S_IFCHR, S_IFDIR, S_IFLNK, S_IFMT, S_IFREG, S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP,
     S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR, dev_t, gid_t, major, makedev, minor, mknod,
@@ -550,6 +552,7 @@ impl Cpio {
         for file in [
             ".backup/.magisk",
             ".backup/.cfg",
+            concatcp!(".backup/", BUILD_BACKUP_CONFIG),
             "init.magisk.rc",
             "overlay/init.magisk.rc",
         ] {

@@ -1,11 +1,13 @@
 #pragma once
 
-#define DEFAULT_DT_DIR "/proc/device-tree/firmware/android"
-#define REDIR_PATH "/data/._init"
+#include "../../out/generated/flags.h"
 
-#define PRELOAD_LIB    "/dev/preload.so"
-#define PRELOAD_POLICY "/dev/sepolicy"
-#define PRELOAD_ACK    "/dev/ack"
+#define DEFAULT_DT_DIR "/proc/device-tree/firmware/android"
+#define REDIR_PATH BUILD_REDIR_PATH
+
+#define PRELOAD_LIB    BUILD_PRELOAD_LIB
+#define PRELOAD_POLICY BUILD_PRELOAD_POLICY
+#define PRELOAD_ACK    BUILD_PRELOAD_ACK
 
 #ifdef __cplusplus
 

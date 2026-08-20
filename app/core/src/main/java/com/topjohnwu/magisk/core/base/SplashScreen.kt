@@ -122,9 +122,9 @@ class SplashController<T>(private val activity: T)
             withPermission(REQUEST_INSTALL_PACKAGES) { granted ->
                 if (granted) {
                     lifecycleScope.launch {
-                        val apk = File(cacheDir, "stub.apk")
+                        val apk = File(cacheDir, Const.STUB_NAME)
                         try {
-                            assets.open("stub.apk").writeTo(apk)
+                            assets.open(Const.STUB_NAME).writeTo(apk)
                             AppMigration.upgradeStub(activity, apk)?.let {
                                 startActivity(it)
                             }

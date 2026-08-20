@@ -118,7 +118,12 @@ abstract class MagiskInstallImpl protected constructor(
                         !it.isDirectory && it.name.startsWith("lib/${Const.CPU_ABI}/")
                     }.forEach {
                         val n = it.name.substring(it.name.lastIndexOf('/') + 1)
-                        val name = n.substring(3, n.length - 3)
+                        val packagedName = n.substring(3, n.length - 3)
+                        val name = when (packagedName) {
+                            "mpol" -> BuildConfig.POLICY_NAME
+                            "init-ld" -> BuildConfig.INIT_LD_NAME
+                            else -> packagedName
+                        }
                         val dest = File(installDir, name)
                         zf.getInputStream(it).writeTo(dest)
                         dest.setExecutable(true)
@@ -168,9 +173,21 @@ abstract class MagiskInstallImpl protected constructor(
                 runtimeMain.setExecutable(true)
             }
 
+            val packagedPolicy = File(installDir, "mpol")
+            val runtimePolicy = File(installDir, BuildConfig.POLICY_NAME)
+            if (packagedPolicy != runtimePolicy && packagedPolicy.exists()) {
+                packagedPolicy.renameTo(runtimePolicy)
+            }
+            val packagedInitLd = File(installDir, "init-ld")
+            val runtimeInitLd = File(installDir, BuildConfig.INIT_LD_NAME)
+            if (packagedInitLd != runtimeInitLd && packagedInitLd.exists()) {
+                packagedInitLd.renameTo(runtimeInitLd)
+            }
+
             // Extract scripts
             for (script in listOf(
-                "util_functions.sh", "boot_patch.sh", "addon.d.sh", "stub.apk", "udonge.bin"
+                "util_functions.sh", "boot_patch.sh", "addon.d.sh",
+                BuildConfig.STUB_NAME, BuildConfig.UDONGE_ARCHIVE
             )) {
                 val dest = File(installDir, script)
                 context.assets.open(script).writeTo(dest)

@@ -317,9 +317,9 @@ object AppMigration {
             var installedMainPackage: String? = null
             var committed = false
             try {
-                val stub = File(workDir, "stub.apk")
+                val stub = File(workDir, Const.STUB_NAME)
                 try {
-                    context.assets.open("stub.apk").writeTo(stub)
+                    context.assets.open(Const.STUB_NAME).writeTo(stub)
                 } catch (_: IOException) {
                     return@withContext false
                 }

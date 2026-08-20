@@ -181,7 +181,7 @@ void BootConfig::init() noexcept {
         }
         return true;
     };
-    parse_prop_file("/.backup/.cfg", read_recovery);
+    parse_prop_file("/.backup/" BUILD_BACKUP_CONFIG, read_recovery);
     parse_prop_file("/.backup/.magisk", read_recovery);
 
     if (dt_dir[0] == '\0')

@@ -21,6 +21,16 @@ android {
         buildConfigField("int", "STUB_VERSION", Config.stubVersion)
         buildConfigField("String", "SECURE_DIR", "\"${Config.secureDir}\"")
         buildConfigField("String", "MAIN_BIN_NAME", "\"${Config.mainBinName}\"")
+        buildConfigField("String", "DATA_DIR", "\"${Config.dataDir}\"")
+        buildConfigField("String", "DB_NAME", "\"${Config.dbName}\"")
+        buildConfigField("String", "INTERNAL_DIR", "\"${Config.internalDir}\"")
+        buildConfigField("String", "POLICY_NAME", "\"${Config.policyName}\"")
+        buildConfigField("String", "STUB_NAME", "\"${Config.stubName}\"")
+        buildConfigField("String", "INIT_LD_NAME", "\"${Config.initLdName}\"")
+        buildConfigField("String", "UDONGE_DIR", "\"${Config.udongeDir}\"")
+        buildConfigField("String", "UDONGE_ARCHIVE", "\"${Config.udongeArchive}\"")
+        buildConfigField("String", "TMP_DIR", "\"${Config.tmpDir}\"")
+        buildConfigField("String", "BACKUP_PREFIX", "\"${Config.backupPrefix}\"")
         consumerProguardFile("proguard-rules.pro")
     }
 

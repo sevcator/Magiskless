@@ -14,26 +14,26 @@ pub const MAGISK_FULL_VER: &str = concatcp!(MAGISK_VERSION, "(", MAGISK_VER_CODE
 pub const APP_PACKAGE_NAME: &str = "io.sevcator.reisenless";
 
 // Two-stage init redirect path (must match REDIR_PATH in init.hpp)
-pub const REDIR_PATH: &str = "/data/._init";
+pub const REDIR_PATH: &str = BUILD_REDIR_PATH;
 // Policy binary name in DATABIN (must match LOCAL_MODULE in Android.mk and scripts)
-pub const POLICY_DATABIN_NAME: &str = "mpol";
+pub const POLICY_DATABIN_NAME: &str = BUILD_POLICY_NAME;
 
 // data paths — configurable via secureDir in config.prop (default: /data/adb)
 pub const SECURE_DIR: &str = BUILD_SECURE_DIR;
 pub const MODULEROOT: &str = concatcp!(SECURE_DIR, "/modules");
 pub const MODULEUPGRADE: &str = concatcp!(SECURE_DIR, "/modules_update");
-pub const DATABIN: &str = concatcp!(SECURE_DIR, "/ms");
-pub const MAGISKDB: &str = concatcp!(SECURE_DIR, "/ms.db");
+pub const DATABIN: &str = concatcp!(SECURE_DIR, "/", BUILD_DATA_DIR);
+pub const MAGISKDB: &str = concatcp!(SECURE_DIR, "/", BUILD_DB_NAME);
 
 // tmpfs paths
-pub const INTERNAL_DIR: &str = ".ms";
+pub const INTERNAL_DIR: &str = BUILD_INTERNAL_DIR;
 pub const MAIN_CONFIG: &str = concatcp!(INTERNAL_DIR, "/config");
 pub const PREINITMIRR: &str = concatcp!(INTERNAL_DIR, "/preinit");
 pub const MODULEMNT: &str = concatcp!(INTERNAL_DIR, "/modules");
 pub const WORKERDIR: &str = concatcp!(INTERNAL_DIR, "/worker");
 pub const BBPATH: &str = concatcp!(INTERNAL_DIR, "/busybox");
 pub const DEVICEDIR: &str = concatcp!(INTERNAL_DIR, "/device");
-pub const MAIN_SOCKET: &str = concatcp!(DEVICEDIR, "/socket");
+pub const MAIN_SOCKET: &str = concatcp!(DEVICEDIR, "/", BUILD_SOCKET_NAME);
 pub const PREINITDEV: &str = concatcp!(DEVICEDIR, "/preinit");
 pub const ROOTOVL: &str = concatcp!(INTERNAL_DIR, "/rootdir");
 pub const ROOTMNT: &str = concatcp!(ROOTOVL, "/.mount_list");
@@ -51,13 +51,13 @@ pub const WORKER_SOURCE: &str = BUILD_ID;
 pub const ZYGISKLDR: &str = concatcp!("lib", BUILD_ID, "z.so");
 
 // Stable ramdisk filename (not randomized - not accessible to apps at runtime)
-pub const RAMDISK_BIN_NAME: &str = "ms";
+pub const RAMDISK_BIN_NAME: &str = BUILD_RAMDISK_NAME;
 // Backup config path in ramdisk (must match boot_patch.sh)
-pub const BACKUP_CONFIG: &str = ".backup/.cfg";
+pub const BACKUP_CONFIG: &str = concatcp!(".backup/", BUILD_BACKUP_CONFIG);
 
 // Unconstrained domain the daemon and root processes run in
-pub const SEPOL_PROC_DOMAIN: &str = "ms";
+pub const SEPOL_PROC_DOMAIN: &str = BUILD_PROC_DOMAIN;
 pub const MAGISK_PROC_CON: &str = concatcp!("u:r:", SEPOL_PROC_DOMAIN, ":s0");
 // Unconstrained file type that anyone can access
-pub const SEPOL_FILE_TYPE: &str = "ms_file";
+pub const SEPOL_FILE_TYPE: &str = BUILD_FILE_TYPE;
 pub const MAGISK_FILE_CON: &str = concatcp!("u:object_r:", SEPOL_FILE_TYPE, ":s0");

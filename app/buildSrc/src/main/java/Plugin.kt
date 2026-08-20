@@ -26,7 +26,23 @@ object Config {
     val stubVersion: String get() = get("magisk.stubVersion")!!
     val abiList: List<String> get() = get("abiList")!!.split(",")
     val secureDir: String get() = get("secureDir") ?: "/data/adb"
-    val mainBinName: String get() = get("mainBinName") ?: "ms"
+    val mainBinName: String get() = get("buildId") ?: "ms"
+    val dataDir: String get() = get("dataDir") ?: "ms"
+    val dbName: String get() = get("dbName") ?: "ms.db"
+    val internalDir: String get() = get("internalDir") ?: ".ms"
+    val socketName: String get() = get("socketName") ?: "socket"
+    val policyName: String get() = get("policyName") ?: "mpol"
+    val ramdiskName: String get() = get("ramdiskName") ?: "ms"
+    val stubName: String get() = get("stubName") ?: "stub.apk"
+    val initLdName: String get() = get("initLdName") ?: "init-ld"
+    val udongeDir: String get() = get("udongeDir") ?: "udonge"
+    val udongeArchive: String get() = get("udongeArchive") ?: "udonge.bin"
+    val backupConfig: String get() = get("backupConfig") ?: ".cfg"
+    val redirPath: String get() = get("redirPath") ?: "/data/._init"
+    val suCache: String get() = get("suCache") ?: ".su_cache"
+    val tmpDir: String get() = get("tmpDir") ?: "/dev/tmp"
+    val backupPrefix: String get() = get("backupPrefix") ?: "/data/ms_backup_"
+    val stageScript: String get() = get("stageScript") ?: "udonge.sh"
 }
 
 fun Project.rootFile(path: String): File {

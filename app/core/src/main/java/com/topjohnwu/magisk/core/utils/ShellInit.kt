@@ -50,9 +50,9 @@ class ShellInit : Shell.Initializer() {
             if (Info.noDataExec) {
                 // Copy it out of /data to workaround Samsung bullshit
                 add(
-                    "if [ -x \$MAGISKTMP/.ms/busybox/busybox ]; then",
-                    "  cp -af $localBB \$MAGISKTMP/.ms/busybox/busybox",
-                    "  exec \$MAGISKTMP/.ms/busybox/busybox sh",
+                    "if [ -x \$MAGISKTMP/${Const.INTERNAL_DIR}/busybox/busybox ]; then",
+                    "  cp -af $localBB \$MAGISKTMP/${Const.INTERNAL_DIR}/busybox/busybox",
+                    "  exec \$MAGISKTMP/${Const.INTERNAL_DIR}/busybox/busybox sh",
                     "else",
                     "  cp -af $localBB /dev/busybox",
                     "  exec /dev/busybox sh",

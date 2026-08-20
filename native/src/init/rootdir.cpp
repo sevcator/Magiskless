@@ -233,9 +233,9 @@ static void recreate_sbin(const char *mirror, bool use_bind_mount) {
 
 static void extract_files(bool sbin) {
     const char *magisk_xz = sbin ? "/sbin/" RAMDISK_BIN_NAME ".xz" : RAMDISK_BIN_NAME ".xz";
-    const char *stub_xz = sbin ? "/sbin/stub.xz" : "stub.xz";
-    const char *init_ld_xz = sbin ? "/sbin/init-ld.xz" : "init-ld.xz";
-    const char *udonge_xz = sbin ? "/sbin/udonge.xz" : "udonge.xz";
+    const char *stub_xz = sbin ? "/sbin/" BUILD_STUB_NAME ".xz" : BUILD_STUB_NAME ".xz";
+    const char *init_ld_xz = sbin ? "/sbin/" BUILD_INIT_LD_NAME ".xz" : BUILD_INIT_LD_NAME ".xz";
+    const char *udonge_xz = sbin ? "/sbin/" BUILD_UDONGE_ARCHIVE ".xz" : BUILD_UDONGE_ARCHIVE ".xz";
 
     if (access(magisk_xz, F_OK) == 0) {
         mmap_data magisk(magisk_xz);
@@ -243,27 +243,25 @@ static void extract_files(bool sbin) {
         int fd = xopen(MAIN_BIN_NAME, O_WRONLY | O_CREAT, 0755);
         unxz(fd, magisk);
         close(fd);
-        // Stable alias for shell scripts (ms → BUILD_ID)
-        xsymlink(MAIN_BIN_NAME, RAMDISK_BIN_NAME);
     }
     if (access(stub_xz, F_OK) == 0) {
         mmap_data stub(stub_xz);
         unlink(stub_xz);
-        int fd = xopen("stub.apk", O_WRONLY | O_CREAT, 0);
+        int fd = xopen(BUILD_STUB_NAME, O_WRONLY | O_CREAT, 0);
         unxz(fd, stub);
         close(fd);
     }
     if (access(init_ld_xz, F_OK) == 0) {
         mmap_data init_ld(init_ld_xz);
         unlink(init_ld_xz);
-        int fd = xopen("init-ld", O_WRONLY | O_CREAT, 0);
+        int fd = xopen(BUILD_INIT_LD_NAME, O_WRONLY | O_CREAT, 0);
         unxz(fd, init_ld);
         close(fd);
     }
     if (access(udonge_xz, F_OK) == 0) {
         mmap_data udonge(udonge_xz);
         unlink(udonge_xz);
-        int fd = xopen("udonge.bin", O_WRONLY | O_CREAT | O_TRUNC, 0600);
+        int fd = xopen(BUILD_UDONGE_ARCHIVE, O_WRONLY | O_CREAT | O_TRUNC, 0600);
         unxz(fd, udonge);
         close(fd);
     }
@@ -336,7 +334,7 @@ void MagiskInit::patch_ro_root() noexcept {
     extract_files(false);
 
     handle_sepolicy();
-    unlink("init-ld");
+    unlink(BUILD_INIT_LD_NAME);
 
     // Mount rootdir
     mount_overlay("/");
@@ -376,12 +374,12 @@ void MagiskInit::patch_rw_root() noexcept {
     extract_files(true);
 
     handle_sepolicy();
-    unlink("init-ld");
+    unlink(BUILD_INIT_LD_NAME);
 
     chdir("/");
 
     // Dump magiskinit as magisk
-    cp_afc(REDIR_PATH, "/sbin/ms");
+    cp_afc(REDIR_PATH, "/sbin/" RAMDISK_BIN_NAME);
 }
 
 int magisk_proxy_main(int, char *argv[]) {
@@ -391,7 +389,7 @@ int magisk_proxy_main(int, char *argv[]) {
     // Mount rootfs as rw to do post-init rootfs patches
     xmount(nullptr, "/", nullptr, MS_REMOUNT, nullptr);
 
-    unlink("/sbin/ms");
+    unlink("/sbin/" RAMDISK_BIN_NAME);
 
     // Move tmpfs to /sbin
     // make parent private before MS_MOVE
@@ -406,7 +404,7 @@ int magisk_proxy_main(int, char *argv[]) {
 
     // Tell magiskd to remount rootfs
     setenv("REMOUNT_ROOT", "1", 1);
-    execve("/sbin/ms", argv, environ);
+    execve("/sbin/" RAMDISK_BIN_NAME, argv, environ);
     return 1;
 }
 

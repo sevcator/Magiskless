@@ -47,8 +47,9 @@ else
 fi
 
 # Extract files from APK
-unzip -oj magisk.apk 'assets/util_functions.sh' 'assets/stub.apk' 'assets/udonge.bin'
+unzip -oj magisk.apk 'assets/util_functions.sh'
 . ./util_functions.sh
+unzip -oj magisk.apk "assets/$STUB_NAME" "assets/$UDONGE_ARCHIVE"
 
 api_level_arch_detect
 
@@ -57,6 +58,8 @@ for file in lib*.so; do
   chmod 755 $file
   mv "$file" "${file:3:${#file}-6}"
 done
+[ -f mpol ] && mv mpol "$POLICY_NAME"
+[ -f init-ld ] && mv init-ld "$INIT_LD_NAME"
 
 if $IS_RAMDISK; then
   ./mboot decompress "$TARGET_FILE" ramdisk.cpio
@@ -76,24 +79,24 @@ echo "PREINITDEVICE=$(./$MAIN_BIN_NAME --preinit-device)" >> config
 [ $API = "28" ] && echo 'RECOVERYMODE=true' >> config
 cat config
 
-[ -f "$MAIN_BIN_NAME" ] && mv "$MAIN_BIN_NAME" ms
-./mboot compress=xz ms ms.xz
-./mboot compress=xz stub.apk stub.xz
-./mboot compress=xz init-ld init-ld.xz
-./mboot compress=xz udonge.bin udonge.xz
+[ -f "$MAIN_BIN_NAME" ] && mv "$MAIN_BIN_NAME" "$RAMDISK_NAME"
+./mboot compress=xz "$RAMDISK_NAME" "$RAMDISK_NAME.xz"
+./mboot compress=xz "$STUB_NAME" "$STUB_NAME.xz"
+./mboot compress=xz "$INIT_LD_NAME" "$INIT_LD_NAME.xz"
+./mboot compress=xz "$UDONGE_ARCHIVE" "$UDONGE_ARCHIVE.xz"
 
 ./mboot cpio ramdisk.cpio \
 "add 0750 init minit" \
 "mkdir 0750 overlay.d" \
 "mkdir 0750 overlay.d/sbin" \
-"add 0644 overlay.d/sbin/ms.xz ms.xz" \
-"add 0644 overlay.d/sbin/stub.xz stub.xz" \
-"add 0644 overlay.d/sbin/init-ld.xz init-ld.xz" \
-"add 0600 overlay.d/sbin/udonge.xz udonge.xz" \
+"add 0644 overlay.d/sbin/$RAMDISK_NAME.xz $RAMDISK_NAME.xz" \
+"add 0644 overlay.d/sbin/$STUB_NAME.xz $STUB_NAME.xz" \
+"add 0644 overlay.d/sbin/$INIT_LD_NAME.xz $INIT_LD_NAME.xz" \
+"add 0600 overlay.d/sbin/$UDONGE_ARCHIVE.xz $UDONGE_ARCHIVE.xz" \
 "patch" \
 "backup ramdisk.cpio.orig" \
 "mkdir 000 .backup" \
-"add 000 .backup/.cfg config"
+"add 000 .backup/$BACKUP_CONFIG config"
 
 rm -f ramdisk.cpio.orig config *.xz
 if $IS_RAMDISK; then

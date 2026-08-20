@@ -1,5 +1,5 @@
 use crate::SePolicy;
-use crate::consts::{SEPOL_FILE_TYPE, SEPOL_PROC_DOMAIN};
+use crate::consts::{BUILD_UDONGE_FILE_TYPE, SEPOL_FILE_TYPE, SEPOL_PROC_DOMAIN};
 use crate::ffi::Xperm;
 use base::{LogLevel, set_log_level_state};
 
@@ -54,8 +54,8 @@ impl SePolicy {
             type_(file, ["file_type"]);
             typeattribute([file], ["mlstrustedobject"]);
 
-            type_("udonge_lib_file", ["file_type"]);
-            allow(["keystore"], ["udonge_lib_file"], ["file"],
+            type_(BUILD_UDONGE_FILE_TYPE, ["file_type"]);
+            allow(["keystore"], [BUILD_UDONGE_FILE_TYPE], ["file"],
                 ["open", "read", "getattr", "map", "execute"]);
 
             // Create unconstrained file type

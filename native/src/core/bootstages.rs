@@ -1,5 +1,6 @@
 use crate::consts::{
-    APP_PACKAGE_NAME, BBPATH, DATABIN, MAIN_BIN_NAME_32, MODULEROOT, POLICY_BIN_NAME, SECURE_DIR,
+    APP_PACKAGE_NAME, BBPATH, DATABIN, MAIN_BIN_NAME_32, MODULEROOT, POLICY_BIN_NAME,
+    POLICY_DATABIN_NAME, SECURE_DIR,
 };
 use crate::daemon::MagiskD;
 use crate::ffi::{
@@ -100,7 +101,7 @@ impl MagiskD {
             let tmp = buf.append_path(get_magisk_tmp()).append_path(MAIN_BIN_NAME_32);
             magisk32.copy_to(tmp).log_ok();
         }
-        let mpol = cstr!(concatcp!(DATABIN, "/mpol"));
+        let mpol = cstr!(concatcp!(DATABIN, "/", POLICY_DATABIN_NAME));
         if mpol.exists() {
             let tmp = buf
                 .append_path(get_magisk_tmp())

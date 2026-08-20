@@ -6,11 +6,11 @@
 // Configurable via secureDir in config.prop (default: /data/adb)
 #define SECURE_DIR      BUILD_SECURE_DIR
 #define MODULEROOT      SECURE_DIR "/modules"
-#define DATABIN         SECURE_DIR "/ms"
-#define MAGISKDB        SECURE_DIR "/ms.db"
+#define DATABIN         SECURE_DIR "/" BUILD_DATA_DIR
+#define MAGISKDB        SECURE_DIR "/" BUILD_DB_NAME
 
 // tmpfs paths
-#define INTLROOT      ".ms"
+#define INTLROOT      BUILD_INTERNAL_DIR
 #define MIRRDIR       INTLROOT "/mirror"
 #define PREINITMIRR   INTLROOT "/preinit"
 #define DEVICEDIR     INTLROOT "/device"
@@ -20,7 +20,7 @@
 #define ROOTOVL       INTLROOT "/rootdir"
 #define SHELLPTS      INTLROOT "/pts"
 #define MAIN_CONFIG   INTLROOT "/config"
-#define MAIN_SOCKET   DEVICEDIR "/socket"
+#define MAIN_SOCKET   DEVICEDIR "/" BUILD_SOCKET_NAME
 
 constexpr const char *applet_names[] = { "su", "resetprop", nullptr };
 
@@ -41,13 +41,13 @@ constexpr const char *applet_names[] = { "su", "resetprop", nullptr };
 #define ZYGISKD32     BUILD_ID "d32"
 
 // Stable ramdisk filename - NOT randomized (not accessible to apps at runtime)
-#define RAMDISK_BIN_NAME "ms"
+#define RAMDISK_BIN_NAME BUILD_RAMDISK_NAME
 // Backup config path in ramdisk (must match boot_patch.sh)
-#define BACKUP_CONFIG    ".backup/.cfg"
+#define BACKUP_CONFIG    ".backup/" BUILD_BACKUP_CONFIG
 
 // Unconstrained domain the daemon and root processes run in
-#define SEPOL_PROC_DOMAIN   "ms"
+#define SEPOL_PROC_DOMAIN   BUILD_PROC_DOMAIN
 #define MAGISK_PROC_CON     "u:r:" SEPOL_PROC_DOMAIN ":s0"
 // Unconstrained file type that anyone can access
-#define SEPOL_FILE_TYPE     "ms_file"
+#define SEPOL_FILE_TYPE     BUILD_FILE_TYPE
 #define MAGISK_FILE_CON     "u:object_r:" SEPOL_FILE_TYPE ":s0"

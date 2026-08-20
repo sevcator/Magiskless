@@ -6,7 +6,6 @@ import json
 import multiprocessing
 import os
 import platform
-import random
 import re
 import shutil
 import stat
@@ -333,15 +332,92 @@ def write_if_diff(file_name: Path, text: str):
             f.write(text)
 
 
+def _repository_namespace() -> str:
+    namespace = config.get("identityNamespace", "").strip()
+    if not namespace:
+        namespace = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    if not namespace:
+        remote = cmd_out(["git", "remote", "get-url", "origin"]).strip()
+        match = re.search(r"(?:github\.com[/:])([^/]+/[^/]+?)(?:\.git)?$", remote)
+        namespace = match.group(1) if match else remote
+    if not namespace:
+        namespace = cmd_out(["git", "rev-list", "--max-parents=0", "HEAD"]).strip()
+    return namespace.lower()
+
+
+def _build_identity() -> dict[str, str]:
+    enabled = config.get("randomizeBuild", "true").lower() == "true"
+    if not enabled:
+        return {
+            "buildId": "ms", "secureDir": config.get("secureDir", "/data/adb"),
+            "dataDir": "ms", "dbName": "ms.db", "internalDir": ".ms",
+            "socketName": "socket", "policyName": "mpol", "ramdiskName": "ms",
+            "stubName": "stub.apk", "initLdName": "init-ld",
+            "udongeDir": "udonge", "udongeArchive": "udonge.bin",
+            "backupConfig": ".cfg", "redirPath": "/data/._init",
+            "procDomain": "ms", "fileType": "ms_file",
+            "udongeFileType": "udonge_lib_file", "suCache": ".su_cache",
+            "tmpDir": "/dev/tmp", "backupPrefix": "/data/ms_backup_",
+            "preloadLib": "/dev/preload.so", "preloadPolicy": "/dev/sepolicy",
+            "preloadAck": "/dev/ack", "stageScript": "udonge.sh",
+        }
+
+    seed = config.get("identitySeed", "reisenless-build-identity-v1")
+    namespace = _repository_namespace()
+
+    def token(label: str, minimum: int = 5, maximum: int = 10) -> str:
+        digest = hashlib.shake_256(
+            f"{seed}\0{namespace}\0{label}".encode("utf-8")
+        ).digest(maximum + 1)
+        size = minimum + digest[0] % (maximum - minimum + 1)
+        return "".join(string.ascii_lowercase[value % 26] for value in digest[1:size + 1])
+
+    explicit_secure_dir = config.get("secureDir", "")
+    randomize_secure = config.get("randomizeSecureDir", "true").lower() == "true"
+    secure_dir = (
+        f"/data/.{token('secure-dir', 4, 4)}"
+        if randomize_secure or not explicit_secure_dir
+        else explicit_secure_dir
+    )
+    proc = token("policy-domain", 6, 9)
+    file_type = token("policy-file", 6, 9)
+    udonge_type = token("policy-udonge", 6, 9)
+    return {
+        "buildId": token("main-binary", 5, 8),
+        "secureDir": secure_dir,
+        "dataDir": "." + token("data-bin", 6, 10),
+        "dbName": "." + token("database", 6, 10),
+        "internalDir": "." + token("tmpfs-internal", 6, 10),
+        "socketName": token("daemon-socket", 6, 10),
+        "policyName": token("policy-binary", 5, 9),
+        "ramdiskName": token("ramdisk-binary", 5, 9),
+        "stubName": token("stub-apk", 6, 10) + ".apk",
+        "initLdName": token("init-loader", 6, 10),
+        "udongeDir": "." + token("udonge-root", 3, 3),
+        "udongeArchive": token("udonge-archive", 7, 11) + ".bin",
+        "backupConfig": "." + token("backup-config", 6, 10),
+        # Must fit inside the /system/bin/init string patched in-place.
+        "redirPath": "/data/." + token("init-redirect", 7, 9),
+        "procDomain": proc + "_d", "fileType": file_type + "_f",
+        "udongeFileType": udonge_type + "_f",
+        "suCache": "." + token("package-cache", 6, 10),
+        "tmpDir": "/dev/." + token("installer-temp", 6, 10),
+        "backupPrefix": "/data/." + token("backup-prefix", 6, 10) + "_",
+        "preloadLib": "/dev/." + token("preload-lib", 6, 10) + ".so",
+        "preloadPolicy": "/dev/." + token("preload-policy", 6, 10),
+        "preloadAck": "/dev/." + token("preload-ack", 6, 10),
+        "stageScript": "." + token("udonge-stage", 6, 10) + ".sh",
+    }
+
+
 def _build_flag_metadata():
     return {
         "version": config["version"],
         "versionCode": config["versionCode"],
         "release": args.release,
-        "randomizeName": config.get("randomizeName", "true").lower() == "true",
-        "secureDir": config.get("secureDir", "/data/adb"),
-        "randomizeSecureDir": config.get("randomizeSecureDir", "false").lower()
-        == "true",
+        "randomizeBuild": config.get("randomizeBuild", "true").lower() == "true",
+        "identityNamespace": _repository_namespace(),
+        "identity": _build_identity(),
         "spoofFingerprint": config.get("spoofFingerprint", ""),
         "spoofManufacturer": config.get("spoofManufacturer", ""),
         "spoofModel": config.get("spoofModel", ""),
@@ -384,16 +460,9 @@ def _escape_flag_string(value: str) -> str:
 
 
 def dump_flag_header():
-    if config.get("randomizeName", "true").lower() == "true":
-        build_id = ''.join(random.choices(string.ascii_lowercase, k=5))
-    else:
-        build_id = "ms"
-
-    # randomizeSecureDir=true generates a random /data/.<id> path each build
-    if config.get("randomizeSecureDir", "false").lower() == "true":
-        secure_dir = "/data/." + ''.join(random.choices(string.ascii_lowercase, k=5))
-    else:
-        secure_dir = config.get("secureDir", "/data/adb")
+    identity = _build_identity()
+    build_id = identity["buildId"]
+    secure_dir = identity["secureDir"]
     if (
         not re.fullmatch(r"/data/[A-Za-z0-9._/-]+", secure_dir)
         or "/../" in f"{secure_dir}/"
@@ -427,6 +496,21 @@ def dump_flag_header():
     flag_txt += f"#define MAGISK_DEBUG        {0 if args.release else 1}\n"
     flag_txt += f'#define BUILD_ID            "{build_id}"\n'
     flag_txt += f'#define BUILD_SECURE_DIR    "{secure_dir}"\n'
+    identity_flags = {
+        "dataDir": "BUILD_DATA_DIR", "dbName": "BUILD_DB_NAME",
+        "internalDir": "BUILD_INTERNAL_DIR", "socketName": "BUILD_SOCKET_NAME",
+        "policyName": "BUILD_POLICY_NAME", "ramdiskName": "BUILD_RAMDISK_NAME",
+        "stubName": "BUILD_STUB_NAME", "initLdName": "BUILD_INIT_LD_NAME",
+        "udongeDir": "BUILD_UDONGE_DIR", "udongeArchive": "BUILD_UDONGE_ARCHIVE",
+        "backupConfig": "BUILD_BACKUP_CONFIG", "redirPath": "BUILD_REDIR_PATH",
+        "procDomain": "BUILD_PROC_DOMAIN", "fileType": "BUILD_FILE_TYPE",
+        "udongeFileType": "BUILD_UDONGE_FILE_TYPE", "suCache": "BUILD_SU_CACHE",
+        "tmpDir": "BUILD_TMP_DIR", "backupPrefix": "BUILD_BACKUP_PREFIX",
+        "preloadLib": "BUILD_PRELOAD_LIB", "preloadPolicy": "BUILD_PRELOAD_POLICY",
+        "preloadAck": "BUILD_PRELOAD_ACK", "stageScript": "BUILD_STAGE_SCRIPT",
+    }
+    for key, macro in identity_flags.items():
+        flag_txt += f'#define {macro:<24} "{identity[key]}"\n'
     flag_txt += f'#define SPOOF_FINGERPRINT   "{spoof_fp}"\n'
     flag_txt += f'#define SPOOF_MANUFACTURER  "{spoof_mfr}"\n'
     flag_txt += f'#define SPOOF_MODEL         "{spoof_model}"\n'
@@ -444,6 +528,8 @@ def dump_flag_header():
     rust_flag_txt += f'pub const MAGISK_VER_CODE: i32 = {config["versionCode"]};\n'
     rust_flag_txt += f'pub const BUILD_ID: &str = "{build_id}";\n'
     rust_flag_txt += f'pub const BUILD_SECURE_DIR: &str = "{secure_dir}";\n'
+    for key, const_name in identity_flags.items():
+        rust_flag_txt += f'pub const {const_name}: &str = "{identity[key]}";\n'
     rust_flag_txt += f'pub const SPOOF_FINGERPRINT: &str = "{spoof_fp}";\n'
     rust_flag_txt += f'pub const SPOOF_MANUFACTURER: &str = "{spoof_mfr}";\n'
     rust_flag_txt += f'pub const SPOOF_MODEL: &str = "{spoof_model}";\n'
@@ -571,12 +657,25 @@ def _zip_bytes(zf: ZipFile, name: str, data: bytes, mode: int = 0o644):
     zf.writestr(info, data)
 
 
-def _patch_tee_dex(data: bytes) -> bytes:
+def _patch_tee_dex(data: bytes, udonge_root: str) -> bytes:
+    def fit_path(path: str, size: int) -> bytes:
+        encoded = path.encode()
+        if len(encoded) > size:
+            error(f"Generated Udonge path is too long for TEE DEX: {path}")
+        # Repeated path separators are equivalent on Android and let the
+        # replacement preserve the DEX string_data layout exactly.
+        split = encoded.find(b"/", len(b"/data/"))
+        if split < 0:
+            split = len(encoded)
+        return encoded[:split] + b"/" * (size - len(encoded)) + encoded[split:]
+
+    state_source = b"/data/adb/tricky_store"
+    library_source = b"/data/adb/modules/tricky_store/libcertgen.so"
     replacements = (
-        (b"/data/adb/tricky_store", b"/data/adb/udonge/state"),
+        (state_source, fit_path(f"{udonge_root}/state", len(state_source))),
         (
-            b"/data/adb/modules/tricky_store/libcertgen.so",
-            b"/data/adb/udonge/./tee-runtime/libcertgen.so",
+            library_source,
+            fit_path(f"{udonge_root}/tee-runtime/libcertgen.so", len(library_source)),
         ),
     )
     for source, target in replacements:
@@ -645,7 +744,9 @@ def build_udonge():
         for name in ("main.cpp", "config.cpp", "hideapps.cpp", "hooks.cpp", "spoof.cpp")
     ]
     api = "23"
-    secure_dir = config.get("secureDir", "/data/adb").rstrip("/")
+    identity = _build_identity()
+    secure_dir = identity["secureDir"].rstrip("/")
+    udonge_root = f'{secure_dir}/{identity["udongeDir"]}'
     drivers = {
         "armeabi-v7a": "armv7a-linux-androideabi",
         "arm64-v8a": "aarch64-linux-android",
@@ -674,7 +775,7 @@ def build_udonge():
             "-shared",
             "-Wl,--gc-sections",
             "-Wl,--build-id=none",
-            f'-DUDONGE_ROOT="{secure_dir}/udonge"',
+            f'-DUDONGE_ROOT="{udonge_root}"',
             *native_sources,
             "-ldl",
             "-llog",
@@ -696,13 +797,14 @@ def build_udonge():
             name = source.relative_to(payload).as_posix()
             data = source.read_bytes()
             if name == "tee/classes.dex":
-                data = _patch_tee_dex(data)
+                data = _patch_tee_dex(data, udonge_root)
             if name.endswith(".sh") or name in {"tee/daemon"} or name.endswith("/inject") or name.endswith("/supervisor"):
                 mode = 0o700
             else:
                 mode = 0o600 if name.startswith("defaults/") else 0o644
             if name.endswith(".sh"):
-                data = data.replace(b"root=/data/adb/udonge", f"root={secure_dir}/udonge".encode())
+                data = data.replace(b"root=/data/adb/udonge", f"root={udonge_root}".encode())
+                data = data.replace(b"udonge_lib_file", identity["udongeFileType"].encode())
             _zip_bytes(zf, name, data, mode)
 
     rm_rf(work)
@@ -717,13 +819,13 @@ def build_apk(module: str):
     # Write flags.prop for Gradle (read by Plugin.kt as Config.version, etc.)
     gradle_build_dir = Path("app", "build")
     gradle_build_dir.mkdir(mode=0o755, parents=True, exist_ok=True)
+    identity = _build_identity()
     write_if_diff(
         gradle_build_dir / "flags.prop",
         f"version={config['version']}\n"
         f"magisk.versionCode={config['versionCode']}\n"
         f"abiList={','.join(build_abis.keys())}\n"
-        f"mainBinName={_read_generated_flag('BUILD_ID', 'ms')}\n"
-        f"secureDir={_read_generated_flag('BUILD_SECURE_DIR', config.get('secureDir', '/data/adb'))}\n",
+        + "".join(f"{key}={value}\n" for key, value in identity.items()),
     )
 
     os.chdir("app")

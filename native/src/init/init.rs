@@ -1,4 +1,4 @@
-use crate::consts::MAIN_BIN_NAME;
+use crate::consts::{MAIN_BIN_NAME, RAMDISK_BIN_NAME};
 use crate::ffi::{BootConfig, MagiskInit, backup_init, magisk_proxy_main};
 use crate::logging::setup_klog;
 use crate::mount::is_rootfs;
@@ -182,7 +182,8 @@ pub unsafe extern "C" fn main(
 
         let name = basename(*argv);
 
-        if CStr::from_ptr(name).to_bytes() == MAIN_BIN_NAME.as_bytes() {
+        let name = CStr::from_ptr(name).to_bytes();
+        if name == MAIN_BIN_NAME.as_bytes() || name == RAMDISK_BIN_NAME.as_bytes() {
             return magisk_proxy_main(argc, argv);
         }
 

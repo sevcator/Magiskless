@@ -4,7 +4,7 @@ import android.util.Base64
 import com.topjohnwu.superuser.Shell
 
 object Udonge {
-    private val root = "${Const.SECURE_DIR}/udonge"
+    private val root = "${Const.SECURE_DIR}/${Const.UDONGE_DIR}"
     private val state = "$root/state"
     private val runtime = "$root/runtime"
 

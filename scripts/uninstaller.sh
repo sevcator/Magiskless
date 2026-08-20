@@ -104,14 +104,14 @@ case $((STATUS & 3)) in
   1 )  # Magisk patched
     ui_print "- reisenless patched image detected"
     # Find SHA1 of stock boot image (try our config first, fall back to old .magisk)
-    ./mboot cpio ramdisk.cpio "extract .backup/.cfg config.orig" 2>/dev/null || \
+      ./mboot cpio ramdisk.cpio "extract .backup/$BACKUP_CONFIG config.orig" 2>/dev/null || \
       ./mboot cpio ramdisk.cpio "extract .backup/.magisk config.orig" 2>/dev/null
     if [ -f config.orig ]; then
       chmod 0644 config.orig
       SHA1=$(grep_prop SHA1 config.orig)
       rm config.orig
     fi
-    BACKUPDIR=/data/ms_backup_$SHA1
+    BACKUPDIR=${BACKUP_PREFIX}${SHA1}
     if [ -d $BACKUPDIR ]; then
       ui_print "- restoring stock boot image"
       flash_image $BACKUPDIR/boot.img.gz $BOOTIMAGE
@@ -152,7 +152,7 @@ ui_print "- removing files"
 rm -rf \
 /cache/*magisk* /cache/unblock /data/*magisk* /data/cache/*magisk* /data/property/*magisk* \
 /data/Magisk.apk /data/busybox /data/custom_ramdisk_patch.sh /data/adb/*magisk* \
-${SECURE_DIR}/ms ${SECURE_DIR}/ms.db ${SECURE_DIR}/udonge ${SECURE_DIR}/post-fs-data.d ${SECURE_DIR}/service.d ${SECURE_DIR}/modules* \
+${SECURE_DIR}/${DATA_DIR} ${SECURE_DIR}/${DB_NAME} ${SECURE_DIR}/${UDONGE_DIR} ${SECURE_DIR}/post-fs-data.d ${SECURE_DIR}/service.d ${SECURE_DIR}/modules* \
 /data/adb/ms /data/adb/ms.db /data/adb/udonge /data/adb/post-fs-data.d /data/adb/service.d /data/adb/modules* \
 /data/unencrypted/magisk /data/unencrypted/.mnt \
 /metadata/magisk /metadata/watchdog/magisk /metadata/watchdog/.mnt \

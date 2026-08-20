@@ -1,4 +1,4 @@
-use crate::consts::{PREINITMIRR, SELINUXMOCK};
+use crate::consts::{BUILD_INIT_LD_NAME, PREINITMIRR, SELINUXMOCK};
 use crate::ffi::{MagiskInit, preload_ack, preload_lib, preload_policy, split_plat_cil};
 use base::const_format::concatcp;
 use base::nix::fcntl::OFlag;
@@ -129,7 +129,7 @@ impl MagiskInit {
             SePatchStrategy::LdPreload => {
                 info!("SePatchStrategy: LD_PRELOAD");
 
-                cstr!("init-ld").copy_to(preload_lib())?;
+                cstr!(BUILD_INIT_LD_NAME).copy_to(preload_lib())?;
                 unsafe {
                     libc::setenv(raw_cstr!("LD_PRELOAD"), preload_lib().as_ptr(), 1);
                 }

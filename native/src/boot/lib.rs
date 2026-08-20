@@ -11,6 +11,9 @@ mod cli;
 mod compress;
 mod cpio;
 mod dtb;
+#[allow(dead_code)]
+#[path = "../../out/generated/flags.rs"]
+mod flags;
 mod format;
 mod patch;
 mod payload;

@@ -6,10 +6,8 @@
 # The version name of Magisk. Default: git HEAD short SHA1
 version=string
 
-# Secure directory where Magisk stores modules, binaries and database.
-# Change to avoid detection by path-based scans. Default: /data/adb
-# Example: secureDir=/data/.system
-secureDir=/data/adb
+# Optional fixed secure directory. It is used only when randomizeSecureDir=false.
+# secureDir=/data/.system
 
 # Output path. Default: out
 outdir=string
@@ -63,16 +61,17 @@ keyPass=string
 # spoofVersionRelease=15
 
 ###########################################################
-# Per-Build Randomization
+# Repository Build Identity
 ###########################################################
 
-# Randomize the binary/daemon names each build (default: true)
-# Binary names are derived from a random 5-char BUILD_ID so every
-# build produces unique executable names — no shared string across installs.
-# Set false for the stable BUILD_ID "ms". Partial native builds preserve the
-# identity of the existing full native output and reject configuration changes.
-# randomizeName=true
+# Derive opaque names for all Reisenless-owned runtime paths and identifiers.
+# Values are stable for upgrades of one repository and differ between forks.
+# randomizeBuild=true
 
-# Randomize the secure storage path each build instead of using secureDir above
-# Generates a random /data/.<5-char> path per build
-# randomizeSecureDir=false
+# Include the secure data root in the generated identity (default: true).
+# randomizeSecureDir=true
+
+# Optional private/public salt and namespace overrides. GitHub Actions uses
+# GITHUB_REPOSITORY automatically; local builds use the origin remote URL.
+# identitySeed=long-random-string
+# identityNamespace=owner/repository

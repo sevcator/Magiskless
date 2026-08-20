@@ -77,7 +77,7 @@ object AppContext : ContextWrapper(null),
         val base = app.baseContext
         attachBaseContext(base)
         base.deleteDatabase("sulogs.db")
-        listOf("stub.apk", "test.apk", "patched.apk").forEach {
+        listOf(Const.STUB_NAME, "stub.apk", "test.apk", "patched.apk").forEach {
             java.io.File(base.cacheDir, it).delete()
         }
         base.cacheDir.listFiles { file -> file.extension == "md" }?.forEach { it.delete() }

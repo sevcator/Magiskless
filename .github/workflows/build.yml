@@ -68,14 +68,16 @@ jobs:
         run: |
           set -euo pipefail
           apk=out/app-release.apk
+          identity=native/out/generated/flags.json
+          udonge_archive="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["identity"]["udongeArchive"])' "$identity")"
+          secure_dir="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["identity"]["secureDir"])' "$identity")"
           test -s "$apk"
           unzip -tq "$apk"
-          unzip -p "$apk" assets/udonge.bin > "$RUNNER_TEMP/udonge.bin"
+          unzip -p "$apk" "assets/$udonge_archive" > "$RUNNER_TEMP/udonge.bin"
           test -s "$RUNNER_TEMP/udonge.bin"
           unzip -p "$RUNNER_TEMP/udonge.bin" tee/classes.dex > "$RUNNER_TEMP/udonge-tee.dex"
           unzip -p "$RUNNER_TEMP/udonge.bin" tee/daemon > "$RUNNER_TEMP/udonge-tee-daemon"
-          grep -aFq '/data/adb/udonge/state' "$RUNNER_TEMP/udonge-tee.dex"
-          grep -aFq '/data/adb/udonge/./tee-runtime/libcertgen.so' "$RUNNER_TEMP/udonge-tee.dex"
+          grep -aFq "$secure_dir" "$RUNNER_TEMP/udonge-tee.dex"
           ! grep -aFq '/data/adb/tricky_store' "$RUNNER_TEMP/udonge-tee.dex"
           ! grep -aFq '/data/adb/modules/tricky_store' "$RUNNER_TEMP/udonge-tee.dex"
           aapt="$(find "$ANDROID_HOME/build-tools" -type f -name aapt -print | sort -V | tail -n 1)"

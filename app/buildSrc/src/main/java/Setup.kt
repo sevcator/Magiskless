@@ -169,7 +169,9 @@ fun Project.setupCoreLib() {
                         "app_functions.sh", "uninstaller.sh", "module_installer.sh")
                 }
                 from(rootFile("tools/bootctl"))
-                from(rootFile("out/udonge.bin"))
+                from(rootFile("out/udonge.bin")) {
+                    rename { Config.udongeArchive }
+                }
                 into("chromeos") {
                     from(rootFile("tools/futility"))
                     from(rootFile("tools/keys")) {
@@ -178,10 +180,28 @@ fun Project.setupCoreLib() {
                 }
                 from(stubTask) {
                     include { it.name.endsWith(".apk") }
-                    rename { "stub.apk" }
+                    rename { Config.stubName }
                 }
                 val secureDirLine = "SECURE_DIR='${Config.secureDir}'"
                 val mainBinNameLine = "MAIN_BIN_NAME='${Config.mainBinName}'"
+                val identityLines = listOf(
+                    "DATA_DIR='${Config.dataDir}'",
+                    "DB_NAME='${Config.dbName}'",
+                    "INTERNAL_DIR='${Config.internalDir}'",
+                    "SOCKET_NAME='${Config.socketName}'",
+                    "POLICY_NAME='${Config.policyName}'",
+                    "RAMDISK_NAME='${Config.ramdiskName}'",
+                    "STUB_NAME='${Config.stubName}'",
+                    "INIT_LD_NAME='${Config.initLdName}'",
+                    "UDONGE_DIR='${Config.udongeDir}'",
+                    "UDONGE_ARCHIVE='${Config.udongeArchive}'",
+                    "BACKUP_CONFIG='${Config.backupConfig}'",
+                    "REDIR_PATH='${Config.redirPath}'",
+                    "SU_CACHE='${Config.suCache}'",
+                    "BUILD_TMPDIR='${Config.tmpDir}'",
+                    "BACKUP_PREFIX='${Config.backupPrefix}'",
+                    "STAGE_SCRIPT='${Config.stageScript}'",
+                ).joinToString("\n")
                 filesMatching("**/*.sh") {
                     filter {
                         it.replace(
@@ -189,6 +209,7 @@ fun Project.setupCoreLib() {
                             "MAGISK_VER='${Config.version}'\nMAGISK_VER_CODE=${Config.versionCode}"
                         ).replace("#SECURE_DIR_STUB", secureDirLine)
                             .replace("#MAIN_BIN_NAME_STUB", mainBinNameLine)
+                            .replace("#BUILD_IDENTITY_STUB", identityLines)
                     }
                     filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
                 }
