@@ -60,7 +60,7 @@ class HideAppsRepository(context: Context) {
 
     @Synchronized
     private fun load(): HideAppsConfig = runCatching {
-        if (file.isFile) HideAppsConfig.parse(file.readText()) else HideAppsConfig()
+        if (file.isFile) HideAppsConfig.parse(file.readText()) else HideAppsConfig(enabled = true, hiddenPackages = setOf("io.sevcator.reisenless"))
     }.getOrDefault(HideAppsConfig())
 
     private fun save(updated: HideAppsConfig) {

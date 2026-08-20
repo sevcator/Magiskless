@@ -155,6 +155,12 @@ object UdongeSettings : BaseSettingsItem.Section() {
     override val title = CoreR.string.udonge.asText()
 }
 
+object AnonymousMode : BaseSettingsItem.Toggle() {
+    override val title = CoreR.string.anonymous_mode_title.asText()
+    override val description = CoreR.string.anonymous_mode_summary.asText()
+    override var value by Config::anonymousEnabled
+}
+
 object UdongeKeyboxes : BaseSettingsItem.SplitToggle() {
     override val title = CoreR.string.udonge_keybox_list_title.asText()
     override val description = CoreR.string.udonge_keybox_list_summary.asText()

@@ -19,6 +19,23 @@ object Udonge {
         return success
     }
 
+    fun setAnonymous(enabled: Boolean): Boolean {
+        // The runtime script does the real work (firewall + identity
+        // randomization). When the on-device runtime predates anonymous
+        // mode we still set the flag, which takes effect after the
+        // runtime is updated and the device reboots.
+        val action = if (enabled) {
+            "mkdir -p '$state' && : > '$state/anonymous' && " +
+                "if [ -f '$runtime/anonymous.sh' ]; then sh '$runtime/anonymous.sh' enable; fi"
+        } else {
+            "rm -f '$state/anonymous' '$state/anonymous_clear_data' && " +
+                "if [ -f '$runtime/anonymous.sh' ]; then sh '$runtime/anonymous.sh' disable; fi"
+        }
+        val success = Shell.cmd(action).exec().isSuccess
+        if (success) Config.anonymousEnabled = enabled
+        return success
+    }
+
     fun setKeyboxUrls(value: String): Boolean {
         val normalized = value.lineSequence()
             .map(String::trim)

@@ -2,8 +2,10 @@ package com.topjohnwu.magisk.core.utils
 
 import android.content.Context
 import com.topjohnwu.magisk.StubApk
+import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.Info
+import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.isRunningAsStub
 import com.topjohnwu.magisk.core.ktx.cachedFile
 import com.topjohnwu.magisk.core.ktx.deviceProtectedContext
@@ -80,8 +82,35 @@ class ShellInit : Shell.Initializer() {
                 "'INSERT OR IGNORE INTO policies (uid, policy, until, logging, notification) " +
                 "VALUES ($myUid, 2, 0, 0, 0)'"
             ).exec()
+            detectAndSaveRomKeywords(shell)
         }
 
         return true
+    }
+
+    private fun detectAndSaveRomKeywords(shell: Shell) {
+        val propKeywords = linkedMapOf(
+            "ro.lineage.version" to "lineage",
+            "ro.proton.version" to "proton",
+            "ro.calyxos.version" to "calyx",
+            "ro.grapheneos.version" to "grapheneos",
+            "ro.pe.version" to "pixelexperience",
+            "ro.crdroid.version" to "crdroid",
+            "ro.evolutionx.version" to "evo",
+            "ro.spark.version" to "spark",
+            "ro.rising.version" to "rising",
+            "ro.bliss.version" to "bliss",
+        )
+        val script = propKeywords.keys.joinToString("\n") { "getprop '$it'" }
+        val output = shell.newJob().add(script).exec().out
+        val detected = propKeywords.values.toList()
+            .zip(output)
+            .filter { (_, value) -> value.isNotBlank() }
+            .map { (keyword, _) -> keyword }
+        if (detected.isEmpty()) return
+        val existing = Config.udongeRomKeywords
+        val combined = (existing.lineSequence().filter { it.isNotBlank() } + detected.asSequence())
+            .distinct().joinToString("\n")
+        if (combined != existing) Udonge.setRomKeywords(combined)
     }
 }

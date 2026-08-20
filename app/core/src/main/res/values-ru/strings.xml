@@ -253,6 +253,8 @@
     <string name="hide_apps_viewer_whitelist_title">приложения, которым видны скрытые приложения</string>
     <string name="webui">веб-интерфейс</string>
     <string name="udonge">udonge</string>
+    <string name="anonymous_mode_title">анонимный режим</string>
+    <string name="anonymous_mode_summary">новый образ устройства после каждой перезагрузки, Google полностью блокируется через iptables, профили реальных устройств скачиваются с GitHub</string>
     <string name="udonge_integrity_title">пройти strong integrity</string>
     <string name="udonge_integrity_summary">udonge сделает ваше устройство легитимным!</string>
     <string name="udonge_keybox_list_title">enable</string>

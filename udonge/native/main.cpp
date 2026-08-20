@@ -109,25 +109,6 @@ std::string find_hide_rule(const std::string &config, const std::string &package
     return "R\t" + package + "\tB\t0\t" + manager + "\t" + hidden + "\t";
 }
 
-bool is_candidate(const std::string &package_name) {
-    const std::string name = base_package(package_name);
-    static const char *const packages[] = {
-        "com.eltavine.duckdetector", "ru.nspk.mirpay", "ru.nspk.sbpay",
-        "ru.sberbankmobile", "com.idamob.tinkoff.android",
-        "ru.vtb24.mobilebanking.android", "ru.alfabank.mobile.android",
-        "ru.gazprombank.android.mobilebank.app", "ru.raiffeisennews",
-        "ru.rosbank.android", "ru.mkb.mobile", "ru.rshb.dbo",
-        "ru.letobank.Prometheus", "com.openbank", "ru.sovcombank.halva",
-        "com.sovcombank.club", "ru.yoo.money", "com.yandex.bank",
-        "ru.ozon.fintech.finance", "com.qiwi.wallet",
-        "com.axlebolt.standoff2",
-    };
-    for (const char *candidate : packages) {
-        if (name == candidate) return true;
-    }
-    return false;
-}
-
 } // namespace
 
 class UdongeModule : public zygisk::ModuleBase {
@@ -155,13 +136,13 @@ public:
         if (package_name.empty()) return;
         std::string package = base_package(package_name);
         is_gms_unstable_ = package_name == "com.google.android.gms.unstable";
-        bool candidate = is_candidate(package_name);
         if (!fetch_config(package_name)) return;
 
         hide_apps_ = !hide_rule_.empty() && !hide_dex_.empty();
 
         if (is_gms_unstable_) return;
-        if (!candidate) return;
+        // Cloak/stealth candidacy comes from targets.conf (live config),
+        // not from a hardcoded list — anonymous mode relies on this.
         if (cfg_.shouldStealth(package)) {
             api_->setOption(zygisk::FORCE_DENYLIST_UNMOUNT);
             return;

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
@@ -45,18 +46,7 @@ object AppMigration {
         "telegram", "whatsapp", "chrome", "camera", "calendar", "gallery", "notes",
         "music", "weather", "drive", "maps", "photos", "clock", "files",
     )
-    @Suppress("DEPRECATION")
-    private val FRAMEWORK_ICONS = intArrayOf(
-        android.R.drawable.sym_def_app_icon,
-        android.R.drawable.ic_dialog_alert,
-        android.R.drawable.ic_dialog_info,
-        android.R.drawable.ic_menu_camera,
-        android.R.drawable.ic_menu_compass,
-        android.R.drawable.ic_menu_gallery,
-        android.R.drawable.ic_menu_manage,
-        android.R.drawable.ic_menu_mapmode,
-        android.R.drawable.ic_menu_myplaces,
-    )
+    private val DOT_ICON_COUNT = 8
     private val PACKAGE_NAME = Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")
 
     const val PLACEHOLDER = "COMPONENT_PLACEHOLDER"
@@ -135,7 +125,7 @@ object AppMigration {
             minSdk = 5 + random.nextInt(9),
             versionName = versionName,
             versionCode = versionCode.coerceAtLeast(1),
-            icon = FRAMEWORK_ICONS[random.nextInt(FRAMEWORK_ICONS.size)],
+            icon = 0,
         )
     }
 
@@ -191,6 +181,22 @@ object AppMigration {
         }
     }.distinct().iterator()
 
+    private fun resolveDotIcon(pm: PackageManager, info: ApplicationInfo, packageName: String): Int? {
+        return try {
+            val res = pm.getResourcesForApplication(info)
+            val pkgNames = listOf(packageName, LEGACY_PACKAGE_NAME, APP_PACKAGE_NAME).distinct()
+            val ids = (0 until DOT_ICON_COUNT).mapNotNull { i ->
+                pkgNames.firstNotNullOfOrNull { pkg ->
+                    val id = res.getIdentifier("ic_dot_$i", "drawable", pkg)
+                    if (id != 0) id else null
+                }
+            }
+            if (ids.isEmpty()) null else ids[SecureRandom().nextInt(ids.size)]
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun patch(
         context: Context,
         apk: File, out: OutputStream,
@@ -199,6 +205,8 @@ object AppMigration {
         val pm = context.packageManager
         val packageInfo = pm.getPackageArchiveInfo(apk.path, 0) ?: return false
         val info = packageInfo.applicationInfo ?: return false
+        info.sourceDir = apk.path
+        info.publicSourceDir = apk.path
         // Resolve resource-backed labels as well as literal android:label values.
         // The previous nonLocalizedLabel lookup returned "null" for the shipped
         // APK, so the hidden package kept the old visible Reisenless label.
@@ -220,10 +228,12 @@ object AppMigration {
                         else -> it
                     }
                 }
+                val iconId = resolveDotIcon(pm, info, packageInfo.packageName)
+                    ?: android.R.drawable.sym_def_app_icon
                 if (!p ||
                     !xml.patchIntAttribute("minSdkVersion", identity.minSdk) ||
                     !xml.patchIntAttribute("versionCode", identity.versionCode) ||
-                    !xml.patchIntAttribute("icon", identity.icon)
+                    !xml.patchIntAttribute("icon", iconId)
                 ) return false
 
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
@@ -369,6 +379,7 @@ object AppMigration {
                     return@withContext false
                 }
                 installedMainPackage = newPackage
+                Shell.cmd("${Const.MAIN_BIN} --sulist add $newPackage '${identity.label}'").exec()
                 Shell.cmd("touch $AppApkPath").exec()
                 if (!launchApp(context, newPackage)) return@withContext false
                 committed = true

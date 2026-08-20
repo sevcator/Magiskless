@@ -90,6 +90,15 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 boot_wait=0
+
+# Anonymous mode: fresh device identity + full firewall on every boot.
+# Runs BEFORE the boot-completed wait so the new identity is in place
+# before the user can launch any app. Backgrounded — the engine has its
+# own single-instance lock.
+if [ -f "$state/anonymous" ] && [ -f "$runtime/anonymous.sh" ]; then
+    sh "$runtime/anonymous.sh" boot >/dev/null 2>&1 &
+fi
+
 until [ "$(getprop sys.boot_completed)" = 1 ]; do
     [ "$boot_wait" -ge 90 ] && exit 0
     sleep 2
