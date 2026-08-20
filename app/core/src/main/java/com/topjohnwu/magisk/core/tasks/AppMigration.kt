@@ -35,6 +35,10 @@ object AppMigration {
     private const val ALPHADOTS = "$ALPHA....."
     private const val ANDROID_MANIFEST = "AndroidManifest.xml"
     private const val TEST_PKG_NAME = "$APP_PACKAGE_NAME.test"
+    // The bundled stub is generated from Magisk's original manifest and can
+    // still contain the upstream package even though this build uses the
+    // Reisenless application id. Both names must be rewritten during hiding.
+    private const val LEGACY_PACKAGE_NAME = "com.topjohnwu.magisk"
     private val PACKAGE_NAME = Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")
 
     const val MAX_LABEL_LENGTH = 32
@@ -143,9 +147,12 @@ object AppMigration {
                 val je = jar.getJarEntry(ANDROID_MANIFEST)
                 val xml = AXML(jar.getRawData(je))
                 val generator = classNameGenerator()
+                val sourcePackages = setOf(APP_PACKAGE_NAME, LEGACY_PACKAGE_NAME)
                 val p = xml.patchStrings {
                     when {
-                        it.contains(APP_PACKAGE_NAME) -> it.replace(APP_PACKAGE_NAME, pkg)
+                        sourcePackages.any(it::contains) -> sourcePackages.fold(it) { value, source ->
+                            value.replace(source, pkg)
+                        }
                         it.contains(PLACEHOLDER) -> generator.next()
                         it == origLabel -> label.toString()
                         else -> it
@@ -173,11 +180,10 @@ object AppMigration {
             JarMap.open(apk, true).use { jar ->
                 val je = jar.getJarEntry(ANDROID_MANIFEST)
                 val xml = AXML(jar.getRawData(je))
+                val sourcePackages = setOf(sourcePkg, LEGACY_PACKAGE_NAME)
                 val p = xml.patchStrings {
-                    when (it) {
-                        sourcePkg -> targetPkg
-                        "$sourcePkg.test" -> "$targetPkg.test"
-                        else -> it
+                    sourcePackages.fold(it) { value, source ->
+                        value.replace(source, targetPkg)
                     }
                 }
                 if (!p) return false
