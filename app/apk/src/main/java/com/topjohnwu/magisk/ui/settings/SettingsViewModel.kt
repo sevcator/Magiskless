@@ -38,20 +38,20 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
         val context = AppContext
         val hidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
 
-        // Customization
+        // App
         val list = mutableListOf(
             Customization,
-            Theme, Language
+            Theme, Language, DoHToggle
         )
         if (isRunningAsStub && ShortcutManagerCompat.isRequestPinShortcutSupported(context))
             list.add(AddShortcut)
 
-        // Manager
-        list.add(DoHToggle)
-        if (Info.env.isActive && Const.USER_ID == 0) {
-            list.add(if (hidden) Restore else Hide)
-        }
+        // Reisenless
         if (Info.env.isActive) {
+            list.add(ReisenlessSettings)
+            if (Const.USER_ID == 0) {
+                list.add(if (hidden) Restore else Hide)
+            }
             list.add(SystemlessHosts)
             if (Const.Version.atLeast_24_0()) {
                 list.add(Zygisk)

@@ -27,10 +27,14 @@ import com.topjohnwu.magisk.view.MagiskDialog
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.magisk.core.R as CoreR
 
-// --- Customization
+// --- App
 
 object Customization : BaseSettingsItem.Section() {
     override val title = CoreR.string.settings_customization.asText()
+}
+
+object ReisenlessSettings : BaseSettingsItem.Section() {
+    override val title = CoreR.string.home_app_title.asText()
 }
 
 object Language : BaseSettingsItem.Selector() {

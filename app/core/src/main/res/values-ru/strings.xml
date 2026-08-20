@@ -6,7 +6,7 @@
     <string name="settings">настройки</string>
     <string name="install">установка</string>
     <string name="section_home">главная</string>
-    <string name="section_theme">темы</string>
+    <string name="section_theme">тема</string>
     <string name="sulist">sulist</string>
 
     <!--Home-->
@@ -167,7 +167,7 @@
     <string name="settings_su_auth_summary">требовать аутентификацию пользователя при запросах superuser</string>
     <string name="settings_su_auth_insecure">на устройстве не настроен метод аутентификации</string>
     <string name="settings_su_tapjack_summary">окно запроса прав суперпользователя будет неактивно пока активированы наложения экрана</string>
-    <string name="settings_customization">персонализация</string>
+    <string name="settings_customization">приложение</string>
     <string name="setting_add_shortcut_summary">добавить ярлык на рабочий стол для удобного восприятия приложения после его скрытия</string>
     <string name="settings_doh_title">dns поверх https</string>
     <string name="settings_doh_description">активировать doh (используйте при проблемах с подключением к сети)</string>
@@ -271,7 +271,7 @@
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">пройти strong integrity</string>
     <string name="udonge_integrity_summary">udonge сделает ваше устройство легитимным!</string>
-    <string name="udonge_keybox_list_title">список keybox</string>
+    <string name="udonge_keybox_list_title">enable</string>
     <string name="udonge_keybox_list_summary">добавляйте и удаляйте ссылки на keybox</string>
     <string name="udonge_update_title">обновить udonge</string>
     <string name="udonge_update_summary">версия (%1$s)</string>

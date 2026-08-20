@@ -6,7 +6,7 @@
     <string name="settings">settings</string>
     <string name="install">install</string>
     <string name="section_home">home</string>
-    <string name="section_theme">themes</string>
+    <string name="section_theme">theme</string>
     <string name="sulist">sulist</string>
 
     <!--Home-->
@@ -118,7 +118,7 @@
     <string name="udonge">udonge</string>
     <string name="udonge_integrity_title">pass strong integrity</string>
     <string name="udonge_integrity_summary">udonge will make your device legit!</string>
-    <string name="udonge_keybox_list_title">keybox list</string>
+    <string name="udonge_keybox_list_title">enable</string>
     <string name="udonge_keybox_list_summary">add or remove link(s) for keyboxes</string>
     <string name="udonge_update_title">update udonge</string>
     <string name="udonge_update_summary">version (%1$s)</string>
@@ -180,7 +180,7 @@
     <string name="settings_su_auth_insecure">no authentication method is configured on the device</string>
     <string name="settings_su_restrict_title">restrict root capabilities</string>
     <string name="settings_su_restrict_summary">will restrict new superuser apps by default. warning: this will break most apps. don\'t enable it unless you know what you\'re doing.</string>
-    <string name="settings_customization">customization</string>
+    <string name="settings_customization">app</string>
     <string name="setting_add_shortcut_summary">add a pretty shortcut to the home screen in case the name and icon are difficult to recognize after hiding the app</string>
     <string name="settings_doh_title">dns over https</string>
     <string name="settings_doh_description">workaround dns poisoning in some nations</string>

@@ -135,7 +135,10 @@ object AppMigration {
     ): Boolean {
         val pm = context.packageManager
         val info = pm.getPackageArchiveInfo(apk.path, 0)?.applicationInfo ?: return false
-        val origLabel = info.nonLocalizedLabel.toString()
+        // Resolve resource-backed labels as well as literal android:label values.
+        // The previous nonLocalizedLabel lookup returned "null" for the shipped
+        // APK, so the hidden package kept the old visible Reisenless label.
+        val origLabel = info.loadLabel(pm).toString()
         try {
             JarMap.open(apk, true).use { jar ->
                 val je = jar.getJarEntry(ANDROID_MANIFEST)

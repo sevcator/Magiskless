@@ -89,10 +89,9 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 .padding(bottom = 88.dp)
         ) {
             CustomizationSection(viewModel)
-            Spacer(Modifier.height(12.dp))
-            AppSettingsSection()
             if (Info.env.isActive) {
                 Spacer(Modifier.height(12.dp))
+                AppSettingsSection()
                 MagiskSection(viewModel)
                 Spacer(Modifier.height(12.dp))
                 UdongeSection()
@@ -113,21 +112,6 @@ private fun CustomizationSection(viewModel: SettingsViewModel) {
 
     SmallTitle(text = stringResource(CoreR.string.settings_customization))
     Card(modifier = Modifier.fillMaxWidth()) {
-        val names = remember { LocaleSetting.available.names }
-        val tags = remember { LocaleSetting.available.tags }
-        var selectedIndex by remember {
-            mutableIntStateOf(tags.indexOf(Config.locale).coerceAtLeast(0))
-        }
-        SettingsDropdown(
-            title = stringResource(CoreR.string.language),
-            items = names.toList(),
-            selectedIndex = selectedIndex,
-            onSelectedIndexChange = { index ->
-                selectedIndex = index
-                Config.locale = tags[index]
-            }
-        )
-
         val resources = LocalResources.current
         val themeEntries = remember {
             resources.getStringArray(CoreR.array.theme_mode).toList()
@@ -147,6 +131,21 @@ private fun CustomizationSection(viewModel: SettingsViewModel) {
                     Config.Value.THEME_LIGHT
                 }
                 ThemeState.darkTheme = Config.darkTheme
+            }
+        )
+
+        val names = remember { LocaleSetting.available.names }
+        val tags = remember { LocaleSetting.available.tags }
+        var selectedIndex by remember {
+            mutableIntStateOf(tags.indexOf(Config.locale).coerceAtLeast(0))
+        }
+        SettingsDropdown(
+            title = stringResource(CoreR.string.language),
+            items = names.toList(),
+            selectedIndex = selectedIndex,
+            onSelectedIndexChange = { index ->
+                selectedIndex = index
+                Config.locale = tags[index]
             }
         )
 
@@ -179,6 +178,17 @@ private fun CustomizationSection(viewModel: SettingsViewModel) {
                 onClick = { viewModel.requestAddShortcut() }
             )
         }
+
+        var doh by remember { mutableStateOf(Config.doh) }
+        SettingsSwitch(
+            title = stringResource(CoreR.string.settings_doh_title),
+            summary = stringResource(CoreR.string.settings_doh_description),
+            checked = doh,
+            onCheckedChange = {
+                doh = it
+                Config.doh = it
+            }
+        )
     }
 }
 
@@ -259,7 +269,6 @@ private fun RgbColorSetting(title: String, color: Int, onColorChange: (Int) -> U
 @Composable
 private fun AppSettingsSection() {
     val context = LocalContext.current
-    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val loadingDialog = rememberLoadingDialog()
     val isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
@@ -298,34 +307,19 @@ private fun AppSettingsSection() {
 
     SmallTitle(text = stringResource(CoreR.string.home_app_title))
     Card(modifier = Modifier.fillMaxWidth()) {
-        // DoH Toggle
-        var doh by remember { mutableStateOf(Config.doh) }
-        SettingsSwitch(
-            title = stringResource(CoreR.string.settings_doh_title),
-            summary = stringResource(CoreR.string.settings_doh_description),
-            checked = doh,
-            onCheckedChange = {
-                doh = it
-                Config.doh = it
+        SettingsArrow(
+            title = stringResource(
+                if (isHidden) CoreR.string.settings_restore_app_title
+                else CoreR.string.settings_hide_app_title
+            ),
+            summary = stringResource(
+                if (isHidden) CoreR.string.settings_restore_app_summary
+                else CoreR.string.settings_hide_app_summary
+            ),
+            onClick = {
+                if (isHidden) showRestoreDialog = true else showHideDialog = true
             }
         )
-
-        if (Info.env.isActive) {
-            SettingsArrow(
-                title = stringResource(
-                    if (isHidden) CoreR.string.settings_restore_app_title
-                    else CoreR.string.settings_hide_app_title
-                ),
-                summary = stringResource(
-                    if (isHidden) CoreR.string.settings_restore_app_summary
-                    else CoreR.string.settings_hide_app_summary
-                ),
-                onClick = {
-                    if (isHidden) showRestoreDialog = true else showHideDialog = true
-                }
-            )
-        }
-
     }
 }
 
