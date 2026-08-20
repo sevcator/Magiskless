@@ -658,15 +658,23 @@ def _zip_bytes(zf: ZipFile, name: str, data: bytes, mode: int = 0o644):
 
 
 def _patch_tee_dex(data: bytes, udonge_root: str) -> bytes:
-    def fit_path(path: str, size: int) -> bytes:
+    def fit_path(path: str, size: int, pad_after: str | None = None) -> bytes:
         encoded = path.encode()
         if len(encoded) > size:
             error(f"Generated Udonge path is too long for TEE DEX: {path}")
         # Repeated path separators are equivalent on Android and let the
-        # replacement preserve the DEX string_data layout exactly.
-        split = encoded.find(b"/", len(b"/data/"))
-        if split < 0:
-            split = len(encoded)
+        # replacement preserve the DEX string_data layout exactly. For the
+        # library path, pad after the Udonge root so it still sorts before the
+        # state path in the DEX string_ids table.
+        if pad_after is not None:
+            prefix = (pad_after.rstrip("/") + "/").encode()
+            if not encoded.startswith(prefix):
+                error(f"Invalid Udonge DEX padding prefix: {pad_after}")
+            split = len(prefix)
+        else:
+            split = encoded.find(b"/", len(b"/data/"))
+            if split < 0:
+                split = len(encoded)
         return encoded[:split] + b"/" * (size - len(encoded)) + encoded[split:]
 
     state_source = b"/data/adb/tricky_store"
@@ -675,7 +683,11 @@ def _patch_tee_dex(data: bytes, udonge_root: str) -> bytes:
         (state_source, fit_path(f"{udonge_root}/state", len(state_source))),
         (
             library_source,
-            fit_path(f"{udonge_root}/tee-runtime/libcertgen.so", len(library_source)),
+            fit_path(
+                f"{udonge_root}/tee-runtime/libcertgen.so",
+                len(library_source),
+                udonge_root,
+            ),
         ),
     )
     for source, target in replacements:
