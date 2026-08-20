@@ -38,15 +38,11 @@ object Const {
 
     object ID {
         const val DOWNLOAD_JOB_ID = 6
-        const val CHECK_UPDATE_JOB_ID = 7
     }
 
     object Url {
         const val PATREON_URL = "https://www.patreon.com/topjohnwu"
-        const val SOURCE_CODE_URL = "https://github.com/topjohnwu/Magisk"
-
-        const val GITHUB_API_URL = "https://api.github.com/"
-        const val GITHUB_PAGE_URL = "https://topjohnwu.github.io/magisk-files/"
+        const val SOURCE_CODE_URL = "https://github.com/sevcator/Reisenless"
         const val INVALID_URL = "https://example.com/"
     }
 

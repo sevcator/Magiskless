@@ -46,8 +46,6 @@ inline fun <reified T> Context.intent() = Intent().setComponent(T::class.java.cm
 val shouldKeepResources = listOf(
     R.string.no_info_provided,
     R.string.release_notes,
-    R.string.invalid_update_channel,
-    R.string.update_available,
     R.string.app_changelog,
     R.string.home_item_source,
     R.drawable.ic_more,

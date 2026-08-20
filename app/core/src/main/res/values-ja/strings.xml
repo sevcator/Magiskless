@@ -26,7 +26,6 @@
     <string name="home_support_content">reisenless はフリーでオープンソースです。寄付を送ると､ reisenless の開発を支援することができます。</string>
     <string name="home_installed_version">インストール済</string>
     <string name="home_latest_version">最新版</string>
-    <string name="invalid_update_channel">不正な更新チャンネルです</string>
     <string name="uninstall_magisk_title">reisenless のアンインストール</string>
     <string name="uninstall_magisk_msg">すべてのモジュールが無効化/削除されます。\nアンインストール後は root が削除され､ストレージが暗号化されていない場合は暗号化される場合があります。</string>
 
@@ -99,7 +98,6 @@
     <string name="module_state_remove">削除</string>
     <string name="module_state_restore">復元</string>
     <string name="module_action_install_external">ストレージからインストール</string>
-    <string name="update_available">更新あり</string>
     <string name="suspend_text_riru">モジュールは %1$s が有効化されているため休止しました</string>
     <string name="suspend_text_zygisk">モジュールは %1$s が有効化されていないため休止しました</string>
     <string name="zygisk_module_unloaded">互換性がないため zygisk モジュールは読み込まれませんでした</string>
@@ -112,19 +110,10 @@
     <string name="settings_restore_app_summary">隠すのを止めて、元の apk をインストールします</string>
     <string name="language">言語 (language)</string>
     <string name="system_default">(システム標準)</string>
-    <string name="settings_check_update_title">更新をチェック</string>
-    <string name="settings_check_update_summary">バックグラウンドで定期的に更新をチェックします</string>
-    <string name="settings_update_channel_title">更新チャンネル</string>
-    <string name="settings_update_stable">安定版</string>
-    <string name="settings_update_beta">ベータ版</string>
-    <string name="settings_update_custom">カスタム</string>
-    <string name="settings_update_custom_msg">カスタム url を入力</string>
     <string name="settings_zygisk_summary">reisenless の一部を zygote デーモン上で実行します</string>
     <string name="settings_hosts_title">systemless hosts</string>
     <string name="settings_hosts_summary">広告ブロックアプリのための systemless hosts サポートを有効化します</string>
     <string name="settings_hosts_toast">systemless hosts モジュールを追加しました</string>
-    <string name="settings_app_name_hint">アプリ名</string>
-    <string name="settings_app_name_helper">プロキシアプリはこのアプリ名でインストールされます</string>
     <string name="settings_app_name_error">不正な形式</string>
     <string name="settings_su_app_adb">アプリと adb</string>
     <string name="settings_su_app">アプリのみ</string>
@@ -169,14 +158,10 @@
     <string name="isolate_summary">root セッション毎に分離された名前空間を使用します</string>
 
     <!--Notifications-->
-    <string name="update_channel">reisenless の更新</string>
     <string name="progress_channel">進捗通知</string>
     <string name="updated_channel">更新完了</string>
     <string name="download_complete">ダウンロード完了</string>
     <string name="download_file_error">ダウンロード中にエラーが発生しました</string>
-    <string name="magisk_update_title">reisenless の更新があります！</string>
-    <string name="updated_title">reisenless を更新しました</string>
-    <string name="updated_text">タップでアプリを開きます</string>
 
     <!--Toasts, Dialogs-->
     <string name="yes">対応</string>
@@ -239,7 +224,6 @@
     <string name="color_purple">紫</string>
     <string name="color_teal">ティール</string>
     <string name="color_gray">グレー</string>
-    <string name="settings_update_debug">デバッグ</string>
     <string name="settings_su_restrict_title">root 機能を制限</string>
     <string name="settings_su_restrict_summary">新しいスーパーユーザーアプリをデフォルトで制限します。警告: ほとんどのアプリが動作しなくなります。内容を理解している場合のみ有効にしてください。</string>
     <string name="settings_random_name_title">出力名をランダム化</string>
@@ -260,8 +244,14 @@
     <string name="udonge_integrity_summary">udonge がデバイスを正規の状態にします！</string>
     <string name="udonge_keybox_list_title">keybox リスト</string>
     <string name="udonge_keybox_list_summary">keybox のリンクを追加または削除</string>
-    <string name="udonge_update_title">udonge を更新</string>
-    <string name="udonge_update_summary">バージョン (%1$s)</string>
     <string name="udonge_keybox_hint">1 行につき 1 つの https リンク</string>
+    <string name="udonge_rom_keywords_title">システムの痕跡を隠す</string>
+    <string name="udonge_rom_keywords_summary">カスタム ROM のランタイムシグナルとフレームワークの痕跡を隠します</string>
+    <string name="udonge_rom_keywords_hint">1 行につき 1 つの ROM 名（例: lineage、protonaosp）</string>
+    <string name="hide_app_randomize_confirmation">アプリ名、パッケージ、Android バージョン、アプリバージョン、バージョンコード、アイコンをランダムに生成します。続行しますか？</string>
+    <string name="webui_root_required">WebUI には root と有効な Reisenless のインストールが必要です</string>
+    <string name="webui_webview_required">Android System WebView が必要です</string>
+    <string name="webui_webview_required_summary">このデバイスには使用可能な Android WebView プロバイダーがありません。Android System WebView をインストールまたは有効にして、もう一度お試しください。</string>
+    <string name="webui_install_webview">WebView をインストール</string>
 
 </resources>

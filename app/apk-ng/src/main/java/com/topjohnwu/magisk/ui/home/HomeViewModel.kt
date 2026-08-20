@@ -38,6 +38,7 @@ class HomeViewModel : AsyncLoadViewModel() {
         get() = when {
             Info.isRooted && Info.env.isUnsupported -> State.OUTDATED
             !Info.env.isActive -> State.INVALID
+            Info.env.isCurrentBuild -> State.UP_TO_DATE
             Info.env.versionCode < BuildConfig.APP_VERSION_CODE -> State.OUTDATED
             else -> State.UP_TO_DATE
         }

@@ -74,6 +74,14 @@ object Info {
         }
         val isUnsupported = code > 0 && code < Const.Version.MIN_VERCODE
         val isActive = versionCode > 0
+        val isCurrentBuild
+            get() = isActive && if (versionString.isNotBlank()) {
+                // The short Git commit is the stable build identity. It works
+                // unchanged in every fork and avoids timestamp-only collisions.
+                versionString == BuildConfig.APP_VERSION_NAME
+            } else {
+                versionCode == BuildConfig.APP_VERSION_CODE
+            }
     }
 
     fun init(shell: Shell) {

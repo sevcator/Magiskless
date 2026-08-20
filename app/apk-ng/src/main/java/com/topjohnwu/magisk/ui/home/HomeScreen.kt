@@ -111,7 +111,6 @@ fun HomeScreen(viewModel: HomeViewModel, installVm: InstallViewModel) {
         UninstallComposableDialog(
             showDialog = showUninstallDialog,
             activity = activity,
-            loadingDialog = loadingDialog,
         )
     }
 
@@ -557,9 +556,7 @@ private fun DevelopersCard(onLinkClicked: (String) -> Unit) {
 private fun UninstallComposableDialog(
     showDialog: MutableState<Boolean>,
     activity: MainActivity,
-    loadingDialog: LoadingDialogHandle,
 ) {
-    val scope = rememberCoroutineScope()
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
@@ -586,24 +583,6 @@ private fun UninstallComposableDialog(
                     Text(stringResource(CoreR.string.complete_uninstall))
                 }
             },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showDialog.value = false
-                        scope.launch {
-                            val success = loadingDialog.withLoading {
-                                MagiskInstaller.Restore().exec()
-                            }
-                            activity.toast(
-                                if (success) CoreR.string.restore_done else CoreR.string.restore_fail,
-                                Toast.LENGTH_SHORT
-                            )
-                        }
-                    }
-                ) {
-                    Text(stringResource(CoreR.string.restore_img))
-                }
-            }
         )
     }
 }
@@ -617,9 +596,7 @@ private fun EnvFixComposableDialog(
     onNavigateInstall: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val needsFullFix = code == 2 ||
-        Info.env.versionCode != com.topjohnwu.magisk.core.BuildConfig.APP_VERSION_CODE ||
-        Info.env.versionString != com.topjohnwu.magisk.core.BuildConfig.APP_VERSION_NAME
+    val needsFullFix = code == 2 || !Info.env.isCurrentBuild
 
     if (showDialog.value) {
         AlertDialog(

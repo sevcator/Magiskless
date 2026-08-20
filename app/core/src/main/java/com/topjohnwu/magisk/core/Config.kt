@@ -138,7 +138,7 @@ object Config : PreferenceConfig, DBConfig {
         }
 
     var zygisk by dbSettings(Key.ZYGISK, Info.isEmulator)
-    var sulist by dbSettings(Key.SULIST, false)
+    var sulist by dbSettings(Key.SULIST, true)
     var suManager by dbStrings(Key.SU_MANAGER, "", true)
     var keyStoreRaw by dbStrings(Key.KEYSTORE, "", true)
     var migrationSource by dbStrings(Key.MIGRATION_SOURCE, "", true)

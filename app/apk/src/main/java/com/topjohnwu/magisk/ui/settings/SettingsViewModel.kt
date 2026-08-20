@@ -58,7 +58,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             }
             list.add(SuList)
             list.add(HideApps)
-            list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeRomKeywords, UdongeUpdate))
+            list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeRomKeywords))
         }
 
         if (Info.showSuperUser) {
@@ -95,11 +95,9 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             SystemlessHosts -> createHosts()
             SuList -> SettingsFragmentDirections.actionSettingsFragmentToDenyFragment().navigate()
             HideApps -> SettingsFragmentDirections.actionSettingsFragmentToHideAppsFragment().navigate()
-            is Hide -> viewModelScope.launch { AppMigration.hide(view.activity, item.value) }
+            Hide -> viewModelScope.launch { AppMigration.hide(view.activity) }
             Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
-            UdongeUpdate -> SettingsFragmentDirections
-                .actionSettingsFragmentToInstallFragment().navigate()
             else -> Unit
         }
     }

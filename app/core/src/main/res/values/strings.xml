@@ -25,7 +25,6 @@
     <string name="home_support_content">reisenless is, and always will be, free, and open source. however, you can show us that you care by making a donation.</string>
     <string name="home_installed_version">installed</string>
     <string name="home_latest_version">latest</string>
-    <string name="invalid_update_channel">invalid update channel</string>
     <string name="uninstall_magisk_title">uninstall reisenless</string>
     <string name="uninstall_magisk_msg">all modules will be disabled/removed!\nroot will be removed!\nany internal storage unencrypted through the use of reisenless will be re-encrypted!</string>
 
@@ -101,7 +100,6 @@
     <string name="module_action">action</string>
     <string name="module_state_restore">restore</string>
     <string name="module_action_install_external">install from storage</string>
-    <string name="update_available">update available</string>
     <string name="suspend_text_riru">module suspended because %1$s is enabled</string>
     <string name="suspend_text_zygisk">module suspended because %1$s isn\'t enabled</string>
     <string name="zygisk_module_unloaded">zygisk module not loaded due to incompatibility</string>
@@ -120,8 +118,6 @@
     <string name="udonge_integrity_summary">udonge will make your device legit!</string>
     <string name="udonge_keybox_list_title">enable</string>
     <string name="udonge_keybox_list_summary">add or remove link(s) for keyboxes</string>
-    <string name="udonge_update_title">update udonge</string>
-    <string name="udonge_update_summary">version (%1$s)</string>
     <string name="udonge_keybox_hint">one https link per line</string>
     <string name="udonge_rom_keywords_title">hide your system things</string>
     <string name="udonge_rom_keywords_summary">hide runtime signals and framework traces for custom ROMs</string>
@@ -138,24 +134,15 @@
     <string name="color_gray">gray</string>
     <string name="settings_hide_app_title">hide reisenless</string>
     <string name="settings_hide_app_summary">reisensense &gt;w&lt;</string>
+    <string name="hide_app_randomize_confirmation">a random app name, package, android version, version number, version code, and icon will be generated. continue?</string>
     <string name="settings_restore_app_title">restore the reisenless app</string>
     <string name="settings_restore_app_summary">unhide the app and restore the original apk</string>
     <string name="language">language</string>
     <string name="system_default">(system default)</string>
-    <string name="settings_check_update_title">check for updates</string>
-    <string name="settings_check_update_summary">periodically check for updates in the background</string>
-    <string name="settings_update_channel_title">update channel</string>
-    <string name="settings_update_stable">stable</string>
-    <string name="settings_update_beta">beta</string>
-    <string name="settings_update_debug">debug</string>
-    <string name="settings_update_custom">custom</string>
-    <string name="settings_update_custom_msg">insert a custom channel url</string>
     <string name="settings_zygisk_summary">run parts of reisenless in the zygote daemon</string>
     <string name="settings_hosts_title">systemless hosts</string>
     <string name="settings_hosts_summary">systemless hosts support for ad blocking apps</string>
     <string name="settings_hosts_toast">added systemless hosts module</string>
-    <string name="settings_app_name_hint">new name</string>
-    <string name="settings_app_name_helper">app will be repackaged with this name</string>
     <string name="settings_app_name_error">invalid format</string>
     <string name="settings_su_app_adb">apps and adb</string>
     <string name="settings_su_app">apps only</string>
@@ -202,14 +189,10 @@
     <string name="isolate_summary">each root session will have its own isolated namespace</string>
 
     <!--Notifications-->
-    <string name="update_channel">reisenless updates</string>
     <string name="progress_channel">progress notifications</string>
     <string name="updated_channel">update complete</string>
     <string name="download_complete">download complete</string>
     <string name="download_file_error">error downloading file</string>
-    <string name="magisk_update_title">reisenless update available!</string>
-    <string name="updated_title">reisenless updated</string>
-    <string name="updated_text">tap to open app</string>
 
     <!--Toasts, Dialogs-->
     <string name="yes">yes</string>

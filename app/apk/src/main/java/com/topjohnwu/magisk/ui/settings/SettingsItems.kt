@@ -4,22 +4,17 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Build
 import android.text.InputType
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
 import androidx.databinding.Bindable
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.R
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.Udonge
 import com.topjohnwu.magisk.core.ktx.activity
-import com.topjohnwu.magisk.core.tasks.AppMigration
 import com.topjohnwu.magisk.core.utils.LocaleSetting
-import com.topjohnwu.magisk.databinding.DialogSettingsAppNameBinding
 import com.topjohnwu.magisk.databinding.set
-import com.topjohnwu.magisk.core.utils.TextHolder
 import com.topjohnwu.magisk.core.utils.asText
 import com.topjohnwu.magisk.hideapps.HideAppsRepository
 import com.topjohnwu.magisk.ui.hideapps.HideAppsRootClient
@@ -60,27 +55,27 @@ object Theme : BaseSettingsItem.Blank() {
 
 // --- App
 
-object Hide : BaseSettingsItem.Input() {
+object Hide : BaseSettingsItem.Blank() {
     override val title = CoreR.string.settings_hide_app_title.asText()
     override val description = CoreR.string.settings_hide_app_summary.asText()
-    override var value = ""
 
-    override val inputResult
-        get() = if (isError) null else result
-
-    @get:Bindable
-    var result = "settings"
-        set(value) = set(value.lowercase(), field, { field = it }, BR.result, BR.error)
-
-    val maxLength
-        get() = AppMigration.MAX_LABEL_LENGTH
-
-    @get:Bindable
-    val isError
-        get() = result.length > maxLength || result.isBlank()
-
-    override fun getView(context: Context) = DialogSettingsAppNameBinding
-        .inflate(LayoutInflater.from(context)).also { it.data = this }.root
+    override fun onPressed(view: View, handler: Handler) {
+        handler.onItemPressed(view, this) {
+            MagiskDialog(view.activity).apply {
+                setTitle(CoreR.string.settings_hide_app_title)
+                setMessage(CoreR.string.hide_app_randomize_confirmation)
+                setButton(MagiskDialog.ButtonType.POSITIVE) {
+                    text = android.R.string.ok
+                    onClick { handler.onItemAction(view, this@Hide) }
+                }
+                setButton(MagiskDialog.ButtonType.NEGATIVE) {
+                    text = android.R.string.cancel
+                }
+                setCancelable(true)
+                show()
+            }
+        }
+    }
 }
 
 object Restore : BaseSettingsItem.Blank() {
@@ -229,16 +224,6 @@ object UdongeRomKeywords : BaseSettingsItem.Blank() {
                 }
             }.show()
         }
-    }
-}
-
-object UdongeUpdate : BaseSettingsItem.Blank() {
-    override val title = CoreR.string.udonge_update_title.asText()
-    override val description = object : TextHolder() {
-        override fun getText(resources: Resources) = resources.getString(
-            CoreR.string.udonge_update_summary,
-            BuildConfig.APP_VERSION_NAME,
-        )
     }
 }
 

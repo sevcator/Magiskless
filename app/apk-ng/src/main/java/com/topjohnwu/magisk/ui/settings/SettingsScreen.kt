@@ -278,11 +278,11 @@ private fun AppSettingsSection() {
     if (showHideDialog) {
         HideAppDialog(
             onDismiss = { showHideDialog = false },
-            onConfirm = { label ->
+            onConfirm = {
                 showHideDialog = false
                 scope.launch {
                     val success = loadingDialog.withLoading {
-                        AppMigration.patchAndHide(context, label.lowercase())
+                        AppMigration.patchAndHide(context)
                     }
                     if (!success) context.toast(CoreR.string.failure, Toast.LENGTH_LONG)
                 }
@@ -560,14 +560,6 @@ private fun UdongeSection() {
             summary = stringResource(CoreR.string.udonge_rom_keywords_summary),
             onClick = { showRomKeywords = true },
         )
-        SettingsArrow(
-            title = stringResource(CoreR.string.udonge_update_title),
-            summary = stringResource(
-                CoreR.string.udonge_update_summary,
-                BuildConfig.APP_VERSION_NAME,
-            ),
-            onClick = { scope.launch(Dispatchers.IO) { Udonge.refreshKeyboxes() } },
-        )
     }
 }
 
@@ -598,28 +590,13 @@ private fun syncRomKeywordsHideApps(keywords: String) {
 // --- Dialogs ---
 
 @Composable
-private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    val defaultName = stringResource(CoreR.string.settings)
-    var appName by rememberSaveable { mutableStateOf(defaultName) }
-    val isError = appName.isBlank() || appName.length > AppMigration.MAX_LABEL_LENGTH
-
+private fun HideAppDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(CoreR.string.settings_hide_app_title)) },
-        text = {
-            OutlinedTextField(
-                value = appName,
-                onValueChange = { appName = it.lowercase() },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(CoreR.string.settings_app_name_hint)) },
-                isError = isError,
-            )
-        },
+        text = { Text(stringResource(CoreR.string.hide_app_randomize_confirmation)) },
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm(appName.lowercase()) },
-                enabled = !isError,
-            ) {
+            TextButton(onClick = onConfirm) {
                 Text(stringResource(android.R.string.ok))
             }
         },

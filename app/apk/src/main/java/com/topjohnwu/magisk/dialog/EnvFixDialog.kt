@@ -3,7 +3,6 @@ package com.topjohnwu.magisk.dialog
 import android.widget.Toast
 import androidx.core.os.postDelayed
 import androidx.lifecycle.lifecycleScope
-import com.topjohnwu.magisk.core.BuildConfig
 import com.topjohnwu.magisk.core.Info
 import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.ktx.reboot
@@ -50,8 +49,7 @@ class EnvFixDialog(private val vm: HomeViewModel, private val code: Int) : Dialo
         }
 
         if (code == 2 || // No rules block, module policy not loaded
-            Info.env.versionCode != BuildConfig.APP_VERSION_CODE ||
-            Info.env.versionString != BuildConfig.APP_VERSION_NAME) {
+            !Info.env.isCurrentBuild) {
             dialog.setMessage(R.string.env_full_fix_msg)
             dialog.setButton(MagiskDialog.ButtonType.POSITIVE) {
                 text = android.R.string.ok

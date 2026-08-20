@@ -26,7 +26,6 @@
     <string name="home_support_content">reisenless был и всегда будет бесплатным и открытым проектом. однако вы всегда можете поддержать нас, отправив небольшое пожертвование.</string>
     <string name="home_installed_version">текущая версия</string>
     <string name="home_latest_version">последняя версия</string>
-    <string name="invalid_update_channel">некорректный канал обновлений</string>
     <string name="uninstall_magisk_title">удаление reisenless</string>
     <string name="uninstall_magisk_msg">все модули будут отключены либо удалены!\nroot-доступ будет недоступен!\nбудет активировано шифрование /data (если отключалось при установке)!</string>
 
@@ -102,7 +101,6 @@
     <string name="module_state_remove">удалить</string>
     <string name="module_state_restore">восстановить</string>
     <string name="module_action_install_external">установить из хранилища</string>
-    <string name="update_available">доступно обновление</string>
     <string name="suspend_text_riru">модуль отключён, поскольку активирован %1$s</string>
     <string name="suspend_text_zygisk">модуль отключён, поскольку %1$s не активирован</string>
     <string name="zygisk_module_unloaded">модуль zygisk не запущен из-за несовместимости</string>
@@ -132,19 +130,10 @@
     <string name="settings_restore_app_summary">восстановить приложение reisenless к исходному состоянию</string>
     <string name="language">язык</string>
     <string name="system_default">по умолчанию</string>
-    <string name="settings_check_update_title">проверка обновлений</string>
-    <string name="settings_check_update_summary">периодически проверять наличие обновлений в фоновом режиме</string>
-    <string name="settings_update_channel_title">источник обновлений</string>
-    <string name="settings_update_stable">стабильный канал</string>
-    <string name="settings_update_beta">beta канал</string>
-    <string name="settings_update_custom">сторонний канал</string>
-    <string name="settings_update_custom_msg">укажите ссылку</string>
     <string name="settings_zygisk_summary">запускать компоненты reisenless в zygote процессе</string>
     <string name="settings_hosts_title">внесистемный hosts файл</string>
     <string name="settings_hosts_summary">поддержка внесистемного hosts файла для приложений, блокирующих рекламу</string>
     <string name="settings_hosts_toast">модуль для внесистемного hosts файла установлен</string>
-    <string name="settings_app_name_hint">введите имя</string>
-    <string name="settings_app_name_helper">приложение будет пересобрано с этим именем</string>
     <string name="settings_app_name_error">некорректный формат</string>
     <string name="settings_su_app_adb">приложения и adb</string>
     <string name="settings_su_app">только приложения</string>
@@ -191,14 +180,10 @@
     <string name="isolate_summary">сессии суперпользователя используют изолированные пространства имён</string>
 
     <!--Notifications-->
-    <string name="update_channel">обновление reisenless</string>
     <string name="progress_channel">уведомления о прогрессе</string>
     <string name="updated_channel">обновление завершено</string>
     <string name="download_complete">загрузка завершена</string>
     <string name="download_file_error">ошибка загрузки файла</string>
-    <string name="magisk_update_title">доступно обновление reisenless!</string>
-    <string name="updated_title">reisenless обновлён</string>
-    <string name="updated_text">нажмите, чтобы открыть</string>
 
     <!--Toasts, Dialogs-->
     <string name="yes">да</string>
@@ -242,7 +227,6 @@
     <string name="restrict">ограничить</string>
     <string name="reboot_safe_mode">безопасный режим</string>
     <string name="module_action">действие</string>
-    <string name="settings_update_debug">отладка</string>
     <string name="settings_su_restrict_title">ограничение возможностей root</string>
     <string name="settings_su_restrict_summary">по умолчанию ограничивать возможности новых приложений с правами суперпользователя. предупреждение: это нарушит работу большинства приложений. не включайте эту функцию, если не понимаете последствий.</string>
     <string name="download_dialog_title">введите url-адрес образа</string>
@@ -273,10 +257,13 @@
     <string name="udonge_integrity_summary">udonge сделает ваше устройство легитимным!</string>
     <string name="udonge_keybox_list_title">enable</string>
     <string name="udonge_keybox_list_summary">добавляйте и удаляйте ссылки на keybox</string>
-    <string name="udonge_update_title">обновить udonge</string>
-    <string name="udonge_update_summary">версия (%1$s)</string>
     <string name="udonge_keybox_hint">по одной https-ссылке на строку</string>
     <string name="udonge_rom_keywords_title">скрыть следы системы</string>
     <string name="udonge_rom_keywords_summary">скрыть runtime-сигналы и следы фреймворка кастомных ROM</string>
     <string name="udonge_rom_keywords_hint">по одному имени ROM на строку (например: lineage, protonaosp)</string>
+    <string name="hide_app_randomize_confirmation">Будут созданы случайные имя приложения, пакет, версия Android, версия приложения, код версии и значок. Продолжить?</string>
+    <string name="webui_root_required">Для WebUI требуются root и активная установка Reisenless</string>
+    <string name="webui_webview_required">Требуется Android System WebView</string>
+    <string name="webui_webview_required_summary">На устройстве нет рабочего поставщика Android WebView. Установите или включите Android System WebView и повторите попытку.</string>
+    <string name="webui_install_webview">установить WebView</string>
 </resources>

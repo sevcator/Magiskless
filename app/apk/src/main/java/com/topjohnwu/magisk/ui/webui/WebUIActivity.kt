@@ -87,7 +87,7 @@ class WebUIActivity : ComponentActivity() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 if (request.url.host == WEB_DOMAIN) return false
                 return try {
-                    startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                    startActivity(externalViewIntent(request.url))
                     true
                 } catch (_: ActivityNotFoundException) {
                     true
@@ -123,12 +123,20 @@ class WebUIActivity : ComponentActivity() {
             .setMessage(CoreR.string.webui_webview_required_summary)
             .setNegativeButton(android.R.string.cancel) { _, _ -> finish() }
             .setPositiveButton(CoreR.string.webui_install_webview) { _, _ ->
-                val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.webview"))
-                val browser = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview"))
+                val market = externalViewIntent(
+                    Uri.parse("market://details?id=com.google.android.webview")
+                )
+                val browser = externalViewIntent(
+                    Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.webview")
+                )
                 try { startActivity(market) } catch (_: ActivityNotFoundException) { startActivity(browser) }
             }
             .setOnDismissListener { if (!isFinishing) finish() }
             .show()
+    }
+
+    private fun externalViewIntent(uri: Uri) = Intent(Intent.ACTION_VIEW, uri).apply {
+        addCategory(Intent.CATEGORY_BROWSABLE)
     }
 
     override fun onDestroy() {

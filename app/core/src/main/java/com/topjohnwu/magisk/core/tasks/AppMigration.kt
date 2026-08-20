@@ -32,17 +32,43 @@ import kotlin.random.asKotlinRandom
 object AppMigration {
 
     private const val ALPHA = "abcdefghijklmnopqrstuvwxyz"
-    private const val ALPHADOTS = "$ALPHA....."
     private const val ANDROID_MANIFEST = "AndroidManifest.xml"
     private const val TEST_PKG_NAME = "$APP_PACKAGE_NAME.test"
     // The bundled stub is generated from Magisk's original manifest and can
     // still contain the upstream package even though this build uses the
     // Reisenless application id. Both names must be rewritten during hiding.
     private const val LEGACY_PACKAGE_NAME = "com.topjohnwu.magisk"
+    private val PACKAGE_ROOTS = arrayOf(
+        "com", "org", "net", "io", "co", "app", "dev", "me", "tech", "cloud",
+    )
+    private val FALLBACK_APP_NAMES = arrayOf(
+        "telegram", "whatsapp", "chrome", "camera", "calendar", "gallery", "notes",
+        "music", "weather", "drive", "maps", "photos", "clock", "files",
+    )
+    @Suppress("DEPRECATION")
+    private val FRAMEWORK_ICONS = intArrayOf(
+        android.R.drawable.sym_def_app_icon,
+        android.R.drawable.ic_dialog_alert,
+        android.R.drawable.ic_dialog_info,
+        android.R.drawable.ic_menu_camera,
+        android.R.drawable.ic_menu_compass,
+        android.R.drawable.ic_menu_gallery,
+        android.R.drawable.ic_menu_manage,
+        android.R.drawable.ic_menu_mapmode,
+        android.R.drawable.ic_menu_myplaces,
+    )
     private val PACKAGE_NAME = Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")
 
-    const val MAX_LABEL_LENGTH = 32
     const val PLACEHOLDER = "COMPONENT_PLACEHOLDER"
+
+    private data class HiddenIdentity(
+        val label: String,
+        val packageName: String,
+        val minSdk: Int,
+        val versionName: String,
+        val versionCode: Int,
+        val icon: Int,
+    )
 
     private fun isValidPackageName(pkg: String) = PACKAGE_NAME.matches(pkg)
 
@@ -56,27 +82,61 @@ object AppMigration {
         }
     }
 
-    private fun genPackageName(): String {
+    @Suppress("DEPRECATION")
+    private fun generateIdentity(context: Context): HiddenIdentity {
         val random = SecureRandom()
-        val len = 5 + random.nextInt(15)
-        val builder = StringBuilder(len)
-        var next: Char
-        var prev = 0.toChar()
-        for (i in 0 until len) {
-            next = if (prev == '.' || i == 0 || i == len - 1) {
-                ALPHA[random.nextInt(ALPHA.length)]
-            } else {
-                ALPHADOTS[random.nextInt(ALPHADOTS.length)]
-            }
-            builder.append(next)
-            prev = next
+        val installedLabels = context.packageManager.getInstalledApplications(0)
+            .asSequence()
+            .map { it.loadLabel(context.packageManager).toString().lowercase() }
+            .map { label -> label.filter { it in 'a'..'z' } }
+            .filter { it.length >= 3 }
+            .distinct()
+            .toMutableList()
+            .apply { addAll(FALLBACK_APP_NAMES) }
+            .distinct()
+
+        val first = installedLabels[random.nextInt(installedLabels.size)]
+        var second = installedLabels[random.nextInt(installedLabels.size)]
+        while (installedLabels.size > 1 && second == first) {
+            second = installedLabels[random.nextInt(installedLabels.size)]
         }
-        if (!builder.contains('.')) {
-            // Pick a random index and set it as dot
-            val idx = random.nextInt(len - 2)
-            builder[idx + 1] = '.'
+        val kRandom = random.asKotlinRandom()
+        val length = 3 + random.nextInt(2)
+        val mixed = buildList {
+            add(first[random.nextInt(first.length)])
+            add(second[random.nextInt(second.length)])
+            addAll((first + second).toList().shuffled(kRandom).take(length - 2))
+        }.shuffled(kRandom)
+        val labelLower = mixed.joinToString("")
+        val label = labelLower.replaceFirstChar(Char::uppercaseChar)
+
+        fun randomWord(length: Int) = buildString(length) {
+            repeat(length) { append(ALPHA[random.nextInt(ALPHA.length)]) }
         }
-        return builder.toString()
+
+        val packageName = buildString {
+            append(PACKAGE_ROOTS[random.nextInt(PACKAGE_ROOTS.size)])
+            append('.')
+            append(randomWord(4 + random.nextInt(8)))
+            append('.')
+            append(labelLower)
+        }
+
+        val components = IntArray(3 + random.nextInt(2)) { index ->
+            if (index == 0) 1 + random.nextInt(15) else random.nextInt(100)
+        }
+        val suffix = if (random.nextInt(3) == 0) "-${randomWord(5 + random.nextInt(5))}" else ""
+        val versionName = components.joinToString(".") + suffix
+        val versionCode = components.fold(0) { code, component -> code * 100 + component }
+
+        return HiddenIdentity(
+            label = label,
+            packageName = packageName,
+            minSdk = 5 + random.nextInt(9),
+            versionName = versionName,
+            versionCode = versionCode.coerceAtLeast(1),
+            icon = FRAMEWORK_ICONS[random.nextInt(FRAMEWORK_ICONS.size)],
+        )
     }
 
     private fun classNameGenerator() = sequence {
@@ -134,10 +194,11 @@ object AppMigration {
     private fun patch(
         context: Context,
         apk: File, out: OutputStream,
-        pkg: String, label: CharSequence
+        identity: HiddenIdentity,
     ): Boolean {
         val pm = context.packageManager
-        val info = pm.getPackageArchiveInfo(apk.path, 0)?.applicationInfo ?: return false
+        val packageInfo = pm.getPackageArchiveInfo(apk.path, 0) ?: return false
+        val info = packageInfo.applicationInfo ?: return false
         // Resolve resource-backed labels as well as literal android:label values.
         // The previous nonLocalizedLabel lookup returned "null" for the shipped
         // APK, so the hidden package kept the old visible Reisenless label.
@@ -151,14 +212,19 @@ object AppMigration {
                 val p = xml.patchStrings {
                     when {
                         sourcePackages.any(it::contains) -> sourcePackages.fold(it) { value, source ->
-                            value.replace(source, pkg)
+                            value.replace(source, identity.packageName)
                         }
                         it.contains(PLACEHOLDER) -> generator.next()
-                        it == origLabel -> label.toString()
+                        it == origLabel -> identity.label
+                        it == packageInfo.versionName -> identity.versionName
                         else -> it
                     }
                 }
-                if (!p) return false
+                if (!p ||
+                    !xml.patchIntAttribute("minSdkVersion", identity.minSdk) ||
+                    !xml.patchIntAttribute("versionCode", identity.versionCode) ||
+                    !xml.patchIntAttribute("icon", identity.icon)
+                ) return false
 
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
                 val keys = Keygen()
@@ -198,22 +264,17 @@ object AppMigration {
         }
     }
 
-    /**
-     * Install migration APKs from the already-rooted app shell.  Calling the
-     * shell helper used for normal module installs changes the installer UID
-     * to Android's shell user; on current Android that starts an interactive
-     * Play Protect verification flow and the handoff never completes.
-     */
+    /** Install migration APKs from the already-rooted app shell. */
     private fun installMigrationApk(apk: File): Boolean {
-        // The system UID has INSTALL_PACKAGES and does not route this
-        // dynamically signed APK through the shell user's Play Protect UI.
-        // Copy to a world-readable temporary path before switching UID.
+        // Copy to a world-readable path before switching to the system UID.
+        // Mark the migration as a device restore: it is an app identity handoff,
+        // not a user-requested installation from an unknown package source.
         val tmp = "/data/local/tmp/reisenless-migration.apk"
         if (!Shell.cmd("cp -f ${apk.absolutePath} $tmp", "chmod 644 $tmp").exec().isSuccess) {
             return false
         }
         return try {
-            Shell.cmd("su 1000 -c 'pm install -g $tmp'").exec().isSuccess ||
+            Shell.cmd("su 1000 -c 'pm install -g --install-reason 2 $tmp'").exec().isSuccess ||
                 Shell.cmd("pm install -g $tmp").exec().isSuccess
         } finally {
             Shell.cmd("rm -f $tmp").exec()
@@ -247,9 +308,8 @@ object AppMigration {
         return launched
     }
 
-    suspend fun patchAndHide(context: Context, label: String, pkg: String? = null): Boolean =
+    suspend fun patchAndHide(context: Context): Boolean =
         withContext(Dispatchers.IO) {
-            if (label.isBlank() || label.length > MAX_LABEL_LENGTH) return@withContext false
             val workDir = File(context.cacheDir, "app-migration")
             workDir.deleteRecursively()
             if (!workDir.mkdirs()) return@withContext false
@@ -264,12 +324,14 @@ object AppMigration {
                     return@withContext false
                 }
 
-                val newPackage = pkg ?: generateSequence(::genPackageName)
+                val identity = generateSequence { generateIdentity(context) }
                     .take(8)
                     .firstOrNull {
-                        !isInstalled(context, it) && !isInstalled(context, "$it.test")
+                        !isInstalled(context, it.packageName) &&
+                            !isInstalled(context, "${it.packageName}.test")
                     }
                     ?: return@withContext false
+                val newPackage = identity.packageName
                 if (!isValidPackageName(newPackage) || newPackage == context.packageName) {
                     return@withContext false
                 }
@@ -298,7 +360,7 @@ object AppMigration {
 
                 val repack = File(workDir, "patched.apk")
                 repack.outputStream().use {
-                    if (!patch(context, stub, it, newPackage, label.lowercase())) {
+                    if (!patch(context, stub, it, identity)) {
                         return@withContext false
                     }
                 }
@@ -321,14 +383,14 @@ object AppMigration {
         }
 
     @Suppress("DEPRECATION")
-    suspend fun hide(activity: Activity, label: String) {
+    suspend fun hide(activity: Activity) {
         val dialog = android.app.ProgressDialog(activity).apply {
             setTitle(activity.getString(R.string.hide_app_title))
             isIndeterminate = true
             setCancelable(false)
             show()
         }
-        val success = patchAndHide(activity, label)
+        val success = patchAndHide(activity)
         if (!success) {
             dialog.dismiss()
             activity.toast(R.string.failure, Toast.LENGTH_LONG)
@@ -427,12 +489,31 @@ object AppMigration {
     }
 
     suspend fun upgradeStub(context: Context, apk: File): Intent? {
-        val label = context.applicationInfo.nonLocalizedLabel
-        val pkg = context.packageName
+        @Suppress("DEPRECATION")
+        val current = context.packageManager.getPackageInfo(context.packageName, 0)
+        val appInfo = current.applicationInfo ?: return null
+        val currentCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            current.longVersionCode.toInt()
+        } else {
+            @Suppress("DEPRECATION")
+            current.versionCode
+        }
+        val identity = HiddenIdentity(
+            label = appInfo.loadLabel(context.packageManager).toString(),
+            packageName = context.packageName,
+            minSdk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                appInfo.minSdkVersion
+            } else {
+                Build.VERSION.SDK_INT
+            },
+            versionName = current.versionName ?: "1.0",
+            versionCode = currentCode,
+            icon = appInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon,
+        )
         val session = APKInstall.startSession(context)
         return withContext(Dispatchers.IO) {
             session.openStream(context).use {
-                if (!patch(context, apk, it, pkg, label)) {
+                if (!patch(context, apk, it, identity)) {
                     return@withContext null
                 }
             }
