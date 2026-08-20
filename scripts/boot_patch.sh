@@ -177,15 +177,19 @@ ui_print "- patching ramdisk"
 
 $BOOTMODE && [ -z "$PREINITDEVICE" ] && PREINITDEVICE=$(./$MAIN_BIN_NAME --preinit-device)
 
-# Copy to the stable, ramdisk-only payload name. Keep the generated runtime
-# binary for the persistent /data environment installed after boot patching.
-[ -f "$MAIN_BIN_NAME" ] && cp "$MAIN_BIN_NAME" "$RAMDISK_NAME"
+# Copy to the ramdisk payload name when it differs from the runtime name.
+if [ "$MAIN_BIN_NAME" != "$RAMDISK_NAME" ]; then
+  cp "$MAIN_BIN_NAME" "$RAMDISK_NAME" || abort "! unable to prepare ramdisk payload"
+fi
+
+for file in "$RAMDISK_NAME" "$STUB_NAME" "$INIT_LD_NAME" "$UDONGE_ARCHIVE"; do
+  [ -f "$file" ] || abort "! missing installer payload: $file"
+done
 
 # Compress to save precious ramdisk space
-./mboot compress=xz "$RAMDISK_NAME" "$RAMDISK_NAME.xz"
-./mboot compress=xz "$STUB_NAME" "$STUB_NAME.xz"
-./mboot compress=xz "$INIT_LD_NAME" "$INIT_LD_NAME.xz"
-./mboot compress=xz "$UDONGE_ARCHIVE" "$UDONGE_ARCHIVE.xz"
+for file in "$RAMDISK_NAME" "$STUB_NAME" "$INIT_LD_NAME" "$UDONGE_ARCHIVE"; do
+  ./mboot compress=xz "$file" "$file.xz" || abort "! unable to compress installer payload: $file"
+done
 
 echo "KEEPVERITY=$KEEPVERITY" > config
 echo "KEEPFORCEENCRYPT=$KEEPFORCEENCRYPT" >> config
