@@ -13,7 +13,6 @@ import com.topjohnwu.magisk.core.BuildConfig.APP_PACKAGE_NAME
 import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.R
-import com.topjohnwu.magisk.core.ktx.await
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.ktx.writeTo
 import com.topjohnwu.magisk.core.signing.JarMap
@@ -193,6 +192,15 @@ object AppMigration {
         }
     }
 
+    /**
+     * Install migration APKs from the already-rooted app shell.  Calling the
+     * shell helper used for normal module installs changes the installer UID
+     * to Android's shell user; on current Android that starts an interactive
+     * Play Protect verification flow and the handoff never completes.
+     */
+    private fun installMigrationApk(apk: File): Boolean =
+        Shell.cmd("pm install -g ${apk.absolutePath}").exec().isSuccess
+
     private suspend fun launchApp(context: Context, pkg: String): Boolean {
         if (!isValidPackageName(pkg) || pkg == context.packageName) return false
         val intent = context.packageManager.getLaunchIntentForPackage(pkg) ?: return false
@@ -262,7 +270,7 @@ object AppMigration {
                             context.packageName,
                             newPackage,
                         )) return@withContext false
-                    if (!Shell.cmd("adb_pm_install $testRepack $newPackage.test").exec().isSuccess) {
+                    if (!installMigrationApk(testRepack)) {
                         return@withContext false
                     }
                     installedTestPackage = "$newPackage.test"
@@ -276,7 +284,7 @@ object AppMigration {
                     }
                 }
 
-                if (!Shell.cmd("adb_pm_install $repack $newPackage").exec().isSuccess) {
+                if (!installMigrationApk(repack)) {
                     return@withContext false
                 }
                 installedMainPackage = newPackage
@@ -334,15 +342,14 @@ object AppMigration {
                         context.packageName,
                         APP_PACKAGE_NAME,
                     )) return@withContext false
-                if (!Shell.cmd("adb_pm_install $testRepack $TEST_PKG_NAME").exec().isSuccess) {
+                if (!installMigrationApk(testRepack)) {
                     return@withContext false
                 }
                 installedTest = true
             }
 
             val apk = StubApk.current(context)
-            val cmd = "adb_pm_install $apk $APP_PACKAGE_NAME"
-            if (Shell.cmd(cmd).await().isSuccess) {
+            if (installMigrationApk(apk)) {
                 installedMain = true
                 Shell.cmd("touch $AppApkPath").exec()
                 if (launchApp(context, APP_PACKAGE_NAME)) {
