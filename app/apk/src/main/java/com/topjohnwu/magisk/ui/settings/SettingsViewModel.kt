@@ -58,7 +58,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             }
             list.add(SuList)
             list.add(HideApps)
-            list.addAll(listOf(UdongeSettings, AnonymousMode, UdongeKeyboxes, UdongeRomKeywords))
+            list.addAll(listOf(UdongeSettings, UdongeKeyboxes, AnonymousMode, UdongeRomKeywords))
         }
 
         if (Info.showSuperUser) {

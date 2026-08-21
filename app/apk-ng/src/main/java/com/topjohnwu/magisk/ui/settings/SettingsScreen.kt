@@ -544,6 +544,18 @@ private fun UdongeSection() {
 
     SmallTitle(text = stringResource(CoreR.string.udonge))
     Card(modifier = Modifier.fillMaxWidth()) {
+        SettingsSwitchAction(
+            title = stringResource(CoreR.string.udonge_keybox_list_title),
+            summary = stringResource(CoreR.string.udonge_keybox_list_summary),
+            checked = enabled,
+            onClick = { showKeyboxes = true },
+            onCheckedChange = { next ->
+                enabled = next
+                scope.launch(Dispatchers.IO) {
+                    if (!Udonge.setEnabled(next)) enabled = !next
+                }
+            },
+        )
         SettingsSwitch(
             title = stringResource(CoreR.string.anonymous_mode_title),
             summary = stringResource(CoreR.string.anonymous_mode_summary),
@@ -558,18 +570,6 @@ private fun UdongeSection() {
                     if (!Udonge.setAnonymous(next)) anonymous = !next
                 }
             }
-        )
-        SettingsSwitchAction(
-            title = stringResource(CoreR.string.udonge_keybox_list_title),
-            summary = stringResource(CoreR.string.udonge_keybox_list_summary),
-            checked = enabled,
-            onClick = { showKeyboxes = true },
-            onCheckedChange = { next ->
-                enabled = next
-                scope.launch(Dispatchers.IO) {
-                    if (!Udonge.setEnabled(next)) enabled = !next
-                }
-            },
         )
         SettingsArrow(
             title = stringResource(CoreR.string.udonge_rom_keywords_title),
