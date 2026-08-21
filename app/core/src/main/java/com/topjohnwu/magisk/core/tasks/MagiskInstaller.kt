@@ -133,8 +133,8 @@ abstract class MagiskInstallImpl protected constructor(
                     if (Process.is64Bit() && abi32 != null) {
                         val entry = zf.getEntry("lib/$abi32/libmagisk.so")
                         if (entry != null) {
-                            val magisk32 = File(installDir, "magisk32")
-                            zf.getInputStream(entry).writeTo(magisk32)
+                            val bin32 = File(installDir, BuildConfig.BIN32_NAME)
+                            zf.getInputStream(entry).writeTo(bin32)
                         }
                     }
                 }
@@ -149,14 +149,14 @@ abstract class MagiskInstallImpl protected constructor(
                     Os.symlink(lib.path, "$installDir/$name")
                 }
 
-                // Also extract magisk32 on 64-bit devices that supports 32-bit
+                // Also extract 32-bit binary on 64-bit devices that support 32-bit
                 val abi32 = Const.CPU_ABI_32
                 if (Process.is64Bit() && abi32 != null) {
                     val name = "lib/$abi32/libmagisk.so"
                     val entry = javaClass.classLoader!!.getResourceAsStream(name)
                     if (entry != null) {
-                        val magisk32 = File(installDir, "magisk32")
-                        entry.writeTo(magisk32)
+                        val bin32 = File(installDir, BuildConfig.BIN32_NAME)
+                        entry.writeTo(bin32)
                     }
                 }
             }

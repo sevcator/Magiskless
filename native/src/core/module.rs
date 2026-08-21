@@ -592,11 +592,9 @@ fn inject_zygisk_bins(name: &str, system: &mut FsNode) {
             #[cfg(target_pointer_width = "32")]
             bin_path.append_path(MAIN_BIN_NAME);
 
-            // There are some devices that announce ABI as 64 bit only, but ship with linker
-            // because they make use of a special 32 bit to 64 bit translator (such as tango).
-            // In this case, magisk32 does not exist, so inserting it will cause bind mount
-            // failure and affect module mount. Native bridge injection does not support these
-            // kind of translators anyway, so simply check if magisk32 exists here.
+            // Some devices announce 64-bit only ABI but ship a linker for 32-to-64
+            // translation (e.g. tango). The 32-bit binary won't exist there, so
+            // inserting it would cause bind mount failure. Check existence first.
             if bin_path.exists() {
                 children.insert(
                     name.to_string(),

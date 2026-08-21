@@ -32,6 +32,7 @@ object Config {
     val internalDir: String get() = get("internalDir") ?: ".ms"
     val socketName: String get() = get("socketName") ?: "socket"
     val policyName: String get() = get("policyName") ?: "mpol"
+    val bin32Name: String get() = get("bin32Name") ?: "ms32"
     val ramdiskName: String get() = get("ramdiskName") ?: "ms"
     val stubName: String get() = get("stubName") ?: "stub.apk"
     val initLdName: String get() = get("initLdName") ?: "init-ld"

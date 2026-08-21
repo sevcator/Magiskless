@@ -351,7 +351,8 @@ def _build_identity() -> dict[str, str]:
         return {
             "buildId": "ms", "secureDir": config.get("secureDir", "/data/adb"),
             "dataDir": "ms", "dbName": "ms.db", "internalDir": ".ms",
-            "socketName": "socket", "policyName": "mpol", "ramdiskName": "ms",
+            "socketName": "socket", "policyName": "mpol", "bin32Name": "ms32",
+            "ramdiskName": "ms",
             "stubName": "stub.apk", "initLdName": "init-ld",
             "udongeDir": "udonge", "udongeArchive": "udonge.bin",
             "backupConfig": ".cfg", "redirPath": "/data/._init",
@@ -391,6 +392,7 @@ def _build_identity() -> dict[str, str]:
         "internalDir": "." + token("tmpfs-internal", 6, 10),
         "socketName": token("daemon-socket", 6, 10),
         "policyName": token("policy-binary", 5, 9),
+        "bin32Name": token("bin32-databin", 5, 9),
         # The ramdisk proxy must resolve to the daemon after /sbin is moved.
         "ramdiskName": main_binary,
         "stubName": token("stub-apk", 6, 10) + ".apk",
@@ -501,7 +503,8 @@ def dump_flag_header():
     identity_flags = {
         "dataDir": "BUILD_DATA_DIR", "dbName": "BUILD_DB_NAME",
         "internalDir": "BUILD_INTERNAL_DIR", "socketName": "BUILD_SOCKET_NAME",
-        "policyName": "BUILD_POLICY_NAME", "ramdiskName": "BUILD_RAMDISK_NAME",
+        "policyName": "BUILD_POLICY_NAME", "bin32Name": "BUILD_BIN32_NAME",
+        "ramdiskName": "BUILD_RAMDISK_NAME",
         "stubName": "BUILD_STUB_NAME", "initLdName": "BUILD_INIT_LD_NAME",
         "udongeDir": "BUILD_UDONGE_DIR", "udongeArchive": "BUILD_UDONGE_ARCHIVE",
         "backupConfig": "BUILD_BACKUP_CONFIG", "redirPath": "BUILD_REDIR_PATH",

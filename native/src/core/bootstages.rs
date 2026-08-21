@@ -1,6 +1,6 @@
 use crate::consts::{
-    APP_PACKAGE_NAME, BBPATH, DATABIN, MAIN_BIN_NAME_32, MODULEROOT, POLICY_BIN_NAME,
-    POLICY_DATABIN_NAME, SECURE_DIR,
+    APP_PACKAGE_NAME, BBPATH, BIN32_DATABIN_NAME, DATABIN, MAIN_BIN_NAME_32, MODULEROOT,
+    POLICY_BIN_NAME, POLICY_DATABIN_NAME, SECURE_DIR,
 };
 use crate::daemon::MagiskD;
 use crate::ffi::{
@@ -95,11 +95,10 @@ impl MagiskD {
             .log_ok();
 
         // 32-bit binary and policy tool are not in ramdisk; copy from DATABIN to tmpfs.
-        // DATABIN retains installer-assigned names; tmpfs uses the renamed identifiers.
-        let magisk32 = cstr!(concatcp!(DATABIN, "/magisk32"));
-        if magisk32.exists() {
+        let bin32 = cstr!(concatcp!(DATABIN, "/", BIN32_DATABIN_NAME));
+        if bin32.exists() {
             let tmp = buf.append_path(get_magisk_tmp()).append_path(MAIN_BIN_NAME_32);
-            magisk32.copy_to(tmp).log_ok();
+            bin32.copy_to(tmp).log_ok();
         }
         let mpol = cstr!(concatcp!(DATABIN, "/", POLICY_DATABIN_NAME));
         if mpol.exists() {

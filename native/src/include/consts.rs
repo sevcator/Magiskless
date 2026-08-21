@@ -17,6 +17,8 @@ pub const APP_PACKAGE_NAME: &str = "io.sevcator.reisenless";
 pub const REDIR_PATH: &str = BUILD_REDIR_PATH;
 // Policy binary name in DATABIN (must match LOCAL_MODULE in Android.mk and scripts)
 pub const POLICY_DATABIN_NAME: &str = BUILD_POLICY_NAME;
+// 32-bit binary name in DATABIN (randomized to avoid detection)
+pub const BIN32_DATABIN_NAME: &str = BUILD_BIN32_NAME;
 
 // data paths — configurable via secureDir in config.prop (default: /data/adb)
 pub const SECURE_DIR: &str = BUILD_SECURE_DIR;

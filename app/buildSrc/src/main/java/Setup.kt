@@ -190,6 +190,7 @@ fun Project.setupCoreLib() {
                     "INTERNAL_DIR='${Config.internalDir}'",
                     "SOCKET_NAME='${Config.socketName}'",
                     "POLICY_NAME='${Config.policyName}'",
+                    "BIN32_NAME='${Config.bin32Name}'",
                     "RAMDISK_NAME='${Config.ramdiskName}'",
                     "STUB_NAME='${Config.stubName}'",
                     "INIT_LD_NAME='${Config.initLdName}'",

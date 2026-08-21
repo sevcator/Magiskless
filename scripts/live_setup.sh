@@ -69,8 +69,8 @@ done
 
 if $IS64BIT && [ -e "/system/bin/linker" ]; then
   unzip -oj magisk.apk "lib/$ABI32/libmagisk.so"
-  mv libmagisk.so magisk32
-  chmod 755 magisk32
+  mv libmagisk.so "$BIN32_NAME"
+  chmod 755 "$BIN32_NAME"
 fi
 
 [ -f magisk ] && mv magisk "$MAIN_BIN_NAME"
@@ -143,10 +143,10 @@ for file in "$MAIN_BIN_NAME" "$POLICY_NAME" "$STUB_NAME"; do
   cp -af ./$file $MAGISKTMP/$file
   cp -af ./$file $MAGISKBIN/$file
 done
-[ -f ./magisk32 ] && {
-  chmod 755 ./magisk32
-  cp -af ./magisk32 $MAGISKTMP/${MAIN_BIN_NAME}32
-  cp -af ./magisk32 $MAGISKBIN/magisk32
+[ -f "./$BIN32_NAME" ] && {
+  chmod 755 "./$BIN32_NAME"
+  cp -af "./$BIN32_NAME" $MAGISKTMP/${MAIN_BIN_NAME}32
+  cp -af "./$BIN32_NAME" "$MAGISKBIN/$BIN32_NAME"
 }
 cp -af ./mboot $MAGISKBIN/mboot
 cp -af ./minit $MAGISKBIN/minit
