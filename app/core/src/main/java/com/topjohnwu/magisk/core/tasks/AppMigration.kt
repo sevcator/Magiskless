@@ -106,6 +106,35 @@ object AppMigration {
         ).exec()
     }
 
+    /** Make the full APK available before the hidden stub's first process starts. */
+    @Suppress("DEPRECATION")
+    private fun seedMigrationTarget(context: Context, pkg: String, uid: Int): Boolean {
+        val info = try {
+            context.packageManager.getApplicationInfo(pkg, 0)
+        } catch (_: PackageManager.NameNotFoundException) {
+            return false
+        }
+        val dataDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            info.deviceProtectedDataDir
+        } else {
+            info.dataDir
+        }
+        val dataContext = Shell.cmd("ls -Zd $dataDir").exec().out
+            .firstOrNull()?.substringBefore(' ')
+            ?.takeIf { it.count { c -> c == ':' } >= 3 }
+            ?: return false
+        val dynDir = File(dataDir, "dyn")
+        val currentApk = File(dynDir, "current.apk")
+        return Shell.cmd(
+            "mkdir -p ${dynDir.path}",
+            "cp -f $AppApkPath ${currentApk.path}",
+            "chown $uid:$uid ${dynDir.path} ${currentApk.path}",
+            "chmod 700 ${dynDir.path}",
+            "chmod 400 ${currentApk.path}",
+            "chcon $dataContext ${dynDir.path} ${currentApk.path}",
+        ).exec().isSuccess
+    }
+
     @Suppress("DEPRECATION")
     private fun generateIdentity(context: Context): HiddenIdentity {
         val random = SecureRandom()
@@ -405,6 +434,9 @@ object AppMigration {
                     ?: return@withContext false
                 installedMainUid = newUid
                 if (!authorizeMigrationTarget(newUid)) {
+                    return@withContext false
+                }
+                if (!seedMigrationTarget(context, newPackage, newUid)) {
                     return@withContext false
                 }
                 if (!Shell.cmd("${Const.MAIN_BIN} --sulist add $newPackage").exec().isSuccess) {
