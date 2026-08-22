@@ -14,6 +14,9 @@ object Config : PreferenceConfig, DBConfig {
         "https://raw.githubusercontent.com/sevcator/Reisenless/master/udonge/payload/defaults/keybox.xml\n" +
         "https://gist.githubusercontent.com/GreyElaina/2401596f3b8a01f8602768ad5221e2fd/raw/kb_b.xml"
 
+    const val DEFAULT_MODULE_REPOSITORIES =
+        "https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/json/main/modules.json"
+
     override val stringDB get() = ServiceLocator.stringDB
     override val settingsDB get() = ServiceLocator.settingsDB
     override val context get() = ServiceLocator.deContext
@@ -49,6 +52,8 @@ object Config : PreferenceConfig, DBConfig {
         const val UDONGE_ENABLED = "udonge_enabled"
         const val UDONGE_KEYBOX_URLS = "udonge_keybox_urls"
         const val UDONGE_ROM_KEYWORDS = "udonge_rom_keywords"
+        const val REPOSITORY_SEARCHER_ENABLED = "repository_searcher_enabled"
+        const val MODULE_REPOSITORY_URLS = "module_repository_urls"
 
         val NO_MIGRATION = setOf(
             ASKED_HOME, SU_REQUEST_TIMEOUT, SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK,
@@ -128,6 +133,11 @@ object Config : PreferenceConfig, DBConfig {
         get() = storedUdongeKeyboxUrls.ifBlank { DEFAULT_UDONGE_KEYBOX_URLS }
         set(value) { storedUdongeKeyboxUrls = value }
     var udongeRomKeywords by preference(Key.UDONGE_ROM_KEYWORDS, "")
+    var repositorySearcherEnabled by preference(Key.REPOSITORY_SEARCHER_ENABLED, true)
+    var moduleRepositoryUrls by preference(
+        Key.MODULE_REPOSITORY_URLS,
+        DEFAULT_MODULE_REPOSITORIES,
+    )
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
     var locale

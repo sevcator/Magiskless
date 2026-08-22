@@ -46,17 +46,14 @@ object AppMigration {
         "telegram", "whatsapp", "chrome", "camera", "calendar", "gallery", "notes",
         "music", "weather", "drive", "maps", "photos", "clock", "files",
     )
-    @Suppress("DEPRECATION")
-    private val FRAMEWORK_ICONS = intArrayOf(
-        android.R.drawable.sym_def_app_icon,
-        android.R.drawable.ic_dialog_alert,
-        android.R.drawable.ic_dialog_info,
-        android.R.drawable.ic_menu_camera,
-        android.R.drawable.ic_menu_compass,
-        android.R.drawable.ic_menu_gallery,
-        android.R.drawable.ic_menu_manage,
-        android.R.drawable.ic_menu_mapmode,
-        android.R.drawable.ic_menu_myplaces,
+    private val ICON_MARKER = Regex("M0\\.1(?:0[1-9]|[12][0-9]|3[0-2]),")
+    private val ICON_BACKGROUNDS = intArrayOf(
+        0xFFD778B5.toInt(), 0xFFC95BC8.toInt(), 0xFFE284BC.toInt(),
+        0xFFB85AD4.toInt(), 0xFFDF6AAA.toInt(), 0xFFA958C8.toInt(),
+    )
+    private val ICON_PIXELS = intArrayOf(
+        0xFFFFFFFF.toInt(), 0xFFF9D9EE.toInt(), 0xFF4A1942.toInt(),
+        0xFF742F76.toInt(), 0xFF221020.toInt(), 0xFFFFB8DE.toInt(),
     )
     private val PACKAGE_NAME = Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")
 
@@ -68,7 +65,6 @@ object AppMigration {
         val minSdk: Int,
         val versionName: String,
         val versionCode: Int,
-        val icon: Int,
     )
 
     private fun isValidPackageName(pkg: String) = PACKAGE_NAME.matches(pkg)
@@ -189,11 +185,41 @@ object AppMigration {
             minSdk = 5 + random.nextInt(9),
             versionName = versionName,
             versionCode = versionCode.coerceAtLeast(1),
-            // The stub has no public resources. Its real resources are encrypted
-            // and loaded only after process startup, so the package installer and
-            // launcher can resolve only framework-owned icon resource IDs.
-            icon = FRAMEWORK_ICONS[random.nextInt(FRAMEWORK_ICONS.size)],
         )
+    }
+
+    /** Randomize the public stub icon while keeping its resource ID resolvable. */
+    private fun patchHiddenIcon(jar: JarMap, random: SecureRandom): Boolean {
+        val entries = jar.entries()
+        while (entries.hasMoreElements()) {
+            val entry = entries.nextElement()
+            if (!entry.name.startsWith("res/") || !entry.name.endsWith(".xml")) continue
+            val xml = try {
+                AXML(jar.getRawData(entry))
+            } catch (_: RuntimeException) {
+                continue
+            }
+            var markerCount = 0
+            if (!xml.patchStrings { value ->
+                    if (!ICON_MARKER.containsMatchIn(value)) return@patchStrings value
+                    markerCount++
+                    val size = 5 + random.nextInt(18)
+                    val x = random.nextInt(101 - size)
+                    val y = random.nextInt(101 - size)
+                    "M$x,$y" + "h$size" + "v$size" + "h-${size}z"
+                } || markerCount != 32
+            ) continue
+
+            val background = ICON_BACKGROUNDS[random.nextInt(ICON_BACKGROUNDS.size)]
+            if (!xml.patchIntAttributes("fillColor") { index ->
+                    if (index == 0) background
+                    else ICON_PIXELS[random.nextInt(ICON_PIXELS.size)]
+                }
+            ) return false
+            jar.getOutputStream(entry).use { it.write(xml.bytes) }
+            return true
+        }
+        return false
     }
 
     private fun classNameGenerator() = sequence {
@@ -281,11 +307,11 @@ object AppMigration {
                 }
                 if (!p ||
                     !xml.patchIntAttribute("minSdkVersion", identity.minSdk) ||
-                    !xml.patchIntAttribute("versionCode", identity.versionCode) ||
-                    !xml.patchIntAttribute("icon", identity.icon)
+                    !xml.patchIntAttribute("versionCode", identity.versionCode)
                 ) return false
 
                 jar.getOutputStream(je).use { it.write(xml.bytes) }
+                if (!patchHiddenIcon(jar, SecureRandom())) return false
                 val keys = Keygen()
                 SignApk.sign(keys.cert, keys.key, jar, out)
                 return true

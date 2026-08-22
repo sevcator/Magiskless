@@ -274,6 +274,42 @@ private fun AppSettingsSection() {
     val isHidden = context.packageName != BuildConfig.APP_PACKAGE_NAME
     var showHideDialog by rememberSaveable { mutableStateOf(false) }
     var showRestoreDialog by rememberSaveable { mutableStateOf(false) }
+    var repositoryEnabled by remember { mutableStateOf(Config.repositorySearcherEnabled) }
+    var showRepositoryLinks by rememberSaveable { mutableStateOf(false) }
+    var repositoryLinks by rememberSaveable { mutableStateOf(Config.moduleRepositoryUrls) }
+
+    if (showRepositoryLinks) {
+        AlertDialog(
+            onDismissRequest = { showRepositoryLinks = false },
+            title = { Text(stringResource(CoreR.string.repository_links_title)) },
+            text = {
+                OutlinedTextField(
+                    value = repositoryLinks,
+                    onValueChange = { repositoryLinks = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 5,
+                    maxLines = 12,
+                    label = { Text(stringResource(CoreR.string.repository_links_hint)) },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    Config.moduleRepositoryUrls = repositoryLinks.lineSequence()
+                        .map(String::trim)
+                        .filter(String::isNotBlank)
+                        .distinct()
+                        .joinToString("\n")
+                    repositoryLinks = Config.moduleRepositoryUrls
+                    showRepositoryLinks = false
+                }) { Text(stringResource(android.R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRepositoryLinks = false }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
+    }
 
     if (showHideDialog) {
         HideAppDialog(
@@ -319,6 +355,16 @@ private fun AppSettingsSection() {
             onClick = {
                 if (isHidden) showRestoreDialog = true else showHideDialog = true
             }
+        )
+        SettingsSwitchAction(
+            title = stringResource(CoreR.string.repository_searcher),
+            summary = stringResource(CoreR.string.repository_searcher_summary),
+            checked = repositoryEnabled,
+            onClick = { showRepositoryLinks = true },
+            onCheckedChange = { enabled ->
+                repositoryEnabled = enabled
+                Config.repositorySearcherEnabled = enabled
+            },
         )
     }
 }

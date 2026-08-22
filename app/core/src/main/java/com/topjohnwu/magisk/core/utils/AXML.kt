@@ -20,9 +20,15 @@ class AXML(b: ByteArray) {
 
     /** Patch the typed value of every binary XML attribute with [name]. */
     fun patchIntAttribute(name: String, value: Int): Boolean {
+        return patchIntAttributes(name) { value }
+    }
+
+    /** Patch matching attributes in document order with independently generated values. */
+    fun patchIntAttributes(name: String, valueAt: (Int) -> Int): Boolean {
         val buffer = ByteBuffer.wrap(bytes).order(LITTLE_ENDIAN)
         val strings = readStrings(buffer) ?: return false
         var patched = false
+        var matchIndex = 0
         var offset = 8
         while (offset + 8 <= bytes.size) {
             val type = buffer.getShort(offset).toInt() and 0xffff
@@ -39,7 +45,7 @@ class AXML(b: ByteArray) {
                     if (attribute + attributeSize > offset + size) return false
                     val nameIndex = buffer.getInt(attribute + 4)
                     if (nameIndex in strings.indices && strings[nameIndex] == name) {
-                        buffer.putInt(attribute + 16, value)
+                        buffer.putInt(attribute + 16, valueAt(matchIndex++))
                         patched = true
                     }
                     attribute += attributeSize

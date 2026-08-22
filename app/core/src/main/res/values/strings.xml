@@ -133,6 +133,14 @@
     <string name="color_teal">teal</string>
     <string name="color_gray">gray</string>
     <string name="settings_hide_app_title">hide reisenless</string>
+    <string name="repository_searcher">Repository searcher</string>
+    <string name="repository_searcher_summary">Configure online module repositories and show the online search button</string>
+    <string name="repository_links_title">Module repository links</string>
+    <string name="repository_links_hint">One modules.json or GitHub module repository URL per line</string>
+    <string name="repository_search_hint">Search online modules</string>
+    <string name="repository_load_failed">Could not load any configured repository</string>
+    <string name="repository_no_results">No matching online modules</string>
+    <string name="module_search_installed">Search installed modules</string>
     <string name="settings_hide_app_summary">reisensense &gt;w&lt;</string>
     <string name="hide_app_randomize_confirmation">a random app name, package, android version, version number, version code, and icon will be generated. continue?</string>
     <string name="settings_restore_app_title">restore the reisenless app</string>

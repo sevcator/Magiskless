@@ -171,7 +171,7 @@ private abstract class ManifestUpdater: DefaultTask() {
         val manifest = mergedManifest.asFile.get().readText().replace(Regex(".*\\<application"), """
             |<application
             |    android:appComponentFactory="${factoryClass.get()}"
-            |    android:icon="@android:drawable/sym_def_app_icon"
+            |    android:icon="@drawable/ic_hidden"
             |    android:name="${appClass.get()}"""".ind(1)
         ).replace(Regex(".*\\<\\/application"), "$components\n    </application")
         outputManifest.get().asFile.writeText(manifest)
@@ -304,14 +304,6 @@ fun Project.setupStubApk() {
                         }
                     }
                     genEncryptedResources(bos.toByteArray(), outputFolder.get().asFile)
-                }
-            }
-
-            tasks.withType(TransformApkTask::class) {
-                transformations.add {
-                    // Always delete resources.arsc from the APK
-                    // to ensure that external resources can be loaded
-                    it.get("resources.arsc")?.delete()
                 }
             }
 

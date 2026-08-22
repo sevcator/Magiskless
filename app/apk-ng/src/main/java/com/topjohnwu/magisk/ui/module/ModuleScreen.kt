@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.ui.module
 
 import android.provider.OpenableColumns
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -25,11 +26,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SystemUpdateAlt
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,11 +46,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -66,9 +75,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.topjohnwu.magisk.core.Info
+import com.topjohnwu.magisk.core.Config
 import com.topjohnwu.magisk.core.di.ServiceLocator
 import com.topjohnwu.magisk.core.download.DownloadEngine
 import com.topjohnwu.magisk.core.model.module.OnlineModule
+import com.topjohnwu.magisk.core.repository.RepositoryModule
 import com.topjohnwu.magisk.ui.MainActivity
 import com.topjohnwu.magisk.ui.component.ConfirmResult
 import com.topjohnwu.magisk.ui.component.MarkdownTextAsync
@@ -94,6 +105,20 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
 
     var pendingOnlineModule by remember { mutableStateOf<OnlineModule?>(null) }
     val showOnlineDialog = rememberSaveable { mutableStateOf(false) }
+    var showRepository by rememberSaveable { mutableStateOf(false) }
+    var localSearchVisible by rememberSaveable { mutableStateOf(false) }
+    var localQuery by rememberSaveable { mutableStateOf("") }
+
+    if (showRepository) {
+        BackHandler { showRepository = false }
+        androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.loadRepository() }
+        RepositoryScreen(
+            viewModel = viewModel,
+            activity = activity,
+            onBack = { showRepository = false },
+        )
+        return
+    }
 
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -135,8 +160,41 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(CoreR.string.modules)) },
-                scrollBehavior = scrollBehavior
+                title = {
+                    if (localSearchVisible) {
+                        OutlinedTextField(
+                            value = localQuery,
+                            onValueChange = { localQuery = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            placeholder = { Text(stringResource(CoreR.string.module_search_installed)) },
+                        )
+                    } else {
+                        Text(stringResource(CoreR.string.modules))
+                    }
+                },
+                actions = {
+                    if (uiState.modules.isNotEmpty()) {
+                        IconButton(onClick = {
+                            localSearchVisible = !localSearchVisible
+                            if (!localSearchVisible) localQuery = ""
+                        }) {
+                            Icon(
+                                imageVector = if (localSearchVisible) Icons.Default.Close else Icons.Default.Search,
+                                contentDescription = stringResource(CoreR.string.module_search_installed),
+                            )
+                        }
+                    }
+                    if (Config.repositorySearcherEnabled) {
+                        IconButton(onClick = { showRepository = true }) {
+                            Icon(
+                                imageVector = Icons.Default.TravelExplore,
+                                contentDescription = stringResource(CoreR.string.repository_searcher),
+                            )
+                        }
+                    }
+                },
+                scrollBehavior = scrollBehavior,
             )
         },
         floatingActionButton = {
@@ -185,6 +243,20 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
             return@Scaffold
         }
 
+        val visibleModules = remember(uiState.modules, localQuery) {
+            val words = localQuery.trim().lowercase().split(Regex("\\s+"))
+                .filter(String::isNotBlank)
+            if (words.isEmpty()) uiState.modules else uiState.modules.filter { item ->
+                val searchable = listOf(
+                    item.module.id,
+                    item.module.name,
+                    item.module.author,
+                    item.module.description,
+                ).joinToString(" ").lowercase()
+                words.all(searchable::contains)
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -195,7 +267,7 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item { Spacer(Modifier.height(4.dp)) }
-            items(uiState.modules, key = { it.module.id }) { item ->
+            items(visibleModules, key = { it.module.id }) { item ->
                 ModuleCard(
                     item = item,
                     viewModel = viewModel,
@@ -211,6 +283,173 @@ fun ModuleScreen(viewModel: ModuleViewModel) {
                 )
             }
             item { Spacer(Modifier.height(4.dp)) }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RepositoryScreen(
+    viewModel: ModuleViewModel,
+    activity: MainActivity,
+    onBack: () -> Unit,
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var query by rememberSaveable { mutableStateOf(uiState.repositoryQuery) }
+
+    androidx.compose.runtime.LaunchedEffect(query) {
+        kotlinx.coroutines.delay(300)
+        viewModel.searchRepository(query)
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(android.R.string.cancel),
+                        )
+                    }
+                },
+                title = { Text(stringResource(CoreR.string.repository_searcher)) },
+                scrollBehavior = scrollBehavior,
+            )
+        },
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 12.dp),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                        }
+                    }
+                },
+                placeholder = { Text(stringResource(CoreR.string.repository_search_hint)) },
+            )
+
+            when {
+                uiState.repositoryLoading -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) { CircularProgressIndicator() }
+
+                uiState.repositoryFailed -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(CoreR.string.repository_load_failed),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                uiState.repositoryModules.isEmpty() -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(CoreR.string.repository_no_results),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                else -> LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
+                    contentPadding = PaddingValues(bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(uiState.repositoryModules, key = { "${it.id}:${it.zipUrl}" }) { module ->
+                        RepositoryModuleCard(
+                            module = module,
+                            onDownload = {
+                                DownloadEngine.startWithActivity(
+                                    activity,
+                                    OnlineModuleSubject(module.asOnlineModule(), false),
+                                )
+                            },
+                            onInstall = {
+                                DownloadEngine.startWithActivity(
+                                    activity,
+                                    OnlineModuleSubject(module.asOnlineModule(), true),
+                                )
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RepositoryModuleCard(
+    module: RepositoryModule,
+    onDownload: () -> Unit,
+    onInstall: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(module.name, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(
+                    CoreR.string.module_version_author,
+                    module.version,
+                    module.author.ifBlank { module.id },
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurfaceVariant,
+            )
+            if (module.description.isNotBlank()) {
+                Text(
+                    module.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+            ) {
+                Button(
+                    onClick = onDownload,
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer),
+                ) {
+                    Icon(Icons.Default.FileDownload, contentDescription = null)
+                    Spacer(Modifier.size(6.dp))
+                    Text(stringResource(CoreR.string.download))
+                }
+                Button(onClick = onInstall) {
+                    Icon(Icons.Default.SystemUpdateAlt, contentDescription = null)
+                    Spacer(Modifier.size(6.dp))
+                    Text(stringResource(CoreR.string.install))
+                }
+            }
         }
     }
 }
