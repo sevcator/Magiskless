@@ -1,6 +1,7 @@
 package com.topjohnwu.magisk.core.base
 
 import android.Manifest.permission.REQUEST_INSTALL_PACKAGES
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -35,6 +36,7 @@ class SplashController<T>(private val activity: T)
     where T : ComponentActivity, T: SplashScreenHost {
 
     companion object {
+        private const val MIGRATION_ROOT_RETRY = "migration_root_retry"
         private var splashShown = false
     }
 
@@ -54,7 +56,29 @@ class SplashController<T>(private val activity: T)
         } else {
             Shell.getShell(Shell.EXECUTOR) {
                 if (isRunningAsStub && !it.isRoot) {
-                    activity.showInvalidStateMessage()
+                    val migrationLaunch =
+                        activity.intent.hasExtra(Const.Key.PREV_PACKAGE) &&
+                            activity.intent.hasExtra(Const.Key.PREV_CONFIG)
+                    val alreadyRetried =
+                        activity.intent.getBooleanExtra(MIGRATION_ROOT_RETRY, false)
+                    if (migrationLaunch && !alreadyRetried) {
+                        // Package installation and daemon manager validation can
+                        // briefly race on the first hidden process. Preserve the
+                        // migration payload and retry once in a fresh process;
+                        // the cached failed shell must not survive that retry.
+                        val retryIntent = Intent(activity.intent).apply {
+                            putExtra(MIGRATION_ROOT_RETRY, true)
+                        }
+                        activity.runOnUiThread {
+                            activity.window.decorView.postDelayed({
+                                activity.finishAffinity()
+                                activity.startActivity(retryIntent)
+                                Runtime.getRuntime().exit(0)
+                            }, 500L)
+                        }
+                    } else {
+                        activity.showInvalidStateMessage()
+                    }
                     return@getShell
                 }
                 RootUtils.Connection.await()
