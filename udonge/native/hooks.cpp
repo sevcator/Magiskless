@@ -225,7 +225,7 @@ static std::vector<char> filter_status(const std::vector<char> &raw) {
 
 enum ProcFilter { kFilterMaps, kFilterStatus, kFilterMounts };
 
-// Create an anonymous seekable fd containing `content`.
+// Create a memory-backed seekable fd containing `content`.
 // Prefers memfd_create (API 23+); falls back to a pipe.
 static int make_anon_fd(const std::vector<char> &content) {
 #ifdef __NR_memfd_create

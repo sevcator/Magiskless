@@ -61,13 +61,6 @@ normalize_boot_properties() {
 
 normalize_boot_properties || true
 
-# Anonymous mode: raise the Google firewall as early as possible, before
-# any app gets a socket out. CIDR-only here — the package manager is not
-# up yet at this stage; the uid rules are added by service.sh.
-if [ -f "$state/anonymous" ] && [ ! -f "$state/disabled" ] && [ -f "$runtime/anonymous.sh" ]; then
-    sh "$runtime/anonymous.sh" boot-fw >/dev/null 2>&1 || true
-fi
-
 sanitize_rom_traces() {
     [ -f "$state/rom_keywords.conf" ] || return 0
     command -v resetprop >/dev/null 2>&1 || return 1

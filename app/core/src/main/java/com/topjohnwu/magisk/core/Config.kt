@@ -49,7 +49,6 @@ object Config : PreferenceConfig, DBConfig {
         const val UDONGE_ENABLED = "udonge_enabled"
         const val UDONGE_KEYBOX_URLS = "udonge_keybox_urls"
         const val UDONGE_ROM_KEYWORDS = "udonge_rom_keywords"
-        const val ANONYMOUS_ENABLED = "anonymous_enabled"
 
         val NO_MIGRATION = setOf(
             ASKED_HOME, SU_REQUEST_TIMEOUT, SU_AUTO_RESPONSE, SU_REAUTH, SU_TAPJACK,
@@ -129,7 +128,6 @@ object Config : PreferenceConfig, DBConfig {
         get() = storedUdongeKeyboxUrls.ifBlank { DEFAULT_UDONGE_KEYBOX_URLS }
         set(value) { storedUdongeKeyboxUrls = value }
     var udongeRomKeywords by preference(Key.UDONGE_ROM_KEYWORDS, "")
-    var anonymousEnabled by preference(Key.ANONYMOUS_ENABLED, false)
     private var localePrefs by preference(Key.LOCALE, "")
     var doh by preference(Key.DOH, false)
     var locale

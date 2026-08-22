@@ -70,11 +70,16 @@ jobs:
           apk=out/app-release.apk
           identity=native/out/generated/flags.json
           udonge_archive="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["identity"]["udongeArchive"])' "$identity")"
+          stub_name="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["identity"]["stubName"])' "$identity")"
           secure_dir="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["identity"]["secureDir"])' "$identity")"
           test -s "$apk"
           unzip -tq "$apk"
           unzip -p "$apk" "assets/$udonge_archive" > "$RUNNER_TEMP/udonge.bin"
+          unzip -p "$apk" "assets/$stub_name" > "$RUNNER_TEMP/stub.apk"
           test -s "$RUNNER_TEMP/udonge.bin"
+          test -s "$RUNNER_TEMP/stub.apk"
+          ! unzip -l "$RUNNER_TEMP/udonge.bin" | grep -Eiq 'anonymous|device_db'
+          ! grep -R -Eiq 'anonymous(_mode|Enabled|\.sh|_clear_data)|setAnonymous|device_db' app udonge
           unzip -p "$RUNNER_TEMP/udonge.bin" tee/classes.dex > "$RUNNER_TEMP/udonge-tee.dex"
           unzip -p "$RUNNER_TEMP/udonge.bin" tee/daemon > "$RUNNER_TEMP/udonge-tee-daemon"
           grep -aFq "$secure_dir" "$RUNNER_TEMP/udonge-tee.dex"
@@ -84,6 +89,8 @@ jobs:
           dexdump="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump -print | sort -V | tail -n 1)"
           test -x "$aapt"
           test -x "$dexdump"
+          stub_manifest="$("$aapt" dump xmltree "$RUNNER_TEMP/stub.apk" AndroidManifest.xml)"
+          grep -Eq 'android:icon.*=@0x0108[[:xdigit:]]{4}' <<< "$stub_manifest"
           "$dexdump" -f "$RUNNER_TEMP/udonge-tee.dex" >/dev/null
           grep -Fq 'MODDIR=$1' "$RUNNER_TEMP/udonge-tee-daemon"
           grep -Fq 'export RUST_LOG=off' "$RUNNER_TEMP/udonge-tee-daemon"

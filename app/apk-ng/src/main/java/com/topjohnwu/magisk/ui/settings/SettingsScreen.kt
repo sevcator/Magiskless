@@ -473,7 +473,6 @@ private fun SuperuserSection(viewModel: SettingsViewModel) {
 @Composable
 private fun UdongeSection() {
     val scope = rememberCoroutineScope()
-    var anonymous by remember { mutableStateOf(Config.anonymousEnabled) }
     var enabled by remember { mutableStateOf(Config.udongeEnabled) }
     var showKeyboxes by rememberSaveable { mutableStateOf(false) }
     var keyboxUrls by rememberSaveable { mutableStateOf(Config.udongeKeyboxUrls) }
@@ -555,21 +554,6 @@ private fun UdongeSection() {
                     if (!Udonge.setEnabled(next)) enabled = !next
                 }
             },
-        )
-        SettingsSwitch(
-            title = stringResource(CoreR.string.anonymous_mode_title),
-            summary = stringResource(CoreR.string.anonymous_mode_summary),
-            checked = anonymous,
-            onCheckedChange = { next ->
-                anonymous = next
-                scope.launch(Dispatchers.IO) {
-                    if (next) {
-                        Udonge.setEnabled(true)
-                        Config.zygisk = true
-                    }
-                    if (!Udonge.setAnonymous(next)) anonymous = !next
-                }
-            }
         )
         SettingsArrow(
             title = stringResource(CoreR.string.udonge_rom_keywords_title),

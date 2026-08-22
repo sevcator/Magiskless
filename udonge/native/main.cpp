@@ -141,8 +141,7 @@ public:
         hide_apps_ = !hide_rule_.empty() && !hide_dex_.empty();
 
         if (is_gms_unstable_) return;
-        // Cloak/stealth candidacy comes from targets.conf (live config),
-        // not from a hardcoded list — anonymous mode relies on this.
+        // Cloak/stealth candidacy comes from the live targets configuration.
         if (cfg_.shouldStealth(package)) {
             api_->setOption(zygisk::FORCE_DENYLIST_UNMOUNT);
             return;

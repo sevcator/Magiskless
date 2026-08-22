@@ -58,7 +58,7 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             }
             list.add(SuList)
             list.add(HideApps)
-            list.addAll(listOf(UdongeSettings, UdongeKeyboxes, AnonymousMode, UdongeRomKeywords))
+            list.addAll(listOf(UdongeSettings, UdongeKeyboxes, UdongeRomKeywords))
         }
 
         if (Info.showSuperUser) {
@@ -98,20 +98,6 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             Hide -> viewModelScope.launch { AppMigration.hide(view.activity) }
             Restore -> viewModelScope.launch { AppMigration.restore(view.activity) }
             Zygisk -> if (Zygisk.mismatch) SnackbarEvent(R.string.reboot_apply_change).publish()
-            AnonymousMode -> {
-                val requested = AnonymousMode.value
-                if (requested) Config.zygisk = true
-                Shell.EXECUTOR.execute {
-                    // anonymous mode is layered on top of udonge: make sure
-                    // the cloak engine is on when enabling
-                    if (requested) Udonge.setEnabled(true)
-                    if (!Udonge.setAnonymous(requested) && Config.anonymousEnabled == requested) {
-                        Config.anonymousEnabled = !requested
-                        view.post { AnonymousMode.notifyPropertyChanged(BR.checked) }
-                    }
-                }
-                SnackbarEvent(R.string.reboot_apply_change).publish()
-            }
             else -> Unit
         }
     }
