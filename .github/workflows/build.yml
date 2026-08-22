@@ -61,7 +61,17 @@ jobs:
         run: ./build.py -vvr native
 
       - name: Build Reisenless
-        run: ./build.py -vvr app
+        shell: bash
+        run: |
+          set -o pipefail
+          if ! ./build.py -vvr app 2>&1 | tee "$RUNNER_TEMP/app-build.log"; then
+            diagnostic="$(tail -n 160 "$RUNNER_TEMP/app-build.log")"
+            diagnostic="${diagnostic//'%'/'%25'}"
+            diagnostic="${diagnostic//$'\r'/'%0D'}"
+            diagnostic="${diagnostic//$'\n'/'%0A'}"
+            echo "::error title=Android build diagnostics::$diagnostic"
+            exit 1
+          fi
 
       - name: Verify APK
         shell: bash
