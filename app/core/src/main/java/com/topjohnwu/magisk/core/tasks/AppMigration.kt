@@ -345,6 +345,8 @@ object AppMigration {
             var installedTestPackage: String? = null
             var installedMainPackage: String? = null
             var installedMainUid: Int? = null
+            val previousManager = Config.suManager
+            var managerChanged = false
             var committed = false
             try {
                 val stub = File(workDir, Const.STUB_NAME)
@@ -405,15 +407,26 @@ object AppMigration {
                 if (!authorizeMigrationTarget(newUid)) {
                     return@withContext false
                 }
-                Shell.cmd("${Const.MAIN_BIN} --sulist add $newPackage '${identity.label}'").exec()
+                if (!Shell.cmd("${Const.MAIN_BIN} --sulist add $newPackage").exec().isSuccess) {
+                    return@withContext false
+                }
+                // The daemon recognizes the configured manager before applying
+                // Sulist restrictions. Publish the new identity before its first
+                // root request; the target cannot set this itself without root.
+                Config.suManager = newPackage
+                managerChanged = true
                 Shell.cmd("touch $AppApkPath").exec()
                 if (!launchApp(context, newPackage)) return@withContext false
                 committed = true
                 return@withContext true
             } finally {
                 if (!committed) {
+                    if (managerChanged) Config.suManager = previousManager
                     installedTestPackage?.let { Shell.cmd("pm uninstall $it").exec() }
                     installedMainUid?.let(::revokeMigrationPolicy)
+                    installedMainPackage?.let {
+                        Shell.cmd("${Const.MAIN_BIN} --sulist rm $it").exec()
+                    }
                     installedMainPackage?.let { Shell.cmd("pm uninstall $it").exec() }
                 }
                 workDir.deleteRecursively()
@@ -445,6 +458,8 @@ object AppMigration {
         var installedTest = false
         var installedMain = false
         var installedMainUid: Int? = null
+        val previousManager = Config.suManager
+        var managerChanged = false
         var committed = false
         try {
             val sourceTestPackage = "${context.packageName}.test"
@@ -477,6 +492,9 @@ object AppMigration {
                 if (!authorizeMigrationTarget(newUid)) {
                     return@withContext false
                 }
+                // An empty requester selects the signed original package.
+                Config.suManager = ""
+                managerChanged = true
                 Shell.cmd("touch $AppApkPath").exec()
                 if (launchApp(context, APP_PACKAGE_NAME)) {
                     committed = true
@@ -486,6 +504,7 @@ object AppMigration {
             return@withContext false
         } finally {
             if (!committed) {
+                if (managerChanged) Config.suManager = previousManager
                 if (installedTest) Shell.cmd("pm uninstall $TEST_PKG_NAME").exec()
                 installedMainUid?.let(::revokeMigrationPolicy)
                 if (installedMain) Shell.cmd("pm uninstall $APP_PACKAGE_NAME").exec()
@@ -509,6 +528,7 @@ object AppMigration {
         val sourceUidIsExclusive = sourceUid != null &&
             context.packageManager.getPackagesForUid(sourceUid).orEmpty().singleOrNull() == source
         val sourceTest = "$source.test"
+        Shell.cmd("${Const.MAIN_BIN} --sulist rm $source").exec()
         if (isInstalled(context, sourceTest)) {
             Shell.cmd("pm uninstall $sourceTest").exec()
         }
