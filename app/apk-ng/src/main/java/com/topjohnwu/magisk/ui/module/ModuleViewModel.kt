@@ -88,6 +88,7 @@ class ModuleViewModel : AsyncLoadViewModel() {
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     private val repository = ModuleRepository(ServiceLocator.networkService)
     private var repositoryCandidates: List<RepositoryCandidate> = emptyList()
+    private var repositorySources = ""
     private var repositoryLoadJob: Job? = null
     private var repositorySearchJob: Job? = null
 
@@ -132,13 +133,23 @@ class ModuleViewModel : AsyncLoadViewModel() {
     }
 
     fun loadRepository() {
+        val sources = Config.moduleRepositoryUrls
+        if (sources != repositorySources) {
+            repositoryLoadJob?.cancel()
+            repositorySearchJob?.cancel()
+            repositoryCandidates = emptyList()
+            repositorySources = sources
+            _uiState.update {
+                it.copy(repositoryModules = emptyList(), repositoryFailed = false)
+            }
+        }
         if (repositoryCandidates.isNotEmpty() || repositoryLoadJob?.isActive == true) return
         repositoryLoadJob = viewModelScope.launch {
             _uiState.update {
                 it.copy(repositoryLoading = true, repositoryFailed = false)
             }
             repositoryCandidates = withContext(Dispatchers.IO) {
-                repository.loadSources(Config.moduleRepositoryUrls)
+                repository.loadSources(sources)
             }
             if (repositoryCandidates.isEmpty()) {
                 _uiState.update {
