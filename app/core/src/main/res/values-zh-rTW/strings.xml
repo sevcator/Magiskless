@@ -244,4 +244,12 @@
     <string name="webui_webview_required">需要 Android System WebView</string>
     <string name="webui_webview_required_summary">此裝置沒有可用的 Android WebView 提供者。請安裝或啟用 Android System WebView，然後再試一次。</string>
     <string name="webui_install_webview">安裝 WebView</string>
+    <string name="repository_searcher">儲存庫搜尋</string>
+    <string name="repository_searcher_summary">設定線上模組儲存庫並顯示線上搜尋按鈕</string>
+    <string name="repository_links_title">模組儲存庫連結</string>
+    <string name="repository_links_hint">每行一個 modules.json 或 GitHub 模組儲存庫網址</string>
+    <string name="repository_search_hint">搜尋線上模組</string>
+    <string name="repository_load_failed">無法載入任何已設定的儲存庫</string>
+    <string name="repository_no_results">沒有相符的線上模組</string>
+    <string name="module_search_installed">搜尋已安裝模組</string>
 </resources>

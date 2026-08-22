@@ -266,4 +266,12 @@
     <string name="webui_webview_required">Требуется Android System WebView</string>
     <string name="webui_webview_required_summary">На устройстве нет рабочего поставщика Android WebView. Установите или включите Android System WebView и повторите попытку.</string>
     <string name="webui_install_webview">установить WebView</string>
+    <string name="repository_searcher">поиск по репозиториям</string>
+    <string name="repository_searcher_summary">настройка онлайн-репозиториев модулей и кнопки онлайн-поиска</string>
+    <string name="repository_links_title">ссылки на репозитории модулей</string>
+    <string name="repository_links_hint">по одной ссылке на modules.json или GitHub-репозиторий модуля на строку</string>
+    <string name="repository_search_hint">поиск модулей онлайн</string>
+    <string name="repository_load_failed">не удалось загрузить ни один настроенный репозиторий</string>
+    <string name="repository_no_results">подходящие онлайн-модули не найдены</string>
+    <string name="module_search_installed">поиск установленных модулей</string>
 </resources>
