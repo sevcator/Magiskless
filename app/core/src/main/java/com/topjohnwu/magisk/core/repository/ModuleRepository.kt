@@ -106,7 +106,16 @@ class ModuleRepository(private val network: NetworkService) {
     private fun parseJsonObject(root: JSONObject): List<RepositoryCandidate> {
         val modules = root.optJSONArray("modules") ?: root.optJSONArray("data")
         if (modules != null) return parseJsonArray(modules)
-        return listOfNotNull(parseEntry(root))
+        if (root.opt("id") is String) return listOfNotNull(parseEntry(root))
+        return buildList {
+            val keys = root.keys()
+            while (keys.hasNext()) {
+                val id = keys.next()
+                val module = root.optJSONObject(id) ?: continue
+                if (!module.has("id")) module.put("id", id)
+                parseEntry(module)?.let(::add)
+            }
+        }
     }
 
     private fun parseJsonArray(array: JSONArray): List<RepositoryCandidate> = buildList {
