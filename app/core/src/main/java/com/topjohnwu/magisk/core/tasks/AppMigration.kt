@@ -119,19 +119,20 @@ object AppMigration {
         } else {
             info.dataDir
         }
-        val dataContext = Shell.cmd("ls -Zd $dataDir").exec().out
-            .firstOrNull()?.substringBefore(' ')
-            ?.takeIf { it.count { c -> c == ':' } >= 3 }
-            ?: return false
         val dynDir = File(dataDir, "dyn")
         val currentApk = File(dynDir, "current.apk")
+        // Let Android derive the package-specific MLS categories instead of
+        // parsing and replaying an `ls -Z` label. The latter is not stable
+        // across toybox output formats and caused the migration to roll back
+        // immediately on devices where the context could not be parsed.
         return Shell.cmd(
-            "mkdir -p ${dynDir.path}",
-            "cp -f $AppApkPath ${currentApk.path}",
-            "chown $uid:$uid ${dynDir.path} ${currentApk.path}",
-            "chmod 700 ${dynDir.path}",
-            "chmod 400 ${currentApk.path}",
-            "chcon $dataContext ${dynDir.path} ${currentApk.path}",
+            "mkdir -p ${dynDir.path} && " +
+                "cp -f $AppApkPath ${currentApk.path} && " +
+                "chown $uid:$uid ${dynDir.path} ${currentApk.path} && " +
+                "chmod 700 ${dynDir.path} && " +
+                "chmod 400 ${currentApk.path} && " +
+                "/system/bin/restorecon -RF ${dynDir.path} && " +
+                "test -s ${currentApk.path}",
         ).exec().isSuccess
     }
 
