@@ -15,6 +15,7 @@ import com.topjohnwu.magisk.core.Const
 import com.topjohnwu.magisk.core.R
 import com.topjohnwu.magisk.core.ktx.toast
 import com.topjohnwu.magisk.core.ktx.writeTo
+import com.topjohnwu.magisk.core.model.su.SuPolicy
 import com.topjohnwu.magisk.core.signing.JarMap
 import com.topjohnwu.magisk.core.signing.SignApk
 import com.topjohnwu.magisk.core.utils.AXML
@@ -80,6 +81,29 @@ object AppMigration {
         } catch (_: PackageManager.NameNotFoundException) {
             false
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun installedUid(context: Context, pkg: String): Int? {
+        return try {
+            context.packageManager.getApplicationInfo(pkg, 0).uid
+        } catch (_: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
+    /** Give a newly installed migration target root before its first launch. */
+    private fun authorizeMigrationTarget(uid: Int): Boolean {
+        val query = "REPLACE INTO policies " +
+            "(uid, policy, until, logging, notification) " +
+            "VALUES ($uid, ${SuPolicy.ALLOW}, 0, 0, 0)"
+        return Shell.cmd("${Const.MAIN_BIN} --sqlite '$query'").exec().isSuccess
+    }
+
+    private fun revokeMigrationPolicy(uid: Int) {
+        Shell.cmd(
+            "${Const.MAIN_BIN} --sqlite 'DELETE FROM policies WHERE uid=$uid'"
+        ).exec()
     }
 
     @Suppress("DEPRECATION")
@@ -320,6 +344,7 @@ object AppMigration {
             if (!workDir.mkdirs()) return@withContext false
             var installedTestPackage: String? = null
             var installedMainPackage: String? = null
+            var installedMainUid: Int? = null
             var committed = false
             try {
                 val stub = File(workDir, Const.STUB_NAME)
@@ -374,6 +399,12 @@ object AppMigration {
                     return@withContext false
                 }
                 installedMainPackage = newPackage
+                val newUid = installedUid(context, newPackage)
+                    ?: return@withContext false
+                installedMainUid = newUid
+                if (!authorizeMigrationTarget(newUid)) {
+                    return@withContext false
+                }
                 Shell.cmd("${Const.MAIN_BIN} --sulist add $newPackage '${identity.label}'").exec()
                 Shell.cmd("touch $AppApkPath").exec()
                 if (!launchApp(context, newPackage)) return@withContext false
@@ -382,6 +413,7 @@ object AppMigration {
             } finally {
                 if (!committed) {
                     installedTestPackage?.let { Shell.cmd("pm uninstall $it").exec() }
+                    installedMainUid?.let(::revokeMigrationPolicy)
                     installedMainPackage?.let { Shell.cmd("pm uninstall $it").exec() }
                 }
                 workDir.deleteRecursively()
@@ -412,6 +444,7 @@ object AppMigration {
         if (!workDir.mkdirs()) return@withContext false
         var installedTest = false
         var installedMain = false
+        var installedMainUid: Int? = null
         var committed = false
         try {
             val sourceTestPackage = "${context.packageName}.test"
@@ -438,6 +471,12 @@ object AppMigration {
             val apk = StubApk.current(context)
             if (installMigrationApk(apk)) {
                 installedMain = true
+                val newUid = installedUid(context, APP_PACKAGE_NAME)
+                    ?: return@withContext false
+                installedMainUid = newUid
+                if (!authorizeMigrationTarget(newUid)) {
+                    return@withContext false
+                }
                 Shell.cmd("touch $AppApkPath").exec()
                 if (launchApp(context, APP_PACKAGE_NAME)) {
                     committed = true
@@ -448,6 +487,7 @@ object AppMigration {
         } finally {
             if (!committed) {
                 if (installedTest) Shell.cmd("pm uninstall $TEST_PKG_NAME").exec()
+                installedMainUid?.let(::revokeMigrationPolicy)
                 if (installedMain) Shell.cmd("pm uninstall $APP_PACKAGE_NAME").exec()
             }
             workDir.deleteRecursively()
@@ -465,6 +505,9 @@ object AppMigration {
 
     fun completeMigration(context: Context, source: String): Boolean {
         if (!isValidPackageName(source) || source == context.packageName) return false
+        val sourceUid = installedUid(context, source)
+        val sourceUidIsExclusive = sourceUid != null &&
+            context.packageManager.getPackagesForUid(sourceUid).orEmpty().singleOrNull() == source
         val sourceTest = "$source.test"
         if (isInstalled(context, sourceTest)) {
             Shell.cmd("pm uninstall $sourceTest").exec()
@@ -474,6 +517,7 @@ object AppMigration {
         }
         val complete = !isInstalled(context, sourceTest) && !isInstalled(context, source)
         if (complete) {
+            if (sourceUidIsExclusive) sourceUid?.let(::revokeMigrationPolicy)
             Config.migrationSource = ""
             Config.migrationTarget = ""
         }
