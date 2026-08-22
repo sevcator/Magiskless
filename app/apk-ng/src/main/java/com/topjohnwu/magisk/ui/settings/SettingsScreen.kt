@@ -89,9 +89,9 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 .padding(bottom = 88.dp)
         ) {
             CustomizationSection(viewModel)
+            Spacer(Modifier.height(12.dp))
+            AppSettingsSection()
             if (Info.env.isActive) {
-                Spacer(Modifier.height(12.dp))
-                AppSettingsSection()
                 MagiskSection(viewModel)
                 Spacer(Modifier.height(12.dp))
                 UdongeSection()
