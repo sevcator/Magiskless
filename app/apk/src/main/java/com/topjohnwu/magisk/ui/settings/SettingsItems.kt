@@ -112,6 +112,42 @@ object DoHToggle : BaseSettingsItem.Toggle() {
     override var value by Config::doh
 }
 
+object RepositorySearcher : BaseSettingsItem.SplitToggle() {
+    override val title = CoreR.string.repository_searcher.asText()
+    override val description = CoreR.string.repository_searcher_summary.asText()
+    override var value by Config::repositorySearcherEnabled
+
+    override fun onPressed(view: View, handler: Handler) {
+        handler.onItemPressed(view, this) {
+            val input = EditText(view.context).apply {
+                hint = view.resources.getString(CoreR.string.repository_links_hint)
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                minLines = 5
+                maxLines = 12
+                setText(Config.moduleRepositoryUrls)
+                setSelection(text.length)
+            }
+            MagiskDialog(view.activity).apply {
+                setTitle(CoreR.string.repository_links_title)
+                setView(input)
+                setButton(MagiskDialog.ButtonType.POSITIVE) {
+                    text = android.R.string.ok
+                    onClick {
+                        Config.moduleRepositoryUrls = input.text.lineSequence()
+                            .map(String::trim)
+                            .filter(String::isNotBlank)
+                            .distinct()
+                            .joinToString("\n")
+                    }
+                }
+                setButton(MagiskDialog.ButtonType.NEGATIVE) {
+                    text = android.R.string.cancel
+                }
+            }.show()
+        }
+    }
+}
+
 object SystemlessHosts : BaseSettingsItem.Blank() {
     override val title = CoreR.string.settings_hosts_title.asText()
     override val description = CoreR.string.settings_hosts_summary.asText()

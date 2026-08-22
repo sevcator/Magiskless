@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.databinding.Bindable
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.topjohnwu.magisk.BR
 import com.topjohnwu.magisk.MainDirections
 import com.topjohnwu.magisk.R
@@ -23,6 +24,7 @@ import com.topjohnwu.magisk.dialog.OnlineModuleInstallDialog
 import com.topjohnwu.magisk.events.GetContentEvent
 import com.topjohnwu.magisk.events.SnackbarEvent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import com.topjohnwu.magisk.core.R as CoreR
@@ -33,6 +35,8 @@ class ModuleViewModel : AsyncLoadViewModel() {
     val bottomBarBarrierIds = intArrayOf(R.id.module_update, R.id.module_webui, R.id.module_remove)
 
     private val itemsInstalled = diffList<LocalModuleRvItem>()
+    private var allInstalled = emptyList<LocalModuleRvItem>()
+    val hasInstalledModules = MutableLiveData(false)
 
     val items = MergeObservableList<RvItem>()
     val extraBindings = bindExtra {
@@ -64,8 +68,27 @@ class ModuleViewModel : AsyncLoadViewModel() {
 
     private suspend fun loadInstalled() {
         withContext(Dispatchers.Default) {
-            val installed = LocalModule.installed().map { LocalModuleRvItem(it) }
-            itemsInstalled.update(installed)
+            allInstalled = LocalModule.installed().map { LocalModuleRvItem(it) }
+            itemsInstalled.update(allInstalled)
+            hasInstalledModules.postValue(allInstalled.isNotEmpty())
+        }
+    }
+
+    fun searchInstalled(query: String) {
+        val words = query.trim().lowercase().split(Regex("\\s+"))
+            .filter(String::isNotBlank)
+        val filtered = if (words.isEmpty()) allInstalled else allInstalled.filter { row ->
+            val module = row.item
+            val searchable = listOf(
+                module.id,
+                module.name,
+                module.author,
+                module.description,
+            ).joinToString(" ").lowercase()
+            words.all(searchable::contains)
+        }
+        viewModelScope.launch {
+            itemsInstalled.update(filtered)
         }
     }
 

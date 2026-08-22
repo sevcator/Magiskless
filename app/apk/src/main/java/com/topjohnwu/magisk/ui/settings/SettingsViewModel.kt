@@ -47,11 +47,12 @@ class SettingsViewModel : BaseViewModel(), BaseSettingsItem.Handler {
             list.add(AddShortcut)
 
         // Reisenless
+        list.add(ReisenlessSettings)
+        if (Const.USER_ID == 0) {
+            list.add(if (hidden) Restore else Hide)
+        }
+        list.add(RepositorySearcher)
         if (Info.env.isActive) {
-            list.add(ReisenlessSettings)
-            if (Const.USER_ID == 0) {
-                list.add(if (hidden) Restore else Hide)
-            }
             list.add(SystemlessHosts)
             if (Const.Version.atLeast_24_0()) {
                 list.add(Zygisk)
