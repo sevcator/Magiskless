@@ -637,7 +637,6 @@ object AppMigration {
             },
             versionName = current.versionName ?: "1.0",
             versionCode = currentCode,
-            icon = appInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon,
         )
         val session = APKInstall.startSession(context)
         return withContext(Dispatchers.IO) {

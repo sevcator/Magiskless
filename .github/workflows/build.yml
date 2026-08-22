@@ -110,8 +110,8 @@ jobs:
           test -s "$stub_symbols"
           test -s "$stub_res_symbols"
           grep -Fq 'int drawable ic_hidden ' "$stub_symbols"
-          grep -v 'int drawable ic_hidden ' "$stub_symbols" > "$RUNNER_TEMP/stub-symbols-base.txt"
-          diff -u "$RUNNER_TEMP/stub-symbols-base.txt" "$stub_res_symbols"
+          grep -Fq 'int drawable ic_hidden ' "$stub_res_symbols"
+          diff -u "$stub_symbols" "$stub_res_symbols"
           "$dexdump" -f "$RUNNER_TEMP/udonge-tee.dex" >/dev/null
           grep -Fq 'MODDIR=$1' "$RUNNER_TEMP/udonge-tee-daemon"
           grep -Fq 'export RUST_LOG=off' "$RUNNER_TEMP/udonge-tee-daemon"
